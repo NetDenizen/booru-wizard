@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Upload Control Entry",
+  "description": "These are fed to the mass-upload userscript.",
+  "type": "object",
+
+  "patternProperties": {
+    "^.*$": {
+      "description": "Properties for a file, retrieved by the path as key.",
+      "type": "object",
+
+      "properties": {
+        "name": {
+          "description": "Title of work.",
+          "type": ["string", "null"]
+        },
+        "source": {
+          "description": "Source of work.",
+          "type": ["string", "null"]
+        },
+        "rating": {
+          "description": "Rating of work as 's' (safe), 'q' (questionable), or 'e' (explicit).",
+          "type": "string",
+          "enum": ["s", "q", "e"]
+        },
+        "tags": {
+          "description":"List of tag names.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
