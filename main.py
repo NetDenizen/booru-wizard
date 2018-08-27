@@ -167,7 +167,7 @@ def main():
 
 	TagsTracker = TagsContainer()
 	for f in OutputFiles.ControlFiles:
-		TagsTracker.AddContainer(f.tags)
+		TagsTracker.AddStringList( f.tags.ReturnStringList(), 1 )
 	OutputFiles.FilesLock.release()
 
 	wizard = MainFrame(None, APPTITLE, config.MaxImageBufSize, config.output, OutputFiles, config.ConditionalTags, TagsTracker)

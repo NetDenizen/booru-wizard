@@ -61,6 +61,14 @@ class TagsContainer:
 	def AddObj(self, obj):
 		"Add a tag object in this container."
 		self.add(obj.name, obj.occurrences)
+	def AddStringList(self, strings, value):
+		"Add a list of tags as individual strings."
+		for s in strings:
+			self.add(s, value)
+	def AddString(self, string, value):
+		"Add a list of tags as a space terminated string."
+		names = string.split() #TODO: Does this handle Unicode spaces
+		self.AddStringList(names, value)
 	def AddContainer(self, container):
 		"Add the tag objects from another TagsContainer."
 		for t in container.tags:
@@ -155,11 +163,15 @@ class ConditionalTagger:
 			return
 		found = self.lookup.get(name.lower(), None)
 		if found is not None and source.ReturnStringOccurrences(name) != 0:
-			target.AddContainer(found)
+			for t in found.tags:
+				if source.ReturnStringOccurrences(t.name) == 0 or source.ReturnStringOccurrences(t.name) == 1:
+					target.AddObj(t)
 	def SubTags(self, name, source, target):
 		"Search for the name in lookup, and if it is found both in this container and source, then sub the found container with the target one."
 		if not name:
 			return
 		found = self.lookup.get(name.lower(), None)
 		if found is not None and source.ReturnStringOccurrences(name) == 0:
-			target.SubContainer(found)
+			for t in found.tags:
+				if source.ReturnStringOccurrences(t.name) == 0 or source.ReturnStringOccurrences(t.name) == 1:
+					target.SubObj(t)
