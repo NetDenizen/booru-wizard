@@ -65,7 +65,7 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 
 class MainFrame(wx.Frame):
 	def _SetTitle(self):
-		"Update the name of a choice at the specified index, with the current number of occurrences for the related tag from the tag tracker."
+		"Set the title of the software with the path, its index, and the index of the current question."
 		self.SetTitle(''.join( ( self.BaseTitle,
 								 ' - ',
 								 str(int(self.pos) + 1),

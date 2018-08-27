@@ -84,12 +84,14 @@ class ControlFileError(Exception):
 	pass
 
 class FileData:
-	def _SetTaglessTags(self):
+	def SetTaglessTags( self, exclusions = () ):
 		"Check if there are tags with 2 or more occurrences, if not, set the tagless tags, otherwise, clear them."
 		if self.tags.ReturnHighestOccurrences() >= 2:
 			self.tags.ClearContainer(self.TaglessTags)
 		else:
-			self.tags.SetContainer(self.TaglessTags)
+			for t in self.TaglessTags.tags:
+				if t.name not in exclusions:
+					self.tags.SetObj(t)
 	def SetName(self, name):
 		"Set the name setting to the specified value. Set or unset the nameless tags, if it is or is not None, respectively."
 		self.name = name
@@ -119,7 +121,7 @@ class FileData:
 		self.SetSource(DefaultSource)
 
 		self.TaglessTags = TaglessTags
-		self._SetTaglessTags()
+		self.SetTaglessTags()
 
 		self._IsChanged = True
 		self._lock = None # A lock within the ManagedFile object, used to synchronize updates.
@@ -138,7 +140,6 @@ class FileData:
 		self.lock()
 	def FinishChange(self):
 		"Release self._lock if it is not None and set IsChanged to True."
-		self._SetTaglessTags()
 		self.unlock()
 		self._IsChanged = True
 	def LoadJSON(self, obj):

@@ -58,9 +58,6 @@ class TagsContainer:
 			return ""
 		registered = self.register(name)
 		registered.occurrences += value
-	def AddObj(self, obj):
-		"Add a tag object in this container."
-		self.add(obj.name, obj.occurrences)
 	def AddStringList(self, strings, value):
 		"Add a list of tags as individual strings."
 		for s in strings:
@@ -69,23 +66,16 @@ class TagsContainer:
 		"Add a list of tags as a space terminated string."
 		names = string.split() #TODO: Does this handle Unicode spaces
 		self.AddStringList(names, value)
-	def AddContainer(self, container):
-		"Add the tag objects from another TagsContainer."
-		for t in container.tags:
-			self.AddObj(t)
 	def sub(self, name, value):
 		"Register a tag object and decrement its occurrences by a value."
 		if not name:
 			return ""
 		registered = self.register(name)
 		registered.sub(value)
-	def SubObj(self, obj):
-		"Sub a tag object from this container."
-		self.sub(obj.name, obj.occurrences)
-	def SubContainer(self, container):
-		"Sub the tag objects from another TagsContainer."
-		for t in container.tags:
-			self.SubObj(t)
+	def SubStringList(self, strings, value):
+		"Sub a list of tags as individual strings."
+		for s in strings:
+			self.sub(s, value)
 	def clear(self, name, value):
 		"Register a tag object and set its occurrences to 0 if it is less than or equal to 0."
 		if not name:
@@ -157,21 +147,3 @@ class ConditionalTagger:
 		found = self.lookup.get(name.lower(), None)
 		if found is not None:
 			target.ClearContainer(found)
-	def AddTags(self, name, source, target):
-		"Search for the name in lookup, and if it is found in this container and not source, then add the target container with the found one."
-		if not name:
-			return
-		found = self.lookup.get(name.lower(), None)
-		if found is not None and source.ReturnStringOccurrences(name) != 0:
-			for t in found.tags:
-				if source.ReturnStringOccurrences(t.name) == 0 or source.ReturnStringOccurrences(t.name) == 1:
-					target.AddObj(t)
-	def SubTags(self, name, source, target):
-		"Search for the name in lookup, and if it is found both in this container and source, then sub the found container with the target one."
-		if not name:
-			return
-		found = self.lookup.get(name.lower(), None)
-		if found is not None and source.ReturnStringOccurrences(name) == 0:
-			for t in found.tags:
-				if source.ReturnStringOccurrences(t.name) == 0 or source.ReturnStringOccurrences(t.name) == 1:
-					target.SubObj(t)

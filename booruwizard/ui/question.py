@@ -43,15 +43,14 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		if self.CurrentChoice == self.choices.GetSelection():
 			return
 		self.OutputFile.PrepareChange()
+		self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		self.OutputFile.tags.clear(self.TagNames[self.CurrentChoice], 2)
 		self.OutputFile.tags.set(self.TagNames[self.choices.GetSelection()], 2)
 		self.ConditionalTags.ClearTags(self.TagNames[self.CurrentChoice], self.OutputFile.tags)
 		self.ConditionalTags.SetTags(self.TagNames[self.choices.GetSelection()], self.OutputFile.tags)
+		self.OutputFile.SetTaglessTags( (self.TagNames[self.CurrentChoice],) )
+		self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		self.OutputFile.FinishChange()
-		self.TagsTracker.sub(self.TagNames[self.CurrentChoice], 1)
-		self.TagsTracker.add(self.TagNames[self.choices.GetSelection()], 1)
-		self.ConditionalTags.SubTags(self.TagNames[self.CurrentChoice], self.OutputFile.tags, self.TagsTracker)
-		self.ConditionalTags.AddTags(self.TagNames[self.choices.GetSelection()], self.OutputFile.tags, self.TagsTracker)
 		self._UpdateAllNames()
 		self.CurrentChoice = self.choices.GetSelection()
 		e.Skip()
@@ -63,19 +62,19 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		"Display the updated radio question for the given case."
 		#TODO: Should we only load choice on click, or preload choice in load?
 		self.OutputFile.PrepareChange()
+		self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		Last = 0
+		names = []
 		for i, n in enumerate(self.TagNames):
-			if n and self.OutputFile.tags.ReturnStringOccurrences(n) > 0:
-				self.OutputFile.tags.clear(n, 2)
-				self.ConditionalTags.ClearTags(n, self.OutputFile.tags)
-				self.TagsTracker.sub(n, 1)
-				self.ConditionalTags.SubTags(n, self.OutputFile.tags, self.TagsTracker)
-				Last = i
+			self.OutputFile.tags.clear(n, 2)
+			self.ConditionalTags.ClearTags(n, self.OutputFile.tags)
+			Last = i
+			names.append(n)
 		self.choices.SetSelection(Last)
 		self.OutputFile.tags.set(self.TagNames[self.choices.GetSelection()], 2)
 		self.ConditionalTags.SetTags(self.TagNames[self.choices.GetSelection()], self.OutputFile.tags)
-		self.TagsTracker.add(self.TagNames[self.choices.GetSelection()], 1)
-		self.ConditionalTags.AddTags(self.TagNames[self.choices.GetSelection()], self.OutputFile.tags, self.TagsTracker)
+		self.OutputFile.SetTaglessTags(names)
+		self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		self.OutputFile.FinishChange()
 		self._UpdateAllNames()
 		self.CurrentChoice = self.choices.GetSelection()
@@ -111,20 +110,22 @@ class CheckQuestion(TagChoiceQuestion):
 		"Bound to EVT_CHECKLISTBOX; set selected tags and remove the previously selected ones."
 		if e.GetInt() in self.CurrentChoices:
 			self.OutputFile.PrepareChange()
+			self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.tags.clear(self.TagNames[e.GetInt()], 2)
 			self.ConditionalTags.ClearTags(self.TagNames[e.GetInt()], self.OutputFile.tags)
+			self.OutputFile.SetTaglessTags( (self.TagNames[e.GetInt()],) )
+			self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.FinishChange()
 			self.CurrentChoices.remove( e.GetInt() )
-			self.TagsTracker.sub(self.TagNames[e.GetInt()], 1)
-			self.ConditionalTags.SubTags(self.TagNames[e.GetInt()], self.OutputFile.tags, self.TagsTracker)
 		else:
 			self.OutputFile.PrepareChange()
+			self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.tags.set(self.TagNames[e.GetInt()], 2)
 			self.ConditionalTags.SetTags(self.TagNames[e.GetInt()], self.OutputFile.tags)
+			self.OutputFile.SetTaglessTags()
+			self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.FinishChange()
 			self.CurrentChoices.append( e.GetInt() )
-			self.TagsTracker.add(self.TagNames[e.GetInt()], 1)
-			self.ConditionalTags.AddTags(self.TagNames[e.GetInt()], self.OutputFile.tags, self.TagsTracker)
 		self.OutputFile.lock()
 		self._UpdateChecks()
 		self.OutputFile.unlock()
@@ -171,13 +172,14 @@ class EntryQuestion(wx.Panel):
 	def _UpdateTags(self):
 		"Subtract the previously entered tag string and add the new one"
 		self.OutputFile.PrepareChange()
+		self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		if self.CurrentTags is None:
 			self.CurrentTags = TagsContainer()
+		names = []
 		for s in self.CurrentTags.ReturnStringList(): #TODO Should this be rolled into a SetContainer function
-			self.TagsTracker.sub(s, 1)
-			self.ConditionalTags.SubTags(s, self.OutputFile.tags, self.TagsTracker)
 			self.OutputFile.tags.clear(s, 2)
 			self.ConditionalTags.ClearTags(s, self.OutputFile.tags)
+			names.append(s)
 		for s in self.EntryStrings[self.pos].split():
 			self.ConditionalTags.ClearTags(s, self.CurrentTags)
 		self.CurrentTags.ClearString(self.EntryStrings[self.pos], 2)
@@ -186,8 +188,8 @@ class EntryQuestion(wx.Panel):
 			self.ConditionalTags.SetTags(s, self.CurrentTags)
 		self.OutputFile.tags.SetContainer(self.CurrentTags)
 		self.EntryStrings[self.pos] = self.entry.GetValue()
-		for s in self.CurrentTags.ReturnStringList(): #TODO Should this be rolled into a SetContainer function
-			self.TagsTracker.add(s, 1)
+		self.OutputFile.SetTaglessTags(names)
+		self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		self.OutputFile.FinishChange()
 	def _OnEntry(self, e):
 		"Bound to EVT_TEXT; when a space is entered, update tags."
@@ -267,20 +269,22 @@ class SessionTags(TagChoiceQuestion):
 		"Bound to EVT_CHECKLISTBOX; set selected tags and remove the previously selected ones."
 		if e.GetInt() in self.CurrentChoices:
 			self.OutputFile.PrepareChange()
+			self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.tags.clear(self.TagNames[e.GetInt()], 2)
 			self.ConditionalTags.ClearTags(self.TagNames[e.GetInt()], self.OutputFile.tags)
+			self.OutputFile.SetTaglessTags(self.TagNames[e.GetInt()])
+			self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.FinishChange()
 			self.CurrentChoices.remove( e.GetInt() )
-			self.TagsTracker.sub(self.TagNames[e.GetInt()], 1)
-			self.ConditionalTags.SubTags(self.TagNames[e.GetInt()], self.OutputFile.tags, self.TagsTracker)
 		else:
 			self.OutputFile.PrepareChange()
+			self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.tags.set(self.TagNames[e.GetInt()], 2)
 			self.ConditionalTags.SetTags(self.TagNames[e.GetInt()], self.OutputFile.tags)
+			self.OutputFile.SetTaglessTags()
+			self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.FinishChange()
 			self.CurrentChoices.append( e.GetInt() )
-			self.TagsTracker.add(self.TagNames[e.GetInt()], 1)
-			self.ConditionalTags.AddTags(self.TagNames[e.GetInt()], self.OutputFile.tags, self.TagsTracker)
 		ChoiceNames = self.TagsTracker.ReturnStringList()
 		if ChoiceNames != self.ChoiceNames: # TODO: Only check if there are things in ChoiceNames not in self.ChoiceNames
 			for c in ChoiceNames:
