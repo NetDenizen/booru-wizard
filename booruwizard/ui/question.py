@@ -8,6 +8,14 @@ from booruwizard.lib.imagereader import ManagedImage, ImageReader
 from booruwizard.lib.fileops import safety, FileData, FileManager
 
 class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
+	def _UpdateChecks(self):
+		"Update the name and check status of every choice."
+		for i, n in enumerate(self.TagNames):
+			self._UpdateName(i)
+			if n and self.OutputFile.tags.ReturnStringOccurrences(n) > 0:
+				self.choices.Check(i)
+			else:
+				self.choices.Check(i, False)
 	def _UpdateName(self, idx):
 		"Update the name of a choice at the specified index, with the current number of occurrences for the related tag from the tag tracker."
 		self.choices.SetString(idx,
@@ -66,10 +74,11 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		Last = 0
 		names = []
 		for i, n in enumerate(self.TagNames):
-			self.OutputFile.tags.clear(n, 2)
-			self.ConditionalTags.ClearTags(n, self.OutputFile.tags)
-			Last = i
-			names.append(n)
+			if n and self.OutputFile.tags.ReturnStringOccurrences(n) > 0:
+				self.OutputFile.tags.clear(n, 2)
+				self.ConditionalTags.ClearTags(n, self.OutputFile.tags)
+				Last = i
+				names.append(n)
 		self.choices.SetSelection(Last)
 		self.OutputFile.tags.set(self.TagNames[self.choices.GetSelection()], 2)
 		self.ConditionalTags.SetTags(self.TagNames[self.choices.GetSelection()], self.OutputFile.tags)
@@ -208,7 +217,7 @@ class EntryQuestion(wx.Panel):
 		"Display the updated entry question for the given case."
 		if self.CurrentTags is None:
 			self.CurrentTags = TagsContainer()
-		return
+		self._UpdateEntryText()
 	def _OnIndexImage(self, message, arg2=None):
 		"Change the index index to the one specified in the message, if possible."
 		if message < len(self.EntryStrings) and message >= 0:
@@ -254,14 +263,6 @@ class EntryQuestion(wx.Panel):
 
 #TODO: Remove code duplication
 class SessionTags(TagChoiceQuestion):
-	def _UpdateChecks(self):
-		"Update the name and check status of every choice."
-		for i, n in enumerate(self.TagNames):
-			self._UpdateName(i)
-			if n and self.OutputFile.tags.ReturnStringOccurrences(n) > 0:
-				self.choices.Check(i)
-			else:
-				self.choices.Check(i, False)
 	def _OnScrollTop(self, e):
 		"Prevent the widget from scrolling to the top when a box is checked."
 		e.StopPropagation()
@@ -286,16 +287,18 @@ class SessionTags(TagChoiceQuestion):
 			self.OutputFile.FinishChange()
 			self.CurrentChoices.append( e.GetInt() )
 		ChoiceNames = self.TagsTracker.ReturnStringList()
-		if ChoiceNames != self.ChoiceNames: # TODO: Only check if there are things in ChoiceNames not in self.ChoiceNames
-			for c in ChoiceNames:
-				if c not in self.ChoiceNames:
-					self.ChoiceNames.append(c)
+		added = False
+		for c in ChoiceNames:
+			if c not in self.ChoiceNames:
+				self.ChoiceNames.append(c)
+				added = True
+		if added: # TODO: Only check if there are things in ChoiceNames not in self.ChoiceNames
 			self.TagNames = self.ChoiceNames
 			self.Unbind( wx.EVT_CHECKLISTBOX, id=self.choices.GetId() )
 			self.Unbind( wx.EVT_SCROLL_TOP, id=self.choices.GetId() )
 			self.sizer.Remove(0)
 			self.choices = None
-			self.choices = wx.CheckListBox( self, choices= self.ChoiceNames )
+			self.choices = wx.CheckListBox(self, choices= self.ChoiceNames)
 			self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL  | wx.EXPAND)
 			self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
 			self.Bind( wx.EVT_SCROLL_TOP, self._OnScrollTop, id=self.choices.GetId() )

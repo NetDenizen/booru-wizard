@@ -101,7 +101,10 @@ class QuestionPanel(QuestionDisplayComponent):
 		self.positions = [0] * NumImages # The position in questions corresponding to each image
 		self.questions = questions # Question objects
 		self.body = wx.TextCtrl(self, style= wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH | wx.TE_NOHIDESEL | wx.TE_AUTO_URL) # The body of the question #TODO: Will poor, poor Mac users get URL highlighting? Set background color?
+		self.BodyTip = wx.ToolTip('Question prompt')
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.body.SetToolTip(self.BodyTip)
 
 		self.sizer.Add(self.body, 1, wx.ALIGN_CENTER | wx.EXPAND)
 		self.SetSizer(self.sizer)

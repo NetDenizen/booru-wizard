@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 class tag:
 	def __init__(self, name):
 		self.name = name # Name of tag.
@@ -12,14 +14,6 @@ class TagsContainer:
 	def __init__(self):
 		self.lookup = {} # Lookup table for quickly locating tags
 		self.tags = []
-	def clone(self):
-		"Clone the object and other sub-objects."
-		output = TagsContainer()
-		for t in self.tags:
-			output.tags.append( tag(t.name) )
-			output.tags[-1].occurrences = t.occurrences
-			output.lookup[output.tags[-1].name] = output.tags[-1]
-		return output
 	def register(self, name):
 		"Add a single tag object with zero occurrences; if it already exists, then do nothing. Return the registered tag."
 		found = self.lookup.get(name.lower(), None)
@@ -52,6 +46,10 @@ class TagsContainer:
 		"Merge the tag objects from another TagsContainer."
 		for t in container.tags:
 			self.SetObj(t)
+	def SetDict(self, obj):
+		"Set a list of tags and their occurrences as a dict."
+		for k, v in obj.items():
+			self.set(k, v)
 	def add(self, name, value):
 		"Register a tag object and increment its occurrences by a value."
 		if not name:
@@ -121,6 +119,13 @@ class TagsContainer:
 			if t.occurrences > highest:
 				highest = t.occurrences
 		return highest
+	def ReturnDict(self):
+		"Return all tags with 1 or more occurrences as a dict with names as keys and occurrences as the values."
+		output = OrderedDict()
+		for t in self.tags:
+			if t.occurrences > 0:
+				output[t.name] = t.occurrences
+		return output
 
 class ConditionalTagger:
 	def __init__(self):

@@ -4,6 +4,7 @@ import os
 import os.path
 import argparse
 import json
+from collections import OrderedDict
 
 import wx
 from pubsub import pub
@@ -97,7 +98,7 @@ def ParseJSONFile(path):
 	if contents is None:
 		return obj
 	try:
-		obj = json.loads(contents)
+		obj = json.loads(contents, object_pairs_hook=OrderedDict)
 	except ValueError as err:
 		raise MainError( ''.join( ('Failed to open file at path: "', path, '" Reason: "', err.msg, '" Line: ', err.lineno, ' Col: ', err.colno ) ) )
 	return obj

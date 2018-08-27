@@ -24,11 +24,17 @@
           "enum": ["s", "q", "e"]
         },
         "tags": {
-          "description":"List of tag names.",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "description":"Lookup table of tag names and their internal 'level'. '1' is automatically set, and '2' is manually set. Manual settings cannot be overridden by automatic ones.",
+          "type": "object",
+          "patternProperties": {
+            "^\\S*$": {
+              "description": "Internal 'level'.",
+              "type": "integer",
+			  "enum": [1, 2],
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

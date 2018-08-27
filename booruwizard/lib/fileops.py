@@ -153,7 +153,7 @@ class FileData:
 		tags = obj.get('tags', None)
 		if tags is not None:
 			self.tags = TagsContainer()
-			self.tags.SetStringList(tags, 2)
+			self.tags.SetDict(tags)
 		rating = obj.get('rating', None)
 		if rating is not None:
 			found = SAFETY_NAMES_LOOKUP.get(rating, None)
@@ -171,7 +171,7 @@ class FileData:
 				{ 'name'   : self.name,
 				  'source' : self.source,
 				  'rating' : SAFETY_VALUES_LOOKUP[self.rating],
-				  'tags'   : self.tags.ReturnStringList()
+				  'tags'   : self.tags.ReturnDict()
 				}
 			  }
 		return json.dumps(obj)
