@@ -195,8 +195,6 @@ class FileDialogFrame(wx.Frame):
 		self.settings.ConfigFile = self.ConfigFileChooser.GetPath()
 		self.settings.InputDir = self.InputDirChooser.GetPath()
 		self.settings.OutputDir = self.OutputDirChooser.GetPath()
-		if not self.settings.OutputDir:
-			self.settings.OutputDir = self.settings.InputDir
 		self.settings.EarlyExit = False
 		self.Close()
 	def _OnEmergencyExit(self, message, arg2=None):

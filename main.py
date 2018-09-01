@@ -74,10 +74,10 @@ def ParseCommandLine():
 	"Function to create a command line argument parser, and return the args object from it."
 	parser = argparse.ArgumentParser(description='Get command line arguments.')
 	parser.add_argument( '--no-dialog', '-d',  action='store_true', help='If this is set, then the file chooser dialog will not be displayed before the regular UI. Thus, the command line settings are relied upon.' )
-	parser.add_argument( '--schema', '-s',  action='store', default='', help='Path to read schema file from. If none, then prompt it on software start.' )
-	parser.add_argument( '--config', '-c', action='store', default='', help='Path to read config file from. If none, then prompt it on software start.' )
-	parser.add_argument( '--input', '-i', action='store', default='', help='Path to input directory. If there is none, then prompt it on software start.' )
-	parser.add_argument( '--output', '-o', action='store', default='', help='Path to output directory. If there is none, then then prompt it on software start.' )
+	parser.add_argument( '--schema', '-s',  action='store', default='', help='Path to read schema file from.' )
+	parser.add_argument( '--config', '-c', action='store', default='', help='Path to read config file from.' )
+	parser.add_argument( '--input', '-i', action='store', default='', help='Path to input directory.' )
+	parser.add_argument( '--output', '-o', action='store', default='', help='Path to output directory. If none, then copy it from "--input".' )
 	return parser.parse_args()
 
 def ReadTextFile(path):
@@ -144,6 +144,8 @@ def main():
 		app.MainLoop()
 		if settings.EarlyExit:
 			sys.exit(0)
+	if not settings.OutputDir:
+		settings.OutputDir = settings.InputDir
 	settings.validate()
 
 	schema = ParseJSONFile(settings.SchemaFile)
@@ -164,6 +166,9 @@ def main():
 		VerifyJSONSchema(p, obj, schema)
 		OutputFiles.AddJSON(settings.InputDir, settings.OutputDir, obj,
 							config.DefaultName, config.DefaultSource, config.DefaultSafety, config.NamelessTags, config.SourcelessTags, config.TaglessTags)
+
+	if not OutputFiles.ControlFiles:
+		raise MainError('No input files found.')
 	OutputFiles.StartUpdateTimer()
 
 	TagsTracker = TagsContainer()

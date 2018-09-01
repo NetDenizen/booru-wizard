@@ -8,14 +8,6 @@ from booruwizard.lib.imagereader import ManagedImage, ImageReader
 from booruwizard.lib.fileops import safety, FileData, FileManager
 
 class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
-	def _UpdateChecks(self):
-		"Update the name and check status of every choice."
-		for i, n in enumerate(self.TagNames):
-			self._UpdateName(i)
-			if n and self.OutputFile.tags.ReturnStringOccurrences(n) > 0:
-				self.choices.Check(i)
-			else:
-				self.choices.Check(i, False)
 	def _UpdateName(self, idx):
 		"Update the name of a choice at the specified index, with the current number of occurrences for the related tag from the tag tracker."
 		self.choices.SetString(idx,
@@ -29,6 +21,17 @@ class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 	def _UpdateAllNames(self):
 		for i, n in enumerate(self.ChoiceNames):
 			self._UpdateName(i)
+	def _UpdateChecks(self):
+		"Update the name and check status of every choice."
+		for i, n in enumerate(self.TagNames):
+			self._UpdateName(i)
+			if n and self.OutputFile.tags.ReturnStringOccurrences(n) > 0:
+				self.choices.Check(i)
+			else:
+				self.choices.Check(i, False)
+	def clear(self):
+		"Clear the question for the given case."
+		return
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent=parent) # TODO: Super
 
@@ -66,6 +69,9 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		"Initialize the question for a certain case."
 		self.OutputFile = OutputFile
 		self.CurrentChoice = wx.NOT_FOUND
+	def clear(self):
+		"Clear the radio question for the given case."
+		return
 	def disp(self):
 		"Display the updated radio question for the given case."
 		#TODO: Should we only load choice on click, or preload choice in load?
@@ -169,14 +175,15 @@ class EntryQuestion(wx.Panel):
 	def _UpdateEntryText(self):
 		"Update the current entry text according to which tags can actually be found in the output file."
 		self.CurrentTags = TagsContainer()
-		self.CurrentTags.SetString(self.EntryStrings[self.pos], 2)
+		OldStrings = self.EntryStrings[self.pos].split()
+		NewStrings = []
 		self.OutputFile.lock()
-		strings = []
-		for s in self.CurrentTags.ReturnStringList():
+		for s in OldStrings:
 			if self.OutputFile.tags.ReturnStringOccurrences(s) > 0:
-				strings.append(s)
-		self.EntryStrings[self.pos] = ''.join(strings)
+				NewStrings.append(s)
+		self.EntryStrings[self.pos] = ' '.join(NewStrings)
 		self.entry.ChangeValue(self.EntryStrings[self.pos])
+		self.CurrentTags.SetStringList(NewStrings, 2)
 		self.OutputFile.unlock()
 	def _UpdateTags(self):
 		"Subtract the previously entered tag string and add the new one"
@@ -213,6 +220,9 @@ class EntryQuestion(wx.Panel):
 	def load(self, OutputFile):
 		"Initialize the entry question for a certain case."
 		self.OutputFile = OutputFile
+	def clear(self):
+		"Clear the entry question for the given case."
+		self._UpdateTags()
 	def disp(self):
 		"Display the updated entry question for the given case."
 		if self.CurrentTags is None:
@@ -297,6 +307,7 @@ class SessionTags(TagChoiceQuestion):
 			self.Unbind( wx.EVT_CHECKLISTBOX, id=self.choices.GetId() )
 			self.Unbind( wx.EVT_SCROLL_TOP, id=self.choices.GetId() )
 			self.sizer.Remove(0)
+			self.choices.Destroy()
 			self.choices = None
 			self.choices = wx.CheckListBox(self, choices= self.ChoiceNames)
 			self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL  | wx.EXPAND)
@@ -318,6 +329,7 @@ class SessionTags(TagChoiceQuestion):
 			self.Unbind( wx.EVT_CHECKLISTBOX, id=self.choices.GetId() )
 			self.Unbind( wx.EVT_SCROLL_TOP, id=self.choices.GetId() )
 			self.sizer.Remove(0)
+			self.choices.Destroy()
 			self.choices = None
 		self.ChoiceNames = self.TagsTracker.ReturnStringList()
 		self.TagNames = self.ChoiceNames
@@ -357,6 +369,9 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 	def load(self, OutputFile):
 		"Initialize the check question for a certain case."
 		self.OutputFile = OutputFile # File data object
+	def clear(self):
+		"Clear the question for the given case."
+		return
 	def disp(self):
 		"Display the updated check question for the given case."
 		self.entry.ChangeValue( self._GetValue() )
@@ -467,6 +482,9 @@ class SafetyQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 			self.CurrentChoice = int(self.OutputFile.rating.value)
 			self.choices.SetSelection(self.CurrentChoice)
 		self.OutputFile.unlock()
+	def clear(self):
+		"Clear the safety question for the given case."
+		return
 	def disp(self):
 		"Display the updated check question for the given case."
 		self._UpdateSafety()
@@ -494,7 +512,8 @@ class QuestionsContainer(wx.Panel):
 		self._CurrentWidget().Show()
 		self.sizer.Layout()
 	def _hide(self):
-		"Call the Hide function of the current widget"
+		"Call the clear and Hide function of the current widget"
+		self._CurrentWidget().clear()
 		self._CurrentWidget().Hide()
 	def _LoadAll(self):
 		"Load all question widgets with the associated OutputFile"
