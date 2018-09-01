@@ -28,7 +28,7 @@ class ExceptDialog(wx.Dialog):
 		wx.Dialog.__init__( self, None, title=''.join( (APPTITLE, ' - Exception') ),
 							style=wx.CAPTION | wx.SYSTEM_MENU | wx.RESIZE_BORDER | wx.CLOSE_BOX | wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX )
 		text = wx.TextCtrl(self, value= msg, style= wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH | wx.TE_NOHIDESEL | wx.TE_AUTO_URL)
-
+		text.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK) )
 		self.Bind(wx.EVT_CLOSE, self._OnClose)
 
 def ExceptHook(etype, value, trace):

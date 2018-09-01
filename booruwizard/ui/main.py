@@ -137,11 +137,12 @@ class MainFrame(wx.Frame):
 		self.sizer.Add(self.main, 1, wx.ALIGN_CENTER | wx.EXPAND)
 		self.SetSizer(self.sizer)
 
-		self._SetTitle()
 		size = self.GetEffectiveMinSize()
 		size.SetHeight( int( float( size.GetHeight() ) * 2.0 ) )
 		size.SetWidth( int( float( size.GetWidth() ) * 1.5 ) )
 		self.SetMinSize(size)
+		self.SetSize( self.GetSize() ) # XXX: Windows does not automatically update the size when the minimum is set.
+		self._SetTitle()
 
 		pub.subscribe(self._OnIndexImage, "IndexImage")
 		pub.subscribe(self._OnIndexQuestion, "IndexQuestion")
@@ -158,7 +159,7 @@ class FilePicker(wx.Panel):
 	def __init__(self, parent, message, path):
 		wx.Panel.__init__(self, parent=parent) # TODO: Super
 
-		self.FileLabel = wx.StaticText(self, label= message, style= wx.ALIGN_CENTER | wx.ST_ELLIPSIZE_END) # Static part of image index display
+		self.FileLabel = wx.StaticText(self, label= message, style= wx.ALIGN_CENTER) # Static part of image index display
 		#TODO: We have to jump through these hoops, because wx.FLP_SAVE seems to be set by init, even if the style is specified; so we cannot set wx.FLP_FILE_MUST_EXIST with it
 		self.FileChooser = wx.FilePickerCtrl(self, message = message, path = path, style = wx.FLP_USE_TEXTCTRL)
 		self.FileChooser.SetWindowStyleFlag(wx.ALIGN_CENTER | wx.FLP_USE_TEXTCTRL | wx.FLP_OPEN | wx.FLP_FILE_MUST_EXIST)
@@ -178,7 +179,7 @@ class DirPicker(wx.Panel):
 	def __init__(self, parent, message, path):
 		wx.Panel.__init__(self, parent=parent) # TODO: Super
 
-		self.DirLabel = wx.StaticText(self, label= message, style= wx.ALIGN_CENTER | wx.ST_ELLIPSIZE_END) # Static part of image index display
+		self.DirLabel = wx.StaticText(self, label= message, style= wx.ALIGN_CENTER) # Static part of image index display
 		self.DirChooser = wx.DirPickerCtrl(self, message = message, path = path, style= wx.ALIGN_CENTER | wx.DIRP_USE_TEXTCTRL | wx.DIRP_DIR_MUST_EXIST)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -225,6 +226,7 @@ class FileDialogFrame(wx.Frame):
 		size.SetHeight( int( float( size.GetHeight() ) * 2.0 ) )
 		size.SetWidth( int( float( size.GetWidth() ) * 1.5 ) )
 		self.SetMinSize(size)
+		self.SetSize( self.GetSize() ) # XXX: Windows does not automatically update the size when the minimum is set.
 		self.SetTitle( ''.join( (APPTITLE, ' - File Chooser') ) )
 
 		self.Bind( wx.EVT_BUTTON, self._OnOK, id=self.OKButton.GetId() )

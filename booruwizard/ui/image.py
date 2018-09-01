@@ -111,7 +111,7 @@ class ImageLabel(wx.Panel):
 		self.paths = paths
 		self.PathLabel = wx.TextCtrl(self, style= wx.TE_READONLY | wx.TE_NOHIDESEL) # Path of current image
 		self.IndexEntry = wx.TextCtrl(self, style= wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Editable display for current image index
-		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER | wx.ST_ELLIPSIZE_END) # Static part of image index display
+		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER) # Static part of image index display
 		self.PathLabelTip = wx.ToolTip('Image path')
 		self.IndexEntryTip = wx.ToolTip('Image index entry')
 		self.IndexLabelTip = wx.ToolTip('Total number of images')
@@ -126,6 +126,7 @@ class ImageLabel(wx.Panel):
 		self.sizer.Add(self.IndexLabel, 0, wx.ALIGN_CENTER)
 		self.SetSizer(self.sizer)
 
+		self.PathLabel.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK) )
 		self._SetLabels()
 
 		self.Bind( wx.EVT_TEXT_ENTER, self._OnIndexEntry, id=self.IndexEntry.GetId() )

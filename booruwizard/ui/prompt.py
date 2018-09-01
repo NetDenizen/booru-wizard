@@ -67,7 +67,7 @@ class QuestionLabel(QuestionDisplayComponent):
 		self.positions = [0] * NumImages # The position in questions corresponding to each image
 		self.questions = questions # Question objects
 		self.IndexEntry = wx.TextCtrl(self, style= wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Editable display for current image index
-		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER | wx.ST_ELLIPSIZE_END) # Static part of image index display
+		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER) # Static part of image index display
 		self.IndexEntryTip = wx.ToolTip('Question index entry')
 		self.IndexLabelTip = wx.ToolTip('Total number of questions')
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -109,6 +109,7 @@ class QuestionPanel(QuestionDisplayComponent):
 		self.sizer.Add(self.body, 1, wx.ALIGN_CENTER | wx.EXPAND)
 		self.SetSizer(self.sizer)
 
+		self.body.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK) )
 		self._set()
 
 		pub.subscribe(self._OnIndexImage, "IndexImage")
