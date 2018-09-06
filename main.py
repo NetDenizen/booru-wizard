@@ -114,7 +114,7 @@ def GetDirFiles(DirPath):
 	"Function to get all file paths from a directory."
 	try:
 		output = []
-		for root, dirnames, filenames in os.walk(DirPath):
+		for root, dirnames, filenames in next( os.walk(DirPath) ):
 			output.extend(filenames)
 		return output
 	except OSError as err:

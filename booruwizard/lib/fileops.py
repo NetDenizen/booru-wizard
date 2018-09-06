@@ -245,7 +245,7 @@ class FileManager:
 	def AddFile(self, InputDir, OutputDir, path, DefaultName, DefaultSource, DefaultSafety, NamelessTags, SourcelessTags, TaglessTags):
 		"Add a FileData object and its associated MangedFile object, with all the proper callbacks set."
 		if path in self.paths:
-			ControlFile = self.ControlFiles[self.paths.find(path)]
+			ControlFile = self.ControlFiles[self.paths.index(path)]
 			ControlFile.PrepareChange()
 			#TODO: To function?
 			ControlFile.name = DefaultName
