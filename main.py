@@ -71,8 +71,8 @@ class DialogSettings:
 def ParseCommandLine():
 	"Function to create a command line argument parser, and return the args object from it."
 	ArgParser = argparse.ArgumentParser(description='Get command line arguments.')
-	ArgParser.add_argument( '--no-dialog', '-d',  action='store_true', help='If this is set, then the file chooser dialog will not be displayed before the regular UI. Thus, the command line settings are relied upon.' )
-	ArgParser.add_argument( '--schema', '-s',  action='store', default='', help='Path to read schema file from.' )
+	ArgParser.add_argument( '--no-dialog', '-d', action='store_true', help='If this is set, then the file chooser dialog will not be displayed before the regular UI. Thus, the command line settings are relied upon.' )
+	ArgParser.add_argument( '--schema', '-s', action='store', default='', help='Path to read schema file from.' )
 	ArgParser.add_argument( '--config', '-c', action='store', default='', help='Path to read config file from.' )
 	ArgParser.add_argument( '--input', '-i', action='store', default='', help='Path to input directory.' )
 	ArgParser.add_argument( '--output', '-o', action='store', default='', help='Path to output directory. If none, then copy it from "--input".' )

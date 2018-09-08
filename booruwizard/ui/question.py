@@ -166,7 +166,7 @@ class CheckQuestion(TagChoiceQuestion):
 		self.CurrentChoices = [] # Currently selected checkboxes
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
-		self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL  | wx.EXPAND)
+		self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 		self.SetSizer(self.sizer)
 
 		self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
@@ -309,7 +309,7 @@ class SessionTags(TagChoiceQuestion):
 			self.choices.Destroy()
 			self.choices = None
 			self.choices = wx.CheckListBox(self, choices= self.ChoiceNames)
-			self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL  | wx.EXPAND)
+			self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 			self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
 			self.Bind( wx.EVT_SCROLL_TOP, self._OnScrollTop, id=self.choices.GetId() )
 			self.sizer.Layout()
@@ -333,7 +333,7 @@ class SessionTags(TagChoiceQuestion):
 		self.ChoiceNames = self.TagsTracker.ReturnStringList()
 		self.TagNames = self.ChoiceNames
 		self.choices = wx.CheckListBox( self, choices= self.ChoiceNames )
-		self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL  | wx.EXPAND)
+		self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 		self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
 		self.Bind( wx.EVT_SCROLL_TOP, self._OnScrollTop, id=self.choices.GetId() )
 		self.OutputFile.lock()
@@ -484,7 +484,7 @@ class SafetyQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		self.choices = wx.RadioBox(self, choices=('Safe', 'Questionable', 'Explicit'), style= wx.RA_SPECIFY_ROWS | wx.BORDER_NONE)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
-		self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL |  wx.EXPAND)
+		self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 		self.SetSizer(self.sizer)
 
 		self.Bind( wx.EVT_RADIOBOX, self._OnSelect, id=self.choices.GetId() )

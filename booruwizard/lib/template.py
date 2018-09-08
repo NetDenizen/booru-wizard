@@ -192,8 +192,8 @@ QuestionTypeLookup = {
 }
 
 class OptionQuestionType(Enum):
-	RADIO_QUESTION  = 0  # Marks the beginning of a new prompt consisting of radio buttons. This allows only ONE tag to be chosen.
-	CHECK_QUESTION  = 1  # Marks the beginning of a new prompt consisting of check boxes. This allows any number of tags to be chosen.
+	RADIO_QUESTION = 0  # Marks the beginning of a new prompt consisting of radio buttons. This allows only ONE tag to be chosen.
+	CHECK_QUESTION = 1  # Marks the beginning of a new prompt consisting of check boxes. This allows any number of tags to be chosen.
 
 OptionQuestionTypeLookup = {
 	PairKey.RADIO_QUESTION : OptionQuestionType.RADIO_QUESTION,
@@ -230,11 +230,11 @@ class ParserError(TemplateError):
 	pass
 
 class ParserState(Enum):
-	NORMAL            = 0 # The default parsing state.
-	OPTION_QUESTION   = 1 # When we are in a RADIO_QUESTION or CHECK_QUESTION which has options.
-	OPTION_NAME       = 2 # When we added the name of an option and are waiting for the tag.
-	ALIAS_FROM        = 3 # When we added the tags to alias from and are waiting for the tags to alias to.
-	ALIAS_TO          = 4 # When we added the tags to alias to and are waiting for the tags to alias from.
+	NORMAL          = 0 # The default parsing state.
+	OPTION_QUESTION = 1 # When we are in a RADIO_QUESTION or CHECK_QUESTION which has options.
+	OPTION_NAME     = 2 # When we added the name of an option and are waiting for the tag.
+	ALIAS_FROM      = 3 # When we added the tags to alias from and are waiting for the tags to alias to.
+	ALIAS_TO        = 4 # When we added the tags to alias to and are waiting for the tags to alias from.
 
 RE_HUMANSIZE = re.compile('^([0-9\.]+)[ ]*([a-zA-Z]*)$')
 SIZE_SPECIFIERS = {'kB'       : 1000.0,
