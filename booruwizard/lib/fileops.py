@@ -1,10 +1,7 @@
 import threading
 import os.path
-import time
 from enum import Enum
 import json
-
-import jsonschema
 
 from booruwizard.lib.tag import tag, TagsContainer
 
@@ -41,7 +38,7 @@ SAFETY_VALUES_LOOKUP = {
 # A single managed file and its exception
 class FileOpError(Exception):
 	def __init__(self, message, errno, strerror):
-		super(FileOpError, self).__init__( ''.join( (' [errno ', errno, ']: ', strerror) ) )
+		super().__init__( ''.join( (message, ' [errno ', errno, ']: ', strerror) ) )
 
 class ManagedFile:
 	def __init__(self, OutputDir, PushUpdatesEnabled, path, IsChangedCallback, DataCallback, ReserveCallback):
@@ -188,8 +185,7 @@ DEFAULT_UPDATE_INTERVAL = 30.0
 DEFAULT_MAX_IMAGE_BUFSIZE = 100000000
 
 class FileManagerError(Exception):
-	def __init__(self, message):
-		super(FileManagerError, self).__init__(message)
+	pass
 
 #TODO: Use semaphore for MaxOpenFiles itself?
 class FileManager:

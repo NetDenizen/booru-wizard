@@ -7,7 +7,7 @@ from booruwizard.lib.tag import TagsContainer, ConditionalTagger
 # Generic template error definition
 class TemplateError(Exception):
 	def __init__(self, message, line, col):
-		super(TemplateError, self).__init__( ''.join( ( message, ' Line: ', str(line), ' Col: ', str(col) ) ) )
+		super().__init__( ''.join( ( message, ' Line: ', str(line), ' Col: ', str(col) ) ) )
 
 # Key-value pair definition
 class PairKey(Enum):
@@ -92,7 +92,6 @@ class lexer:
 			self._pos += m.start(0)
 			return len( m.group(0) )
 		else:
-			#self._pos += len(self.output)
 			return 0
 	def _TrackLinePos(self, StartPos, EndPos):
 		"Count the number of newlines between StartPos and EndPos, and update position accordingly."
@@ -202,8 +201,8 @@ OptionQuestionTypeLookup = {
 }
 
 class question:
-	def __init__(self, QuestionType, text):
-		self.type = QuestionType
+	def __init__(self, ThisType, text):
+		self.type = ThisType
 		self.text = text
 
 class option:
@@ -212,8 +211,8 @@ class option:
 		self.tag = tag
 
 class OptionQuestion(question):
-	def __init__(self, QuestionType, text):
-		super(OptionQuestion, self).__init__(QuestionType, text)
+	def __init__(self, ThisType, text):
+		super().__init__(ThisType, text)
 		self.options = []
 	def GetChoiceNames(self):
 		output = []
@@ -238,7 +237,25 @@ class ParserState(Enum):
 	ALIAS_TO          = 4 # When we added the tags to alias to and are waiting for the tags to alias from.
 
 RE_HUMANSIZE = re.compile('^([0-9\.]+)[ ]*([a-zA-Z]*)$')
-SIZE_SPECIFIERS = {'kB' : 1000.0, 'kilobyte' : 1000.0, 'MB' : 1000000.0, 'megabyte' : 1000000.0, 'GB' : 1000000000.0, 'gigabyte' : 1000000000.0, 'KiB' : 1024.0, 'kibibyte' : 1024.0, 'MB' : 1048576.0, 'mebibyte' : 1048576.0, 'GB' : 1073741800.0, 'gibibyte' : 1073741800.0}
+SIZE_SPECIFIERS = {'kB'       : 1000.0,
+				   'kilobyte' : 1000.0,
+				   'Kilobyte' : 1000.0,
+				   'MB'       : 1000000.0,
+				   'megabyte' : 1000000.0,
+				   'Megabyte' : 1000000.0,
+				   'GB'       : 1000000000.0,
+				   'gigabyte' : 1000000000.0,
+				   'Gigabyte' : 1000000000.0,
+				   'KiB'      : 1024.0,
+				   'kibibyte' : 1024.0,
+				   'Kibibyte' : 1024.0,
+				   'MiB'      : 1048576.0,
+				   'mebibyte' : 1048576.0,
+				   'Mebibyte' : 1048576.0,
+				   'GiB'      : 1073741800.0,
+				   'gibibyte' : 1073741800.0,
+				   'Gibibyte' : 1073741800.0
+}
 
 class parser:
 	def __init__(self):

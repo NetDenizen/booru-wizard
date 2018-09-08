@@ -25,14 +25,13 @@ class ExceptDialog(wx.Dialog):
 		pub.sendMessage("EmergencyExit", message=None)
 		e.Skip()
 	def __init__(self, msg):
-		wx.Dialog.__init__( self, None, title=''.join( (APPTITLE, ' - Exception') ),
-							style=wx.CAPTION | wx.SYSTEM_MENU | wx.RESIZE_BORDER | wx.CLOSE_BOX | wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX )
+		super().__init__( self, None, title=''.join( (APPTITLE, ' - Exception') ),
+						  style=wx.CAPTION | wx.SYSTEM_MENU | wx.RESIZE_BORDER | wx.CLOSE_BOX | wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX )
 		text = wx.TextCtrl(self, value= msg, style= wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH | wx.TE_NOHIDESEL | wx.TE_AUTO_URL)
 		text.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK) )
 		self.Bind(wx.EVT_CLOSE, self._OnClose)
 
 def ExceptHook(etype, value, trace):
-	frame = wx.GetApp().GetTopWindow()
 	tmp = traceback.format_exception(etype, value, trace)
 	exception = "".join(tmp)
 
@@ -42,8 +41,7 @@ def ExceptHook(etype, value, trace):
 sys.excepthook = ExceptHook
 
 class MainError(Exception):
-	def __init__(self, message):
-		super(MainError, self).__init__(message)
+	pass
 
 class DialogSettings:
 	def __init__(self, SchemaFile, ConfigFile, InputDir, OutputDir):
@@ -72,13 +70,13 @@ class DialogSettings:
 
 def ParseCommandLine():
 	"Function to create a command line argument parser, and return the args object from it."
-	parser = argparse.ArgumentParser(description='Get command line arguments.')
-	parser.add_argument( '--no-dialog', '-d',  action='store_true', help='If this is set, then the file chooser dialog will not be displayed before the regular UI. Thus, the command line settings are relied upon.' )
-	parser.add_argument( '--schema', '-s',  action='store', default='', help='Path to read schema file from.' )
-	parser.add_argument( '--config', '-c', action='store', default='', help='Path to read config file from.' )
-	parser.add_argument( '--input', '-i', action='store', default='', help='Path to input directory.' )
-	parser.add_argument( '--output', '-o', action='store', default='', help='Path to output directory. If none, then copy it from "--input".' )
-	return parser.parse_args()
+	ArgParser = argparse.ArgumentParser(description='Get command line arguments.')
+	ArgParser.add_argument( '--no-dialog', '-d',  action='store_true', help='If this is set, then the file chooser dialog will not be displayed before the regular UI. Thus, the command line settings are relied upon.' )
+	ArgParser.add_argument( '--schema', '-s',  action='store', default='', help='Path to read schema file from.' )
+	ArgParser.add_argument( '--config', '-c', action='store', default='', help='Path to read config file from.' )
+	ArgParser.add_argument( '--input', '-i', action='store', default='', help='Path to input directory.' )
+	ArgParser.add_argument( '--output', '-o', action='store', default='', help='Path to output directory. If none, then copy it from "--input".' )
+	return ArgParser.parse_args()
 
 def ReadTextFile(path):
 	"Function to open a text file, and return the string from its contents."
@@ -95,12 +93,10 @@ def ParseJSONFile(path):
 	"Function to parse a JSON file to a Python object, and return it."
 	obj = None
 	contents = ReadTextFile(path)
-	if contents is None:
-		return obj
 	try:
 		obj = json.loads(contents, object_pairs_hook=OrderedDict)
-	except ValueError as err:
-		raise MainError( ''.join( ('Failed to open file at path: "', path, '" Reason: "', err.msg, '" Line: ', err.lineno, ' Col: ', err.colno ) ) )
+	except json.decoder.JSONDecodeError as err:
+		raise MainError( ''.join( ('Failed to decode JSON file at path: "', path, '" Reason: "', err.msg, '" Line: ', str(err.lineno), ' Col: ', str(err.colno) ) ) )
 	return obj
 
 def VerifyJSONSchema(path, obj, schema):
@@ -108,7 +104,7 @@ def VerifyJSONSchema(path, obj, schema):
 	try:
 		jsonschema.validate(obj, schema)
 	except jsonschema.ValidationError as err:
-		raise MainError( ''.join( ('Failed to validate file at path: "', path, '" ', err.message) ) )
+		raise MainError( ''.join( ('Failed to validate JSON file at path: "', path, '" ', err.message) ) )
 
 def GetDirFiles(DirPath):
 	"Function to get all file paths from a directory."

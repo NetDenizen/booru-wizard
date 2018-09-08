@@ -4,7 +4,7 @@ import wx
 
 class ImageReaderError(Exception):
 	def __init__(self, message, errno, strerror):
-		super(ImageReaderError, self).__init__( ''.join( (message, ' [errno ', errno, ']: ', strerror) ) )
+		super().__init__( ''.join( (message, ' [errno ', errno, ']: ', strerror) ) )
 
 class ManagedImage:
 	def __init__(self, path):
@@ -18,8 +18,7 @@ class ManagedImage:
 			self.image = wx.Image(stream)
 			self.size = os.fstat( stream.fileno() ).st_size
 			stream.close()
-		except:
-			#raise ImageReaderError('Failed to open image file.', err.errno, err.strerror)
+		except: # TODO: Should this be more specific?
 			self.image = None
 			self.size = 0
 	def close(self):

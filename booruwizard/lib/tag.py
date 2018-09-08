@@ -27,7 +27,7 @@ class TagsContainer:
 	def set(self, name, value):
 		"Register a tag object and set its occurrences to the specified value, if that value is greater than the current number of occurrences."
 		if not name:
-			return ""
+			return
 		registered = self.register(name)
 		if registered.occurrences < value:
 			registered.occurrences = value
@@ -53,7 +53,7 @@ class TagsContainer:
 	def add(self, name, value):
 		"Register a tag object and increment its occurrences by a value."
 		if not name:
-			return ""
+			return
 		registered = self.register(name)
 		registered.occurrences += value
 	def AddStringList(self, strings, value):
@@ -67,7 +67,7 @@ class TagsContainer:
 	def sub(self, name, value):
 		"Register a tag object and decrement its occurrences by a value."
 		if not name:
-			return ""
+			return
 		registered = self.register(name)
 		registered.sub(value)
 	def SubStringList(self, strings, value):
@@ -77,7 +77,7 @@ class TagsContainer:
 	def clear(self, name, value):
 		"Register a tag object and set its occurrences to 0 if it is less than or equal to 0."
 		if not name:
-			return ""
+			return
 		registered = self.register(name)
 		if registered.occurrences <= value:
 			registered.occurrences = 0

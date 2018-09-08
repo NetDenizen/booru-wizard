@@ -22,7 +22,7 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 		self.SetMinimumPaneSize( int(height * 0.1) )
 		self.SetSashPosition(0, int(height * self.Sash0Pos) )
 		self.SetSashPosition(1, int(height * self.Sash1Pos) )
-	def _OnSize(self, e):
+	def _OnSizeChild(self, e):
 		"Bound to EVT_SIZE to adjust sash positions based on the relative size of the panel."
 		self._SetSashes()
 		e.Skip()
@@ -42,7 +42,7 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 			self._SetSashes()
 		e.Skip()
 	def __init__(self, parent, MaxBufSize, questions, OutputFiles, ConditionalTags, TagsTracker):
-		wx.lib.splitter.MultiSplitterWindow.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE) # TODO: Super
+		super().__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
 
 		self.Sash0Pos = 0.5
 		self.Sash1Pos = 0.1
@@ -55,7 +55,7 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 		self.AppendWindow(self.middle)
 		self.AppendWindow(self.bottom)
 
-		self.Bind( wx.EVT_SIZE, self._OnSize, id=self.GetId() )
+		self.Bind( wx.EVT_SIZE, self._OnSizeChild, id=self.GetId() )
 		self.Bind( wx.EVT_SPLITTER_SASH_POS_CHANGED, self._OnSashChanged, id=self.GetId() )
 
 		size = self.GetEffectiveMinSize()
@@ -82,12 +82,12 @@ class MainFrame(wx.Frame):
 					 )
 	def _OnIndexImage(self, message, arg2=None):
 		"Change the index index to the one specified in the event, if possible."
-		if message < len(self.positions) and message >= 0:
+		if 0 <= message < len(self.positions):
 			self.pos = message
 		self._SetTitle()
 	def _OnIndexQuestion(self, message, arg2=None):
 		"Change the question index to the one specified in the event, if possible."
-		if message < self.NumQuestions and message >= 0:
+		if 0 <= message < self.NumQuestions:
 			self.positions[self.pos] = message
 		self._SetTitle()
 	def _OnLeftImage(self, message, arg2=None):
@@ -124,7 +124,7 @@ class MainFrame(wx.Frame):
 		except:
 			pass
 	def __init__(self, parent, BaseTitle, MaxBufSize, questions, OutputFiles, ConditionalTags, TagsTracker):
-		wx.Frame.__init__(self, parent=parent) # TODO: Super
+		super().__init__(self, parent=parent)
 
 		self.BaseTitle = BaseTitle # Base window title
 		self.paths = OutputFiles.InputPaths
@@ -157,10 +157,10 @@ class FilePicker(wx.Panel):
 		"Wrapper for self.FileChooser.GetPath"
 		return self.FileChooser.GetPath()
 	def __init__(self, parent, message, path):
-		wx.Panel.__init__(self, parent=parent) # TODO: Super
+		super().__init__(self, parent=parent)
 
 		self.FileLabel = wx.StaticText(self, label= message, style= wx.ALIGN_CENTER) # Static part of image index display
-		#TODO: We have to jump through these hoops, because wx.FLP_SAVE seems to be set by init, even if the style is specified; so we cannot set wx.FLP_FILE_MUST_EXIST with it
+		#FIXME: We have to jump through these hoops, because wx.FLP_SAVE seems to be set by init, even if the style is specified; so we cannot set wx.FLP_FILE_MUST_EXIST with it
 		self.FileChooser = wx.FilePickerCtrl(self, message = message, path = path, style = wx.FLP_USE_TEXTCTRL)
 		self.FileChooser.SetWindowStyleFlag(wx.ALIGN_CENTER | wx.FLP_USE_TEXTCTRL | wx.FLP_OPEN | wx.FLP_FILE_MUST_EXIST)
 		self.FileChooser.Refresh()
@@ -177,7 +177,7 @@ class DirPicker(wx.Panel):
 		"Wrapper for self.DirChooser.GetPath"
 		return self.DirChooser.GetPath()
 	def __init__(self, parent, message, path):
-		wx.Panel.__init__(self, parent=parent) # TODO: Super
+		super().__init__(self, parent=parent)
 
 		self.DirLabel = wx.StaticText(self, label= message, style= wx.ALIGN_CENTER) # Static part of image index display
 		self.DirChooser = wx.DirPickerCtrl(self, message = message, path = path, style= wx.ALIGN_CENTER | wx.DIRP_USE_TEXTCTRL | wx.DIRP_DIR_MUST_EXIST)
@@ -203,7 +203,7 @@ class FileDialogFrame(wx.Frame):
 		except:
 			pass
 	def __init__(self, parent, APPTITLE, settings):
-		wx.Frame.__init__(self, parent=parent) # TODO: Super
+		super().__init__(self, parent=parent)
 
 		self.settings = settings
 		self.SchemaFileChooser = FilePicker(self, 'Pick the schema file.', settings.SchemaFile)

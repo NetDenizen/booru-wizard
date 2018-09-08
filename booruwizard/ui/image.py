@@ -35,7 +35,7 @@ class ImagePanel(wx.Panel):
 		e.Skip()
 	def _OnIndex(self, message, arg2=None):
 		"Change the index to the one specified in the event, if possible."
-		if message < len(self.bitmaps.images) and message >= 0:
+		if 0 <= message < len(self.bitmaps.images):
 			self.pos = message
 		self._SetBitmap()
 	def _OnLeft(self, message, arg2=None):
@@ -53,7 +53,7 @@ class ImagePanel(wx.Panel):
 			self.pos += 1
 		self._SetBitmap()
 	def __init__(self, parent, MaxBufSize, paths):
-		wx.Panel.__init__(self, parent=parent) # TODO: Super
+		super().__init__(self, parent=parent)
 		self.SetOwnBackgroundColour( wx.Colour(0, 0, 0) ) # Black # TODO: Can we use 'color'? Should we use the color database?
 
 		self.pos = 0 # Position in bitmaps
@@ -87,7 +87,7 @@ class ImageLabel(wx.Panel):
 		e.Skip()
 	def _OnIndex(self, message, arg2=None):
 		"Change the index to the one specified in the event, if possible."
-		if message < len(self.paths) and message >= 0:
+		if 0 <= message < len(self.paths):
 			self.pos = message
 		self._SetLabels()
 	def _OnLeft(self, message, arg2=None):
@@ -105,7 +105,7 @@ class ImageLabel(wx.Panel):
 			self.pos += 1
 		self._SetLabels()
 	def __init__(self, parent, paths):
-		wx.Panel.__init__(self, parent=parent) # TODO: Super
+		super().__init__(self, parent=parent)
 
 		self.pos = 0 # Position in paths
 		self.paths = paths
@@ -136,7 +136,7 @@ class ImageLabel(wx.Panel):
 
 class ImageContainer(wx.Panel):
 	def __init__(self, parent, MaxBufSize, paths):
-		wx.Panel.__init__(self, parent=parent) # TODO: Super
+		super().__init__(self, parent=parent)
 
 		self.image = ImagePanel(self, MaxBufSize, paths)
 		self.label = ImageLabel(self, paths)

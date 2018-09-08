@@ -33,7 +33,7 @@ class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 		"Clear the question for the given case."
 		return
 	def __init__(self, parent):
-		wx.Panel.__init__(self, parent=parent) # TODO: Super
+		super().__init__(self, parent=parent)
 
 class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 	def _UpdateName(self, idx):
@@ -94,7 +94,7 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		self._UpdateAllNames()
 		self.CurrentChoice = self.choices.GetSelection()
 	def __init__(self, parent, ConditionalTags, TagsTracker, PanelQuestion):
-		wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent) # TODO: Super
+		super().__init__(self, parent)
 
 		self.ConditionalTags = ConditionalTags # Tags to set if certain tags already exist.
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
@@ -155,7 +155,7 @@ class CheckQuestion(TagChoiceQuestion):
 		self.OutputFile.unlock()
 		self.CurrentChoices = list( self.choices.GetCheckedItems() ) # Currently selected checkboxes
 	def __init__(self, parent, ConditionalTags, TagsTracker, PanelQuestion):
-		TagChoiceQuestion.__init__(self, parent) # TODO: Super
+		super().__init__(self, parent)
 
 		self.ConditionalTags = ConditionalTags # Tags to set if certain tags already exist.
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
@@ -230,7 +230,7 @@ class EntryQuestion(wx.Panel):
 		self._UpdateEntryText()
 	def _OnIndexImage(self, message, arg2=None):
 		"Change the index index to the one specified in the message, if possible."
-		if message < len(self.EntryStrings) and message >= 0:
+		if 0 <= message < len(self.EntryStrings):
 			self._UpdateTags()
 			self.pos = message
 			self._UpdateEntryText()
@@ -251,7 +251,7 @@ class EntryQuestion(wx.Panel):
 			self.pos -= 1
 		self._UpdateEntryText()
 	def __init__(self, parent, NumImages, ConditionalTags, TagsTracker):
-		wx.Panel.__init__(self, parent=parent) # TODO: Super
+		super().__init__(self, parent=parent)
 
 		self.ConditionalTags = ConditionalTags # Tags to set if certain tags already exist.
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
@@ -342,7 +342,7 @@ class SessionTags(TagChoiceQuestion):
 		self.OutputFile.unlock()
 		self.CurrentChoices = list( self.choices.GetCheckedItems() ) # Currently selected checkboxes
 	def __init__(self, parent, ConditionalTags, TagsTracker):
-		TagChoiceQuestion.__init__(self, parent) # TODO: Super
+		super().__init__(self, parent)
 
 		self.ConditionalTags = ConditionalTags # Tags to set if certain tags already exist.
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
@@ -376,7 +376,7 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 		"Display the updated check question for the given case."
 		self.entry.ChangeValue( self._GetValue() )
 	def __init__(self, parent):
-		wx.Panel.__init__(self, parent=parent) # TODO: Super
+		super().__init__(self, parent=parent)
 
 class NameQuestion(SingleStringEntry):
 	def _GetValue(self):
@@ -394,7 +394,7 @@ class NameQuestion(SingleStringEntry):
 		self.OutputFile.SetName( self.entry.GetValue() )
 		self.OutputFile.FinishChange()
 	def __init__(self, parent):
-		SingleStringEntry.__init__(self, parent) # TODO: Super
+		super().__init__(self, parent)
 
 		self.OutputFile = None # File data object
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
@@ -432,7 +432,7 @@ class SourceQuestion(SingleStringEntry):
 		self.OrigValue = self.OutputFile.source
 		self.OutputFile.unlock()
 	def __init__(self, parent):
-		SingleStringEntry.__init__(self, parent) # TODO: Super
+		super().__init__(self, parent)
 
 		self.OutputFile = None # File data object
 		self.OrigValue = None # The original value of source
@@ -452,24 +452,13 @@ class SafetyQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		"Update the current selection and set the safety to its associated enumeration."
 		if self.choices.GetSelection() == self.CurrentChoice:
 			pass
-		elif self.choices.GetSelection() == 0:
+		else:
 			self.CurrentChoice = self.choices.GetSelection()
 			self.OutputFile.PrepareChange()
-			self.OutputFile.rating = safety.SAFE
-			self.OutputFile.FinishChange()
-		elif self.choices.GetSelection() == 1:
-			self.CurrentChoice = self.choices.GetSelection()
-			self.OutputFile.PrepareChange()
-			self.OutputFile.rating = safety.QUESTIONABLE
-			self.OutputFile.FinishChange()
-		else: #self.choices.GetSelection() == 2:
-			self.CurrentChoice = self.choices.GetSelection()
-			self.OutputFile.PrepareChange()
-			self.OutputFile.rating = safety.EXPLICIT
+			self.OutputFile.rating = safety(self.CurrentChoice)
 			self.OutputFile.FinishChange()
 	def _OnSelect(self, e):
 		"Bound to EVT_RADIOBOX; update safety."
-		#TODO: Make int to safety conversion method
 		self._UpdateSafety()
 		e.Skip()
 	def load(self, OutputFile):
@@ -489,8 +478,9 @@ class SafetyQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		"Display the updated check question for the given case."
 		self._UpdateSafety()
 	def __init__(self, parent):
-		wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent=parent) # TODO: Super
+		super().__init__(self, parent=parent)
 
+		self.CurrentChoice = wx.NOT_FOUND
 		self.OutputFile = None # File data object
 		self.choices = wx.RadioBox(self, choices=('Safe', 'Questionable', 'Explicit'), style= wx.RA_SPECIFY_ROWS | wx.BORDER_NONE)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -521,14 +511,14 @@ class QuestionsContainer(wx.Panel):
 			w.load( self.OutputFiles.ControlFiles[self.pos] )
 	def _OnIndexImage(self, message, arg2=None):
 		"Change the index index to the one specified in the message, if possible."
-		if message < len(self.positions) and message >= 0:
+		if 0 <= message < len(self.positions):
 			self._hide()
 			self.pos = message
 			self._LoadAll()
 			self._disp()
 	def _OnIndexQuestion(self, message, arg2=None):
 		"Change the question index to the one specified in the message, if possible."
-		if message < self.NumQuestions and message >= 0:
+		if 0 <= message < self.NumQuestions:
 			self._hide()
 			self.positions[self.pos] = message
 			self._disp()
@@ -567,7 +557,7 @@ class QuestionsContainer(wx.Panel):
 			self.positions[self.pos] += 1
 		self._disp()
 	def __init__(self, parent, ConditionalTags, TagsTracker, questions, OutputFiles):
-		wx.Panel.__init__(self, parent=parent) # TODO: Super
+		super().__init__(self, parent=parent)
 
 		self.NumQuestions = len(questions)
 		self.pos = 0 # The position in positions

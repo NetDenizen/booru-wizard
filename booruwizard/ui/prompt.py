@@ -9,12 +9,12 @@ from booruwizard.lib.fileops import safety, FileData, FileManager
 class QuestionDisplayComponent(wx.Panel):  # This class should never be used on its own
 	def _OnIndexImage(self, message, arg2=None):
 		"Change the index index to the one specified in the event, if possible."
-		if message < len(self.positions) and message >= 0:
+		if 0 <= message < len(self.positions):
 			self.pos = message
 		self._set()
 	def _OnIndexQuestion(self, message, arg2=None):
 		"Change the question index to the one specified in the event, if possible."
-		if message < len(self.questions) and message >= 0:
+		if 0 <= message < len(self.questions):
 			self.positions[self.pos] = message
 		self._set()
 	def _OnLeftImage(self, message, arg2=None):
@@ -46,7 +46,7 @@ class QuestionDisplayComponent(wx.Panel):  # This class should never be used on 
 			self.positions[self.pos] += 1
 		self._set()
 	def __init__(self, parent):
-		wx.Panel.__init__(self, parent=parent) # TODO: Super
+		super().__init__(self, parent=parent)
 
 class QuestionLabel(QuestionDisplayComponent):
 	def _set(self):
@@ -57,11 +57,11 @@ class QuestionLabel(QuestionDisplayComponent):
 		"Send a LEVT_INDEX_IMAGE event, if the index value can be converted to an Int; otherwise, reset labels."
 		try:
 			pub.sendMessage("IndexQuestion", message=int( self.IndexEntry.GetValue() ) - 1)
-		except ValueError: # TODO: Should this work with any exception?
+		except ValueError:
 			self._set()
 		e.Skip()
 	def __init__(self, parent, NumImages, questions):
-		QuestionDisplayComponent.__init__(self, parent) # TODO: Super
+		super().__init__(self, parent)
 
 		self.pos = 0 # The position in positions
 		self.positions = [0] * NumImages # The position in questions corresponding to each image
@@ -95,7 +95,7 @@ class QuestionPanel(QuestionDisplayComponent):
 		self.body.SetValue(self.questions[ self.positions[self.pos] ].text)
 	#TODO: Roll these into a function or otherwise cleanup
 	def __init__(self, parent, NumImages, questions):
-		QuestionDisplayComponent.__init__(self, parent) # TODO: Super
+		super().__init__(self, parent)
 
 		self.pos = 0 # The position in positions
 		self.positions = [0] * NumImages # The position in questions corresponding to each image
@@ -133,7 +133,7 @@ class PositionButtons(wx.Panel):
 		pub.sendMessage("RightImage", message=None)
 		e.Skip()
 	def __init__(self, parent):
-		wx.Panel.__init__(self, parent=parent) # TODO: Super
+		super().__init__(self, parent=parent)
 
 		self.LeftImage = wx.Button(self, label = '<<', style=wx.BU_EXACTFIT)
 		self.LeftQuestion = wx.Button(self, label = '<', style=wx.BU_EXACTFIT)
@@ -163,7 +163,7 @@ class PositionButtons(wx.Panel):
 
 class PromptControls(wx.Panel):
 	def __init__(self, parent, NumImages, questions):
-		wx.Panel.__init__(self, parent=parent) # TODO: Super
+		super().__init__(self, parent=parent)
 
 		self.label = QuestionLabel(self, NumImages, questions)
 		self.buttons = PositionButtons(self)
@@ -175,7 +175,7 @@ class PromptControls(wx.Panel):
 
 class PromptContainer(wx.Panel):
 	def __init__(self, parent, NumImages, questions):
-		wx.Panel.__init__(self, parent=parent) # TODO: Super
+		super().__init__(self, parent=parent)
 
 		self.prompt = QuestionPanel(self, NumImages, questions)
 		self.buttons = PromptControls(self, NumImages, questions)
