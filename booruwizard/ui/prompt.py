@@ -46,7 +46,7 @@ class QuestionDisplayComponent(wx.Panel):  # This class should never be used on 
 			self.positions[self.pos] += 1
 		self._set()
 	def __init__(self, parent):
-		super().__init__(self, parent=parent)
+		wx.Panel.__init__(self, parent=parent)
 
 class QuestionLabel(QuestionDisplayComponent):
 	def _set(self):
@@ -61,7 +61,7 @@ class QuestionLabel(QuestionDisplayComponent):
 			self._set()
 		e.Skip()
 	def __init__(self, parent, NumImages, questions):
-		super().__init__(self, parent)
+		QuestionDisplayComponent.__init__(self, parent)
 
 		self.pos = 0 # The position in positions
 		self.positions = [0] * NumImages # The position in questions corresponding to each image
@@ -95,7 +95,7 @@ class QuestionPanel(QuestionDisplayComponent):
 		self.body.SetValue(self.questions[ self.positions[self.pos] ].text)
 	#TODO: Roll these into a function or otherwise cleanup
 	def __init__(self, parent, NumImages, questions):
-		super().__init__(self, parent)
+		QuestionDisplayComponent.__init__(self, parent)
 
 		self.pos = 0 # The position in positions
 		self.positions = [0] * NumImages # The position in questions corresponding to each image
@@ -133,7 +133,7 @@ class PositionButtons(wx.Panel):
 		pub.sendMessage("RightImage", message=None)
 		e.Skip()
 	def __init__(self, parent):
-		super().__init__(self, parent=parent)
+		wx.Panel.__init__(self, parent=parent)
 
 		self.LeftImage = wx.Button(self, label = '<<', style=wx.BU_EXACTFIT)
 		self.LeftQuestion = wx.Button(self, label = '<', style=wx.BU_EXACTFIT)
@@ -163,7 +163,7 @@ class PositionButtons(wx.Panel):
 
 class PromptControls(wx.Panel):
 	def __init__(self, parent, NumImages, questions):
-		super().__init__(self, parent=parent)
+		wx.Panel.__init__(self, parent=parent)
 
 		self.label = QuestionLabel(self, NumImages, questions)
 		self.buttons = PositionButtons(self)
@@ -175,7 +175,7 @@ class PromptControls(wx.Panel):
 
 class PromptContainer(wx.Panel):
 	def __init__(self, parent, NumImages, questions):
-		super().__init__(self, parent=parent)
+		wx.Panel.__init__(self, parent=parent)
 
 		self.prompt = QuestionPanel(self, NumImages, questions)
 		self.buttons = PromptControls(self, NumImages, questions)

@@ -53,7 +53,7 @@ class ImagePanel(wx.Panel):
 			self.pos += 1
 		self._SetBitmap()
 	def __init__(self, parent, MaxBufSize, paths):
-		super().__init__(self, parent=parent)
+		wx.Panel.__init__(self, parent=parent)
 		self.SetOwnBackgroundColour( wx.Colour(0, 0, 0) ) # Black # TODO: Can we use 'color'? Should we use the color database?
 
 		self.pos = 0 # Position in bitmaps
@@ -105,7 +105,7 @@ class ImageLabel(wx.Panel):
 			self.pos += 1
 		self._SetLabels()
 	def __init__(self, parent, paths):
-		super().__init__(self, parent=parent)
+		wx.Panel.__init__(self, parent=parent)
 
 		self.pos = 0 # Position in paths
 		self.paths = paths
@@ -136,7 +136,7 @@ class ImageLabel(wx.Panel):
 
 class ImageContainer(wx.Panel):
 	def __init__(self, parent, MaxBufSize, paths):
-		super().__init__(self, parent=parent)
+		wx.Panel.__init__(self, parent=parent)
 
 		self.image = ImagePanel(self, MaxBufSize, paths)
 		self.label = ImageLabel(self, paths)

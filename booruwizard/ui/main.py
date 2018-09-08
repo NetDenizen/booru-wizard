@@ -42,7 +42,7 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 			self._SetSashes()
 		e.Skip()
 	def __init__(self, parent, MaxBufSize, questions, OutputFiles, ConditionalTags, TagsTracker):
-		super().__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
+		wx.lib.splitter.MultiSplitterWindow.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
 
 		self.Sash0Pos = 0.5
 		self.Sash1Pos = 0.1
@@ -124,7 +124,7 @@ class MainFrame(wx.Frame):
 		except:
 			pass
 	def __init__(self, parent, BaseTitle, MaxBufSize, questions, OutputFiles, ConditionalTags, TagsTracker):
-		super().__init__(self, parent=parent)
+		wx.Frame.__init__(self, parent=parent)
 
 		self.BaseTitle = BaseTitle # Base window title
 		self.paths = OutputFiles.InputPaths
@@ -157,7 +157,7 @@ class FilePicker(wx.Panel):
 		"Wrapper for self.FileChooser.GetPath"
 		return self.FileChooser.GetPath()
 	def __init__(self, parent, message, path):
-		super().__init__(self, parent=parent)
+		wx.Panel.__init__(self, parent=parent)
 
 		self.FileLabel = wx.StaticText(self, label= message, style= wx.ALIGN_CENTER) # Static part of image index display
 		#FIXME: We have to jump through these hoops, because wx.FLP_SAVE seems to be set by init, even if the style is specified; so we cannot set wx.FLP_FILE_MUST_EXIST with it
@@ -177,7 +177,7 @@ class DirPicker(wx.Panel):
 		"Wrapper for self.DirChooser.GetPath"
 		return self.DirChooser.GetPath()
 	def __init__(self, parent, message, path):
-		super().__init__(self, parent=parent)
+		wx.Panel.__init__(self, parent=parent)
 
 		self.DirLabel = wx.StaticText(self, label= message, style= wx.ALIGN_CENTER) # Static part of image index display
 		self.DirChooser = wx.DirPickerCtrl(self, message = message, path = path, style= wx.ALIGN_CENTER | wx.DIRP_USE_TEXTCTRL | wx.DIRP_DIR_MUST_EXIST)
@@ -203,7 +203,7 @@ class FileDialogFrame(wx.Frame):
 		except:
 			pass
 	def __init__(self, parent, APPTITLE, settings):
-		super().__init__(self, parent=parent)
+		wx.Frame.__init__(self, parent=parent)
 
 		self.settings = settings
 		self.SchemaFileChooser = FilePicker(self, 'Pick the schema file.', settings.SchemaFile)

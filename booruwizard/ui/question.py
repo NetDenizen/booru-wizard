@@ -33,7 +33,7 @@ class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 		"Clear the question for the given case."
 		return
 	def __init__(self, parent):
-		super().__init__(self, parent=parent)
+		wx.Panel.__init__(self, parent=parent)
 
 class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 	def _UpdateName(self, idx):
@@ -94,7 +94,7 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		self._UpdateAllNames()
 		self.CurrentChoice = self.choices.GetSelection()
 	def __init__(self, parent, ConditionalTags, TagsTracker, PanelQuestion):
-		super().__init__(self, parent)
+		wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent)
 
 		self.ConditionalTags = ConditionalTags # Tags to set if certain tags already exist.
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
@@ -155,7 +155,7 @@ class CheckQuestion(TagChoiceQuestion):
 		self.OutputFile.unlock()
 		self.CurrentChoices = list( self.choices.GetCheckedItems() ) # Currently selected checkboxes
 	def __init__(self, parent, ConditionalTags, TagsTracker, PanelQuestion):
-		super().__init__(self, parent)
+		TagChoiceQuestion.__init__(self, parent)
 
 		self.ConditionalTags = ConditionalTags # Tags to set if certain tags already exist.
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
@@ -251,7 +251,7 @@ class EntryQuestion(wx.Panel):
 			self.pos -= 1
 		self._UpdateEntryText()
 	def __init__(self, parent, NumImages, ConditionalTags, TagsTracker):
-		super().__init__(self, parent=parent)
+		wx.Panel.__init__(self, parent=parent)
 
 		self.ConditionalTags = ConditionalTags # Tags to set if certain tags already exist.
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
@@ -342,7 +342,7 @@ class SessionTags(TagChoiceQuestion):
 		self.OutputFile.unlock()
 		self.CurrentChoices = list( self.choices.GetCheckedItems() ) # Currently selected checkboxes
 	def __init__(self, parent, ConditionalTags, TagsTracker):
-		super().__init__(self, parent)
+		TagChoiceQuestion.__init__(self, parent)
 
 		self.ConditionalTags = ConditionalTags # Tags to set if certain tags already exist.
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
@@ -376,7 +376,7 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 		"Display the updated check question for the given case."
 		self.entry.ChangeValue( self._GetValue() )
 	def __init__(self, parent):
-		super().__init__(self, parent=parent)
+		wx.Panel.__init__(self, parent=parent)
 
 class NameQuestion(SingleStringEntry):
 	def _GetValue(self):
@@ -394,7 +394,7 @@ class NameQuestion(SingleStringEntry):
 		self.OutputFile.SetName( self.entry.GetValue() )
 		self.OutputFile.FinishChange()
 	def __init__(self, parent):
-		super().__init__(self, parent)
+		SingleStringEntry.__init__(self, parent)
 
 		self.OutputFile = None # File data object
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
@@ -432,7 +432,7 @@ class SourceQuestion(SingleStringEntry):
 		self.OrigValue = self.OutputFile.source
 		self.OutputFile.unlock()
 	def __init__(self, parent):
-		super().__init__(self, parent)
+		SingleStringEntry.__init__(self, parent)
 
 		self.OutputFile = None # File data object
 		self.OrigValue = None # The original value of source
@@ -478,7 +478,7 @@ class SafetyQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		"Display the updated check question for the given case."
 		self._UpdateSafety()
 	def __init__(self, parent):
-		super().__init__(self, parent=parent)
+		wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent=parent)
 
 		self.CurrentChoice = wx.NOT_FOUND
 		self.OutputFile = None # File data object
@@ -557,7 +557,7 @@ class QuestionsContainer(wx.Panel):
 			self.positions[self.pos] += 1
 		self._disp()
 	def __init__(self, parent, ConditionalTags, TagsTracker, questions, OutputFiles):
-		super().__init__(self, parent=parent)
+		wx.Panel.__init__(self, parent=parent)
 
 		self.NumQuestions = len(questions)
 		self.pos = 0 # The position in positions
