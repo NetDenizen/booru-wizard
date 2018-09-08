@@ -212,10 +212,9 @@ class EntryQuestion(wx.Panel):
 		if self.entry.GetValue() and self.entry.GetValue()[-1].isspace(): # TODO: Handle unicode characters?
 			self._UpdateTags()
 		e.Skip()
-	def _OnFocus(self, e):
-		"Bound to EVT_KILL_FOCUS; update tags."
-		if self.entry.GetValue() and not self.entry.GetValue()[-1].isspace(): # TODO: Handle unicode characters?
-			self._UpdateTags()
+	def _OnWindowDestroy(self, e):
+		"Bound to EVT_WINDOW_DESTROY; update tags."
+		self._UpdateTags()
 		e.Skip()
 	def load(self, OutputFile):
 		"Initialize the entry question for a certain case."
@@ -266,7 +265,7 @@ class EntryQuestion(wx.Panel):
 		self.SetSizer(self.sizer)
 
 		self.Bind( wx.EVT_TEXT, self._OnEntry, id=self.entry.GetId() )
-		self.Bind( wx.EVT_KILL_FOCUS, self._OnFocus, id=self.entry.GetId() ) # TODO Should we bind to EVT_SET_FOCUS too?
+		self.Bind( wx.EVT_WINDOW_DESTROY, self._OnWindowDestroy, id=self.GetId() ) # TODO Should we bind to EVT_SET_FOCUS too?
 		pub.subscribe(self._OnIndexImage, "IndexImage")
 		pub.subscribe(self._OnLeftImage, "LeftImage")
 		pub.subscribe(self._OnRightImage, "RightImage")
