@@ -18,6 +18,8 @@ class ManagedImage:
 			self.image = wx.Image(stream)
 			self.size = os.fstat( stream.fileno() ).st_size
 			stream.close()
+			if not self.image.IsOk():
+				raise Exception()
 		except: # TODO: Should this be more specific?
 			self.image = None
 			self.size = 0
