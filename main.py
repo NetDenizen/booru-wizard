@@ -16,7 +16,7 @@ from booruwizard.lib.fileops import FileManager
 from booruwizard.ui.main import FileDialogFrame, MainFrame
 
 APPNAME = 'booru-wizard'
-APPVERSION = '0.1'
+APPVERSION = '0.2'
 APPTITLE = ''.join( ( APPNAME, ' (', APPVERSION, ')' ) )
 
 #TODO: Better accept dialog?

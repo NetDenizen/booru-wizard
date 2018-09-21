@@ -2,8 +2,11 @@
 
 # Entries follow the format of: <key>:"<value>"
 # Double quotation marks in the value can be escaped with \"
+# Arbitrary whitespace can be between  the colon and the key or value portions.
 
-# The maximum amount of memory that can be used to cache images in bytes. This means they will be held in memory, which makes accessing them faster than reading them from the disk again. Note, that this is a limit at which image reservation will be halted; thus, it might be exceeded by the size of an image, before the limit is enforced. If 0, then caching is disabled. This can be ended with the suffixes 'kB', 'kilobyte', 'MB', 'megabyte', 'GB', 'gigabyte', 'KiB', 'kibibyte', 'MiB', 'mebibyte', 'GiB', 'gibibyte' The default is '100megabyte'
+# The maximum amount of memory that can be used to cache images in bytes. This means they will be held in memory, which makes accessing them faster than reading them from the disk again. Note, that this is a limit at which image reservation will be halted; thus, it might be exceeded by the size of an image, before the limit is enforced. If 0, then caching is disabled.
+# This can be ended with the suffixes 'kB', 'kilobyte', 'MB', 'megabyte', 'GB', 'gigabyte', 'KiB', 'kibibyte', 'MiB', 'mebibyte', 'GiB', 'gibibyte' The default is '100megabyte'
+# Tabs or spaces can be between the number and the suffix.
 MAX_IMAGE_BUFSIZE:"100megabyte"
 
 # This is the maximum number of output JSON files which can be held open by the program. Allowing more files to be open might make the software more responsive. This is ultimately limited by the operating system and does not represent other files (namely image files) held open by the software. If it is 0, then impose no limit in the software. By default, it is 20

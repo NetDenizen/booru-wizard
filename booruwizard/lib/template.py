@@ -236,7 +236,7 @@ class ParserState(Enum):
 	ALIAS_FROM      = 3 # When we added the tags to alias from and are waiting for the tags to alias to.
 	ALIAS_TO        = 4 # When we added the tags to alias to and are waiting for the tags to alias from.
 
-RE_HUMANSIZE = re.compile('^([0-9\.]+)[ ]*([a-zA-Z]*)$')
+RE_HUMANSIZE = re.compile('^([0-9\.]+)[ \t]*([a-zA-Z]*)$')
 SIZE_SPECIFIERS = {'kB'       : 1000.0,
 				   'kilobyte' : 1000.0,
 				   'Kilobyte' : 1000.0,
