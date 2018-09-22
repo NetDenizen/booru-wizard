@@ -70,6 +70,10 @@ To build with PyInstaller, use this command from the root directory of the repos
 
 `pyinstaller --clean --onefile --windowed --strip --name booru-wizard main.py`
 
+main.py can also be run directly with the booru-wizard files present in the same directory:
+
+`python3 main.py`
+
 ## Development Roadmap
 
 There are a number of features and changes which I consider for this software. These are listed both to solicit feedback from my users, and for my own planning. In no specific order, they are:
