@@ -12,7 +12,7 @@ So far, this entails:
 
 * Tags
 
-Prompts displayed by the wizard can be manually determined by the user through the use of a configuration file. The default one included with this software is intended to be self-documenting, and show explain the format, in addition to providing examples.
+Prompts displayed by the wizard can be manually determined by the user through the use of a configuration file. The default one included with this software is intended to be self-documenting, and explain the format, in addition to providing examples.
 
 To anyone outside of the hair-fetish community, note that this default configuration file is specifically intended for organizing hair-fetish themed works. Should the software become more popular outside of this community, I might begin using a more generic default configuration.
 
