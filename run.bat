@@ -1,10 +1,10 @@
-# A batch file to run the software with some default settings.
+:: A batch file to run the software with some default settings.
 @ECHO OFF
 
-SET EXE_PATH="%cd%\booru-wizard"
-SET SCHEMA="%cd%\default_schema.json"
-SET CONFIG="%cd%\default_config.txt"
-SET INPUT=""
-SET OUTPUT=""
+Set EXE_PATH="%cd%\booru-wizard"
+Set SCHEMA="%cd%\default_schema.json"
+Set CONFIG="%cd%\default_config.txt"
+Set INPUT=
+Set OUTPUT=
 
-%EXE_PATH% --schema "%SCHEMA%" --config "%CONFIG%" --input "%INPUT%" --output "%OUTPUT%"
+start "" "%EXE_PATH%" --schema "%SCHEMA%" --config "%CONFIG%" --input "%INPUT%" --output "%OUTPUT%"
