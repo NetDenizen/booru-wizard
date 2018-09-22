@@ -16,6 +16,12 @@ Prompts displayed by the wizard can be manually determined by the user through t
 
 To anyone outside of the hair-fetish community, note that this default configuration file is specifically intended for organizing hair-fetish themed works. Should the software become more popular outside of this community, I might begin using a more generic default configuration.
 
+Metadata output from this software is in a series of .json files which correspond to each image opened. They are given the same name, but with `.json` appended to them. When the software is restarted, these same files are read to restore its previous state.
+
+This software was originally designed to be used in conjunction with the uploader userscript at: https://github.com/NetDenizen/Booru-mass-uploader
+
+Other uploading options might be implemented later, largely depending on how well that option meets the needs of its users.
+
 ## Interface Guide
 
 The basic interface of the software is as follows; each element is annotated with a green number:
@@ -97,3 +103,7 @@ There are a number of features and changes which I consider for this software. T
 * The image is currently overlaid on a black background. If transparency is present, this might cause a measure of confusion to the user, so I will consider changing this to the standard alternating gray boxes pattern.
 
 * Normally, the software periodically updates its output files, in case it suddenly crashes before its normal closing procedure would be done. Currently, this process runs in the background without any feedback to the user. I consider adding some kind of indication for it.
+
+* Currently, the software only identifies which files to open by their name, allowing the metadata files to freely be applied to any image. This could be considered a useful feature since the information can be readily copied and transferred between images. On the other hand, it could lead to mistaken application of metadata to the wrong image.
+
+  The solution I consider is to implement some sort of hashing to identify images. This could be a complex component of the software itself, and I am not sure it is within the scope of purpose for the software to act as a search engine.
