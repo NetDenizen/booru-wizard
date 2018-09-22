@@ -69,3 +69,27 @@ Dependencies should not be an issue to the end-user, since the software will be 
 To build with PyInstaller, use this command from the root directory of the repository:
 
 `pyinstaller --clean --onefile --windowed --strip --name booru-wizard main.py`
+
+## Development Roadmap
+
+There are a number of features and changes which I consider for this software. These are listed both to solicit feedback from my users, and for my own planning. In no specific order, they are:
+
+* The displayed image is resized to fit its area and the algorithm used for this will distort it, somewhat. wxPython provides multiple choices of algorithm, and I hard-coded in the highest quality, but slowest one. Users with less powerful computers might benefit from the ability to change this.
+
+* A major feature I intend to add is the ability to control the software through keyboard shortcuts. Ideally, it would be usable without ever touching the mouse. These shortcuts could be set from the configuration file.
+
+* A color picker might be added to lend less ambiguity to the process of determining colors in images. A number of colors would be specified in the configuration file, and upon mousing over or clicking a pixel in the image, the closest 'match' among these colors would be shown.
+
+* Especially in the case of imagesets, I consider that the same sequence of tags might be frequently repeated between multiple images. This raises the question as to if it should be possible to copy tags from one image to another. If not directly implemented, a string containing all tags could be presented for copy-and-pasting.
+
+* I've considered adding more features to the image-viewer itself, such as the ability to zoom, and the ability to display animation.
+
+* Currently, the software produces little in the way of command-line output which could be logged. What is logged, is typically from within the wxPython library. Aside from the command-line logging, such information could also be included in a window or other widget, or flushed to a file.
+
+* A scrollable menu of thumbnails for each image, which can be selected to change to a certain image might be handy for navigation. In the current state of the software, the user would need to remember the images by number, alone, to navigate to a specific one.
+
+* At this point, the UI is a bit rough, in that there's not much empty space to separate or align the elements. That should definitely be added at some point. The 'sashes' which are dragged to resize the window panes are also a bit poorly defined. I can probably change that.
+
+* The image is currently overlaid on a black background. If transparency is present, this might cause a measure of confusion to the user, so I will consider changing this to the standard alternating gray boxes pattern.
+
+* Normally, the software periodically updates its output files, in case it suddenly crashes before its normal closing procedure would be done. Currently, this process runs in the background without any feedback to the user. I consider adding some kind of indication for it.
