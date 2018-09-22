@@ -56,7 +56,7 @@ The image is divided into 3 panes, which can be resized within the window, by cl
 
 The software is intended to run on Windows and Linux. A Mac port is a possibility, but it is a low priority, unless I find there is a great demand for it. Technically speaking, there is nothing in the code that I believe would make it incompatible, but I won't be actively maintaining and testing a port, for now. The library I used also seems to lack certain features on Mac.
 
-Dependencies should not be an issue to the end-user, since the software will be packaged as a standalone executable. Otherwise, the dependencies are:
+Dependencies should not be an issue to the end-user, since the software will be packaged as a standalone executable along with the configuration file, schema file, and a script to run the executable using those other files. Otherwise, the dependencies are:
 
 * Python 3.2 or newer
 
