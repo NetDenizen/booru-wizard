@@ -22,6 +22,36 @@ This software was originally designed to be used in conjunction with the uploade
 
 Other uploading options might be implemented later, largely depending on how well that option meets the needs of its users.
 
+## Installation
+
+These basic steps may be followed to get both the wizard software, and the uploader userscript installed and running.
+
+### booru-wizard
+
+1. Download the packaged version for your respective operating system. These links will be updated on each release:
+
+   * [Windows 64-bit](https://github.com/NetDenizen/booru-wizard/releases/download/0.2/booru-wizard-0.2-x86_64-windows.zip)
+   * [Windows 32-bit](https://github.com/NetDenizen/booru-wizard/releases/download/0.2/booru-wizard-0.2-x86-windows.zip)
+   * [Linux 64-bit](https://github.com/NetDenizen/booru-wizard/releases/download/0.2/booru-wizard-0.2-x86_64-linux.tar.gz)
+
+2. Extract the archive to the directory of your choice.
+
+3. `run.bat` (on Windows) or `run.sh` (on Linux) may be used to run the software with the default schema and configuration files set. It is not at all necessary, and the `booru-wizard` executable may be run directly directly.
+
+   The images directory is where the actual images you wish to manage should be. The software produces its output in a series of .json files which correspond to each image file; these are sent to the output JSON directory. Finally, output files may be reopened, to restore the settings of your previous session; the input JSON directory is searched for these.
+
+   Please refer to the [Interface Guide](#interface-guide) section for more information on using the software.
+
+### Booru-mass-uploader
+
+1. Install a userscript manager for your browser. Common choices are Greasemonkey, Tampermonkey, and Violentmonkey are the 3 popular options. Thus far, the testing for this software has been with Greasemonkey on Mozilla browsers.
+
+2. The script can be acquired [here](https://netdenizen.github.io/Booru-mass-uploader/booru.mass.uploader.user.js). You should know the userscript manager has recognized it, since it will create a popup prompting to install.
+
+3. Go to the supported \*booru of your choice. Currently, Gelbooru 0.1, Danbooru, and Moebooru based sites should be supported, but note that this software was adapted from a preexisting project, and I've only tested Gelbooru for my version. If the script is loaded, you should see a 'Mass Upload' link at the top of the page, or in the navigation bar.
+
+4. The page should be largely self-documenting, but a quick overview is that '.JSON files:' serves a similar role to the input JSON files option for the booru-wizard, and 'Image files:' a similarly equivalent roles. The images you wish to upload should be selected by 'Image files:', while the corresponding JSON files should be selected by '.JSON files:'.
+
 ## Interface Guide
 
 The basic interface of the software is as follows; each element is annotated with a green number:
@@ -58,7 +88,7 @@ The image is divided into 3 panes, which can be resized within the window, by cl
 
 14. The field in which the prompt at element 8 is filled. It can either be a text box, checklist, or radio-buttons.
 
-## Installation, Building, and Dependencies
+## Building and Dependencies
 
 The software is intended to run on Windows and Linux. A Mac port is a possibility, but it is a low priority, unless I find there is a great demand for it. Technically speaking, there is nothing in the code that I believe would make it incompatible, but I won't be actively maintaining and testing a port, for now. The library I used also seems to lack certain features on Mac.
 
