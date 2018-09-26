@@ -7,4 +7,4 @@ CONFIG='./default_config.txt'
 INPUT=''
 OUTPUT=''
 
-$EXE_PATH --schema "$SCHEMA" --config "$CONFIG" --input "$INPUT" --output "$OUTPUT"
+"$EXE_PATH" --schema "$SCHEMA" --config "$CONFIG" --input "$INPUT" --output "$OUTPUT"
