@@ -3,7 +3,7 @@
 
 Set EXE_PATH="%cd%\booru-wizard"
 Set SCHEMA="%cd%\default_schema.json"
-Set CONFIG="%cd%\default_config.txt"
+Set CONFIG="%cd%\default_config.cfg"
 set IMAGE_INPUT=
 set JSON_INPUT=
 set JSON_OUTPUT=

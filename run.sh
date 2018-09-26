@@ -3,7 +3,7 @@
 # A POSIX-compliant shell-script to run the software with some default settings.
 EXE_PATH='./booru-wizard'
 SCHEMA='./default_schema.json'
-CONFIG='./default_config.txt'
+CONFIG='./default_config.cfg'
 IMAGE_INPUT=''
 JSON_INPUT=''
 JSON_OUTPUT=''
