@@ -4,7 +4,12 @@
 EXE_PATH='./booru-wizard'
 SCHEMA='./default_schema.json'
 CONFIG='./default_config.txt'
-INPUT=''
-OUTPUT=''
+IMAGE_INPUT=''
+JSON_INPUT=''
+JSON_OUTPUT=''
 
-"$EXE_PATH" --schema "$SCHEMA" --config "$CONFIG" --input "$INPUT" --output "$OUTPUT"
+"$EXE_PATH" --schema "$SCHEMA" \
+			--config "$CONFIG" \
+			--image-input "$IMAGE_INPUT" \
+			--json-input "$JSON_INPUT" \
+			--json-output "$JSON_OUTPUT"
