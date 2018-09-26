@@ -44,12 +44,13 @@ class MainError(Exception):
 	pass
 
 class DialogSettings:
-	def __init__(self, SchemaFile, ConfigFile, InputDir, OutputDir):
+	def __init__(self, SchemaFile, ConfigFile, ImageInputDir, JSONInputDir, JSONOutputDir):
 		self.EarlyExit = True
 		self.SchemaFile = SchemaFile
 		self.ConfigFile = ConfigFile
-		self.InputDir = InputDir
-		self.OutputDir = OutputDir
+		self.ImageInputDir = ImageInputDir
+		self.JSONInputDir = JSONInputDir
+		self.JSONOutputDir = JSONOutputDir
 	def validate(self):
 		if not os.path.exists(self.SchemaFile):
 			raise MainError( ''.join( ('Schema file path: "', self.SchemaFile, '" does not exist.') ) )
@@ -59,14 +60,18 @@ class DialogSettings:
 			raise MainError( ''.join( ('Config file path: "', self.ConfigFile, '" does not exist.') ) )
 		if not os.path.isfile(self.ConfigFile):
 			raise MainError( ''.join( ('Config file path: "', self.ConfigFile, '" is not a file.') ) )
-		if not os.path.exists(self.InputDir):
-			raise MainError( ''.join( ('Input file path: "', self.InputDir, '" does not exist.') ) )
-		if not os.path.isdir(self.InputDir):
-			raise MainError( ''.join( ('Input file path: "', self.InputDir, '" is not a directory.') ) )
-		if not os.path.exists(self.OutputDir):
-			raise MainError( ''.join( ('Output file path: "', self.OutputDir, '" does not exist.') ) )
-		if not os.path.isdir(self.OutputDir):
-			raise MainError( ''.join( ('Output file path: "', self.OutputDir, '" is not a directory.') ) )
+		if not os.path.exists(self.ImageInputDir):
+			raise MainError( ''.join( ('Image file path: "', self.ImageInputDir, '" does not exist.') ) )
+		if not os.path.isdir(self.ImageInputDir):
+			raise MainError( ''.join( ('Image file path: "', self.ImageInputDir, '" is not a directory.') ) )
+		if not os.path.exists(self.JSONInputDir):
+			raise MainError( ''.join( ('JSON input file path: "', self.JSONInputDir, '" does not exist.') ) )
+		if not os.path.isdir(self.JSONInputDir):
+			raise MainError( ''.join( ('JSON input file path: "', self.JSONInputDir, '" is not a directory.') ) )
+		if not os.path.exists(self.JSONOutputDir):
+			raise MainError( ''.join( ('JSON output file path: "', self.JSONOutputDir, '" does not exist.') ) )
+		if not os.path.isdir(self.JSONOutputDir):
+			raise MainError( ''.join( ('JSON output file path: "', self.JSONOutputDir, '" is not a directory.') ) )
 
 def ParseCommandLine():
 	"Function to create a command line argument parser, and return the args object from it."
@@ -74,8 +79,9 @@ def ParseCommandLine():
 	ArgParser.add_argument( '--no-dialog', '-d', action='store_true', help='If this is set, then the file chooser dialog will not be displayed before the regular UI. Thus, the command line settings are relied upon.' )
 	ArgParser.add_argument( '--schema', '-s', action='store', default='', help='Path to read schema file from.' )
 	ArgParser.add_argument( '--config', '-c', action='store', default='', help='Path to read config file from.' )
-	ArgParser.add_argument( '--input', '-i', action='store', default='', help='Path to input directory.' )
-	ArgParser.add_argument( '--output', '-o', action='store', default='', help='Path to output directory. If none, then copy it from "--input".' )
+	ArgParser.add_argument( '--image-input', '-i', action='store', default='', help='Path to the image input directory.' )
+	ArgParser.add_argument( '--json-input', '-j', action='store', default='', help='Path to the JSON input directory. If none, then it will be copied from "--image-input".' )
+	ArgParser.add_argument( '--json-output', '-o', action='store', default='', help='Path to the JSON output directory. If none, then copy it will be copied from "--json-input".' )
 	return ArgParser.parse_args()
 
 def ReadTextFile(path):
@@ -135,21 +141,22 @@ def main():
 	wx.Log.SetActiveTarget( wx.LogStderr() )
 	args = ParseCommandLine()
 
-	settings = DialogSettings(args.schema, args.config, args.input, args.output)
+	settings = DialogSettings(args.schema, args.config, args.image_input, args.json_input, args.json_output)
 	if not args.no_dialog:
 		dialog = FileDialogFrame(None, APPTITLE, settings)
 		dialog.Show()
 		app.MainLoop()
 		if settings.EarlyExit:
 			sys.exit(0)
-	if not settings.OutputDir:
-		settings.OutputDir = settings.InputDir
+	if not settings.JSONInputDir:
+		settings.JSONInputDir = settings.ImageInputDir
+	if not settings.JSONOutputDir:
+		settings.JSONOutputDir = settings.JSONInputDir
 	settings.validate()
 
 	schema = ParseJSONFile(settings.SchemaFile)
-	FilePaths = GetDirFiles(settings.InputDir)
-	ImagePaths = GetFileTypes(FilePaths, VALID_IMAGES)
-	JSONPaths = GetFileTypes(FilePaths, VALID_JSON)
+	ImagePaths = GetFileTypes(GetDirFiles(settings.ImageInputDir), VALID_IMAGES)
+	JSONPaths = GetFileTypes(GetDirFiles(settings.JSONInputDir), VALID_JSON)
 
 	config = parser()
 	config.parse( ReadTextFile(settings.ConfigFile) )
@@ -157,12 +164,12 @@ def main():
 	OutputFiles = FileManager(config.MaxOpenFiles, config.UpdateInterval)
 	OutputFiles.FilesLock.acquire()
 	for p in ImagePaths:
-		OutputFiles.AddFile(settings.InputDir, settings.OutputDir, p,
+		OutputFiles.AddFile(settings.ImageInputDir, settings.JSONOutputDir, p,
 							config.DefaultName, config.DefaultSource, config.DefaultSafety, config.NamelessTags, config.SourcelessTags, config.TaglessTags)
 	for p in JSONPaths:
-		obj = ParseJSONFile( os.path.join(settings.InputDir, p) )
+		obj = ParseJSONFile( os.path.join(settings.JSONInputDir, p) )
 		VerifyJSONSchema(p, obj, schema)
-		OutputFiles.AddJSON(settings.InputDir, settings.OutputDir, obj,
+		OutputFiles.AddJSON(settings.ImageInputDir, settings.JSONOutputDir, obj,
 							config.DefaultName, config.DefaultSource, config.DefaultSafety, config.NamelessTags, config.SourcelessTags, config.TaglessTags)
 
 	if not OutputFiles.ControlFiles:

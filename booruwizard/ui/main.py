@@ -193,8 +193,9 @@ class FileDialogFrame(wx.Frame):
 	def _OnOK(self, e):
 		self.settings.SchemaFile = self.SchemaFileChooser.GetPath()
 		self.settings.ConfigFile = self.ConfigFileChooser.GetPath()
-		self.settings.InputDir = self.InputDirChooser.GetPath()
-		self.settings.OutputDir = self.OutputDirChooser.GetPath()
+		self.settings.ImageInputDir = self.ImageInputDirChooser.GetPath()
+		self.settings.JSONInputDir = self.JSONInputDirChooser.GetPath()
+		self.settings.JSONOutputDir = self.JSONOutputDirChooser.GetPath()
 		self.settings.EarlyExit = False
 		self.Close()
 	def _OnEmergencyExit(self, message, arg2=None):
@@ -208,15 +209,17 @@ class FileDialogFrame(wx.Frame):
 		self.settings = settings
 		self.SchemaFileChooser = FilePicker(self, 'Pick the schema file.', settings.SchemaFile)
 		self.ConfigFileChooser = FilePicker(self, 'Pick the config file.', settings.ConfigFile)
-		self.InputDirChooser = DirPicker(self, 'Pick the input directory.', settings.InputDir)
-		self.OutputDirChooser = DirPicker(self, 'Pick the output directory. Input directory used if this is blank.', settings.OutputDir)
+		self.ImageInputDirChooser = DirPicker(self, 'Pick the image directory.', settings.ImageInputDir)
+		self.JSONInputDirChooser = DirPicker(self, 'Pick the JSON input directory. The image directory is used if this is blank.', settings.JSONInputDir)
+		self.JSONOutputDirChooser = DirPicker(self, 'Pick the JSON output directory. The JSON input directory used if this is blank.', settings.JSONOutputDir)
 		self.OKButton = wx.Button(self, label='OK')
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.sizer.Add(self.SchemaFileChooser, 1, wx.ALIGN_CENTER | wx.EXPAND)
 		self.sizer.Add(self.ConfigFileChooser, 1, wx.ALIGN_CENTER | wx.EXPAND)
-		self.sizer.Add(self.InputDirChooser, 1, wx.ALIGN_CENTER | wx.EXPAND)
-		self.sizer.Add(self.OutputDirChooser, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.Add(self.ImageInputDirChooser, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.Add(self.JSONInputDirChooser, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.Add(self.JSONOutputDirChooser, 1, wx.ALIGN_CENTER | wx.EXPAND)
 		self.sizer.Add(self.OKButton, 0, wx.ALIGN_CENTER | wx.SHAPED)
 		self.SetSizer(self.sizer)
 
