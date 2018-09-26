@@ -121,7 +121,8 @@ class ImageLabel(wx.Panel):
 		self.IndexEntry.SetToolTip(self.IndexEntryTip)
 		self.IndexLabel.SetToolTip(self.IndexLabelTip)
 
-		self.sizer.Add(self.PathLabel, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.Add(self.PathLabel, 100, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(1)
 		self.sizer.Add(self.IndexEntry, 0, wx.ALIGN_CENTER)
 		self.sizer.Add(self.IndexLabel, 0, wx.ALIGN_CENTER)
 		self.SetSizer(self.sizer)

@@ -59,7 +59,7 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 		self.Bind( wx.EVT_SPLITTER_SASH_POS_CHANGED, self._OnSashChanged, id=self.GetId() )
 
 		size = self.GetEffectiveMinSize()
-		size.SetHeight( int( float( size.GetHeight() ) * 2.0 ) )
+		size.SetHeight( int( float( size.GetHeight() ) * 1.9 ) )
 		size.SetWidth( int( float( size.GetWidth() ) * 1.5 ) )
 		self.SetMinSize(size)
 
@@ -132,13 +132,20 @@ class MainFrame(wx.Frame):
 		self.pos = 0 # The position in positions
 		self.positions = [0] * len(OutputFiles.InputPaths) # The position in questions corresponding to each image
 		self.main = MainContainer(self, MaxBufSize, questions, OutputFiles, ConditionalTags, TagsTracker)
-		self.sizer = wx.BoxSizer(wx.VERTICAL)
+		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
+		self.WrapperSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-		self.sizer.Add(self.main, 1, wx.ALIGN_CENTER | wx.EXPAND)
-		self.SetSizer(self.sizer)
+		self.MainSizer.AddStretchSpacer(1)
+		self.MainSizer.Add(self.main, 100, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.AddStretchSpacer(1)
+
+		self.WrapperSizer.AddStretchSpacer(1)
+		self.WrapperSizer.Add(self.MainSizer, 100, wx.ALIGN_CENTER | wx.EXPAND)
+		self.WrapperSizer.AddStretchSpacer(1)
+		self.SetSizer(self.WrapperSizer)
 
 		size = self.GetEffectiveMinSize()
-		size.SetHeight( int( float( size.GetHeight() ) * 2.0 ) )
+		size.SetHeight( int( float( size.GetHeight() ) * 1.9 ) )
 		size.SetWidth( int( float( size.GetWidth() ) * 1.5 ) )
 		self.SetMinSize(size)
 		self.SetSize( self.GetSize() ) # XXX: Windows does not automatically update the size when the minimum is set.
@@ -213,18 +220,25 @@ class FileDialogFrame(wx.Frame):
 		self.JSONInputDirChooser = DirPicker(self, 'Pick the JSON input directory. The image directory is used if this is blank.', settings.JSONInputDir)
 		self.JSONOutputDirChooser = DirPicker(self, 'Pick the JSON output directory. The JSON input directory used if this is blank.', settings.JSONOutputDir)
 		self.OKButton = wx.Button(self, label='OK')
-		self.sizer = wx.BoxSizer(wx.VERTICAL)
+		self.WrapperSizer  = wx.BoxSizer(wx.HORIZONTAL)
+		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 
-		self.sizer.Add(self.SchemaFileChooser, 1, wx.ALIGN_CENTER | wx.EXPAND)
-		self.sizer.Add(self.ConfigFileChooser, 1, wx.ALIGN_CENTER | wx.EXPAND)
-		self.sizer.Add(self.ImageInputDirChooser, 1, wx.ALIGN_CENTER | wx.EXPAND)
-		self.sizer.Add(self.JSONInputDirChooser, 1, wx.ALIGN_CENTER | wx.EXPAND)
-		self.sizer.Add(self.JSONOutputDirChooser, 1, wx.ALIGN_CENTER | wx.EXPAND)
-		self.sizer.Add(self.OKButton, 0, wx.ALIGN_CENTER | wx.SHAPED)
-		self.SetSizer(self.sizer)
+		self.MainSizer.AddStretchSpacer(1)
+		self.MainSizer.Add(self.SchemaFileChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.Add(self.ConfigFileChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.Add(self.ImageInputDirChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.Add(self.JSONInputDirChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.Add(self.JSONOutputDirChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.Add(self.OKButton, 0, wx.ALIGN_CENTER | wx.SHAPED)
+		self.MainSizer.AddStretchSpacer(7)
+
+		self.WrapperSizer.AddStretchSpacer(1)
+		self.WrapperSizer.Add(self.MainSizer, 40, wx.ALIGN_CENTER | wx.EXPAND)
+		self.WrapperSizer.AddStretchSpacer(1)
+		self.SetSizer(self.WrapperSizer)
 
 		size = self.GetEffectiveMinSize()
-		size.SetHeight( int( float( size.GetHeight() ) * 2.0 ) )
+		size.SetHeight( int( float( size.GetHeight() ) * 1.75 ) )
 		size.SetWidth( int( float( size.GetWidth() ) * 1.5 ) )
 		self.SetMinSize(size)
 		self.SetSize( self.GetSize() ) # XXX: Windows does not automatically update the size when the minimum is set.

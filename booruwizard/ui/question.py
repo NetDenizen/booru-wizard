@@ -110,6 +110,7 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 
 		self.Bind( wx.EVT_RADIOBOX, self._OnSelect, id=self.choices.GetId() )
 
+		self.SetOwnBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW) )
 		self.SetupScrolling()
 
 class CheckQuestion(TagChoiceQuestion):
@@ -489,6 +490,7 @@ class SafetyQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 
 		self.Bind( wx.EVT_RADIOBOX, self._OnSelect, id=self.choices.GetId() )
 
+		self.SetOwnBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW) )
 		self.SetupScrolling()
 
 class QuestionsContainer(wx.Panel):

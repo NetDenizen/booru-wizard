@@ -150,10 +150,13 @@ class PositionButtons(wx.Panel):
 		self.RightImage.SetToolTip(self.RightImageTip)
 		self.RightQuestion.SetToolTip(self.RightQuestionTip)
 
-		self.sizer.Add(self.LeftImage, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.RIGHT)
-		self.sizer.Add(self.LeftQuestion, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.RIGHT)
-		self.sizer.Add(self.RightQuestion, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.RIGHT)
-		self.sizer.Add(self.RightImage, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.RIGHT)
+		self.sizer.Add(self.LeftImage, 10, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.RIGHT)
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.LeftQuestion, 10, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.RIGHT)
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.RightQuestion, 10, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.RIGHT)
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.RightImage, 10, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.RIGHT)
 		self.SetSizer(self.sizer)
 
 		self.Bind( wx.EVT_BUTTON, self._OnLeftImage, id=self.LeftImage.GetId() )
@@ -169,8 +172,9 @@ class PromptControls(wx.Panel):
 		self.buttons = PositionButtons(self)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
-		self.sizer.Add(self.label, 0, wx.ALIGN_CENTER)
-		self.sizer.Add(self.buttons, 0, wx.ALIGN_CENTER)
+		self.sizer.Add(self.label, 3, wx.ALIGN_CENTER)
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.buttons, 3, wx.ALIGN_CENTER)
 		self.SetSizer(self.sizer)
 
 class PromptContainer(wx.Panel):
@@ -179,8 +183,14 @@ class PromptContainer(wx.Panel):
 
 		self.prompt = QuestionPanel(self, NumImages, questions)
 		self.buttons = PromptControls(self, NumImages, questions)
-		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.MainSizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.WrapperSizer = wx.BoxSizer(wx.VERTICAL)
 
-		self.sizer.Add(self.prompt, 1, wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.ALIGN_LEFT | wx.EXPAND)
-		self.sizer.Add(self.buttons, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.ALIGN_RIGHT)
-		self.SetSizer(self.sizer)
+		self.MainSizer.Add(self.prompt, 100, wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.ALIGN_LEFT | wx.EXPAND)
+		self.MainSizer.AddStretchSpacer(1)
+		self.MainSizer.Add(self.buttons, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.ALIGN_RIGHT)
+
+		self.WrapperSizer.AddStretchSpacer(1)
+		self.WrapperSizer.Add(self.MainSizer, 5, wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
+		self.WrapperSizer.AddStretchSpacer(1)
+		self.SetSizer(self.WrapperSizer)
