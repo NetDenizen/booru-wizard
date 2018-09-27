@@ -165,12 +165,14 @@ def main():
 	OutputFiles.FilesLock.acquire()
 	for p in ImagePaths:
 		OutputFiles.AddFile(settings.ImageInputDir, settings.JSONOutputDir, p,
-							config.DefaultName, config.DefaultSource, config.DefaultSafety, config.NamelessTags, config.SourcelessTags, config.TaglessTags)
+							config.DefaultName, config.DefaultSource, config.DefaultSafety,
+							config.ConditionalTags, config.NamelessTags, config.SourcelessTags, config.TaglessTags)
 	for p in JSONPaths:
 		obj = ParseJSONFile( os.path.join(settings.JSONInputDir, p) )
 		VerifyJSONSchema(p, obj, schema)
 		OutputFiles.AddJSON(settings.ImageInputDir, settings.JSONOutputDir, obj,
-							config.DefaultName, config.DefaultSource, config.DefaultSafety, config.NamelessTags, config.SourcelessTags, config.TaglessTags)
+							config.DefaultName, config.DefaultSource, config.DefaultSafety,
+							config.ConditionalTags, config.NamelessTags, config.SourcelessTags, config.TaglessTags)
 
 	if not OutputFiles.ControlFiles:
 		raise MainError('No input files found.')
@@ -181,7 +183,7 @@ def main():
 		TagsTracker.AddStringList( f.tags.ReturnStringList(), 1 )
 	OutputFiles.FilesLock.release()
 
-	wizard = MainFrame(None, APPTITLE, config.MaxImageBufSize, config.output, OutputFiles, config.ConditionalTags, TagsTracker)
+	wizard = MainFrame(None, APPTITLE, config.MaxImageBufSize, config.output, OutputFiles, TagsTracker)
 	wizard.Show()
 	app.MainLoop()
 

@@ -57,8 +57,8 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		self.OutputFile.tags.clear(self.TagNames[self.CurrentChoice], 2)
 		self.OutputFile.tags.set(self.TagNames[self.choices.GetSelection()], 2)
-		self.ConditionalTags.ClearTags(self.TagNames[self.CurrentChoice], self.OutputFile.tags)
-		self.ConditionalTags.SetTags(self.TagNames[self.choices.GetSelection()], self.OutputFile.tags)
+		self.OutputFile.ClearConditionalTags(self.TagNames[self.CurrentChoice])
+		self.OutputFile.SetConditionalTags(self.TagNames[self.choices.GetSelection()])
 		self.OutputFile.SetTaglessTags( (self.TagNames[self.CurrentChoice],) )
 		self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		self.OutputFile.FinishChange()
@@ -82,21 +82,20 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		for i, n in enumerate(self.TagNames):
 			if n and self.OutputFile.tags.ReturnStringOccurrences(n) > 0:
 				self.OutputFile.tags.clear(n, 2)
-				self.ConditionalTags.ClearTags(n, self.OutputFile.tags)
+				self.OutputFile.ClearConditionalTags(n)
 				Last = i
 				names.append(n)
 		self.choices.SetSelection(Last)
 		self.OutputFile.tags.set(self.TagNames[self.choices.GetSelection()], 2)
-		self.ConditionalTags.SetTags(self.TagNames[self.choices.GetSelection()], self.OutputFile.tags)
+		self.OutputFile.SetConditionalTags(self.TagNames[self.choices.GetSelection()])
 		self.OutputFile.SetTaglessTags(names)
 		self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		self.OutputFile.FinishChange()
 		self._UpdateAllNames()
 		self.CurrentChoice = self.choices.GetSelection()
-	def __init__(self, parent, ConditionalTags, TagsTracker, PanelQuestion):
+	def __init__(self, parent, TagsTracker, PanelQuestion):
 		wx.lib.scrolledpanel.ScrolledPanel.__init__(self, parent)
 
-		self.ConditionalTags = ConditionalTags # Tags to set if certain tags already exist.
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
 		self.OutputFile = None # File data object
 		self.TagNames = PanelQuestion.GetChoiceTags() # Names of tags corresponding to each selection name
@@ -128,7 +127,7 @@ class CheckQuestion(TagChoiceQuestion):
 			self.OutputFile.PrepareChange()
 			self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.tags.clear(self.TagNames[e.GetInt()], 2)
-			self.ConditionalTags.ClearTags(self.TagNames[e.GetInt()], self.OutputFile.tags)
+			self.OutputFile.ClearConditionalTags(self.TagNames[e.GetInt()])
 			self.OutputFile.SetTaglessTags( (self.TagNames[e.GetInt()],) )
 			self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.FinishChange()
@@ -137,7 +136,7 @@ class CheckQuestion(TagChoiceQuestion):
 			self.OutputFile.PrepareChange()
 			self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.tags.set(self.TagNames[e.GetInt()], 2)
-			self.ConditionalTags.SetTags(self.TagNames[e.GetInt()], self.OutputFile.tags)
+			self.OutputFile.SetConditionalTags(self.TagNames[e.GetInt()])
 			self.OutputFile.SetTaglessTags()
 			self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.FinishChange()
@@ -155,10 +154,9 @@ class CheckQuestion(TagChoiceQuestion):
 		self._UpdateChecks()
 		self.OutputFile.unlock()
 		self.CurrentChoices = list( self.choices.GetCheckedItems() ) # Currently selected checkboxes
-	def __init__(self, parent, ConditionalTags, TagsTracker, PanelQuestion):
+	def __init__(self, parent, TagsTracker, PanelQuestion):
 		TagChoiceQuestion.__init__(self, parent)
 
-		self.ConditionalTags = ConditionalTags # Tags to set if certain tags already exist.
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
 		self.OutputFile = None # File data object
 		self.TagNames = PanelQuestion.GetChoiceTags() # Names of tags corresponding to each selection name
@@ -195,14 +193,14 @@ class EntryQuestion(wx.Panel):
 		names = []
 		for s in self.CurrentTags.ReturnStringList(): #TODO Should this be rolled into a SetContainer function
 			self.OutputFile.tags.clear(s, 2)
-			self.ConditionalTags.ClearTags(s, self.OutputFile.tags)
+			self.OutputFile.ClearConditionalTags(s)
 			names.append(s)
 		for s in self.EntryStrings[self.pos].split():
-			self.ConditionalTags.ClearTags(s, self.CurrentTags)
+			self.OutputFile.ClearConditionalTags(s)
 		self.CurrentTags.ClearString(self.EntryStrings[self.pos], 2)
 		self.CurrentTags.SetString( self.entry.GetValue(), 2 )
 		for s in self.CurrentTags.ReturnStringList():
-			self.ConditionalTags.SetTags(s, self.CurrentTags)
+			self.OutputFile.SetConditionalTags(s)
 		self.OutputFile.tags.SetContainer(self.CurrentTags)
 		self.EntryStrings[self.pos] = self.entry.GetValue()
 		self.OutputFile.SetTaglessTags(names)
@@ -250,10 +248,9 @@ class EntryQuestion(wx.Panel):
 		else:
 			self.pos -= 1
 		self._UpdateEntryText()
-	def __init__(self, parent, NumImages, ConditionalTags, TagsTracker):
+	def __init__(self, parent, NumImages, TagsTracker):
 		wx.Panel.__init__(self, parent=parent)
 
-		self.ConditionalTags = ConditionalTags # Tags to set if certain tags already exist.
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
 		self.OutputFile = None # File data object
 		self.CurrentTags = None # Keep track of the tags controlled by the entry box
@@ -282,7 +279,7 @@ class SessionTags(TagChoiceQuestion):
 			self.OutputFile.PrepareChange()
 			self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.tags.clear(self.TagNames[e.GetInt()], 2)
-			self.ConditionalTags.ClearTags(self.TagNames[e.GetInt()], self.OutputFile.tags)
+			self.OutputFile.ClearConditionalTags(self.TagNames[e.GetInt()])
 			self.OutputFile.SetTaglessTags(self.TagNames[e.GetInt()])
 			self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.FinishChange()
@@ -291,7 +288,7 @@ class SessionTags(TagChoiceQuestion):
 			self.OutputFile.PrepareChange()
 			self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.tags.set(self.TagNames[e.GetInt()], 2)
-			self.ConditionalTags.SetTags(self.TagNames[e.GetInt()], self.OutputFile.tags)
+			self.OutputFile.SetConditionalTags(self.TagNames[e.GetInt()])
 			self.OutputFile.SetTaglessTags()
 			self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.FinishChange()
@@ -341,10 +338,9 @@ class SessionTags(TagChoiceQuestion):
 		self._UpdateChecks()
 		self.OutputFile.unlock()
 		self.CurrentChoices = list( self.choices.GetCheckedItems() ) # Currently selected checkboxes
-	def __init__(self, parent, ConditionalTags, TagsTracker):
+	def __init__(self, parent, TagsTracker):
 		TagChoiceQuestion.__init__(self, parent)
 
-		self.ConditionalTags = ConditionalTags # Tags to set if certain tags already exist.
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
 		self.OutputFile = None # File data object
 		self.TagNames = [] # Names of tags corresponding to each selection name
@@ -557,7 +553,7 @@ class QuestionsContainer(wx.Panel):
 		else:
 			self.positions[self.pos] += 1
 		self._disp()
-	def __init__(self, parent, ConditionalTags, TagsTracker, questions, OutputFiles):
+	def __init__(self, parent, TagsTracker, questions, OutputFiles):
 		wx.Panel.__init__(self, parent=parent)
 
 		self.NumQuestions = len(questions)
@@ -570,15 +566,15 @@ class QuestionsContainer(wx.Panel):
 		for q in questions:
 			proportion = 0
 			if q.type == OptionQuestionType.RADIO_QUESTION:
-				self.QuestionWidgets.append( RadioQuestion(self, ConditionalTags, TagsTracker, q) )
+				self.QuestionWidgets.append( RadioQuestion(self, TagsTracker, q) )
 				proportion = 1
 			elif q.type == OptionQuestionType.CHECK_QUESTION:
-				self.QuestionWidgets.append( CheckQuestion(self, ConditionalTags, TagsTracker, q) )
+				self.QuestionWidgets.append( CheckQuestion(self, TagsTracker, q) )
 				proportion = 1
 			elif q.type == QuestionType.ENTRY_QUESTION:
-				self.QuestionWidgets.append( EntryQuestion(self, len(OutputFiles.InputPaths), ConditionalTags, TagsTracker) )
+				self.QuestionWidgets.append( EntryQuestion(self, len(OutputFiles.InputPaths), TagsTracker) )
 			elif q.type == QuestionType.SESSION_TAGS:
-				self.QuestionWidgets.append( SessionTags(self, ConditionalTags, TagsTracker) )
+				self.QuestionWidgets.append( SessionTags(self, TagsTracker) )
 				proportion = 1
 			elif q.type == QuestionType.NAME_QUESTION:
 				self.QuestionWidgets.append( NameQuestion(self) )

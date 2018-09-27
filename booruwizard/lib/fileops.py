@@ -103,7 +103,16 @@ class FileData:
 			self.tags.SetContainer(self.SourcelessTags)
 		else:
 			self.tags.ClearContainer(self.SourcelessTags)
-	def __init__(self, path, DefaultName, DefaultSource, DefaultSafety, NamelessTags, SourcelessTags, TaglessTags):
+	def SetConditionalTags(self, name):
+		"Set the conditional tags for a certain name."
+		self.ConditionalTags.SetTags(name, self.tags)
+	def SetConditionalInitTags(self, obj):
+		"Set the conditional tags for names from the initial .JSON dictionary."
+		self.ConditionalTags.SetTagsInit(obj, self.tags)
+	def ClearConditionalTags(self, name):
+		"Clear the conditional tags for a certain name."
+		self.ConditionalTags.ClearTags(name, self.tags)
+	def __init__(self, path, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
 		# The data fields
 		self.path = os.path.basename(path)
 		self.rating = DefaultSafety
@@ -117,6 +126,7 @@ class FileData:
 		self.SourcelessTags = SourcelessTags
 		self.SetSource(DefaultSource)
 
+		self.ConditionalTags = ConditionalTags
 		self.TaglessTags = TaglessTags
 		self.SetTaglessTags()
 
@@ -151,6 +161,7 @@ class FileData:
 		if tags is not None:
 			self.tags = TagsContainer()
 			self.tags.SetDict(tags)
+			self.SetConditionalInitTags(tags)
 		rating = obj.get('rating', None)
 		if rating is not None:
 			found = SAFETY_NAMES_LOOKUP.get(rating, None)
@@ -238,7 +249,7 @@ class FileManager:
 			self._OpenFiles[0].close()
 			self._OpenFiles.pop(0)
 		self._OpenFiles.append(item)
-	def AddFile(self, InputDir, OutputDir, path, DefaultName, DefaultSource, DefaultSafety, NamelessTags, SourcelessTags, TaglessTags):
+	def AddFile(self, InputDir, OutputDir, path, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
 		"Add a FileData object and its associated MangedFile object, with all the proper callbacks set."
 		if path in self.paths:
 			ControlFile = self.ControlFiles[self.paths.index(path)]
@@ -253,15 +264,15 @@ class FileManager:
 			PushUpdatesEnabled = False
 			if self._UpdateInterval == 0.0:
 				PushUpdatesEnabled = True
-			self.ControlFiles.append( FileData(path, DefaultName, DefaultSource, DefaultSafety, NamelessTags, SourcelessTags, TaglessTags) )
+			self.ControlFiles.append( FileData(path, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags) )
 			self.paths.append(path)
 			self.InputPaths.append( os.path.join(InputDir, path) )
 			self._files.append( self.ControlFiles[-1].GetManagedFile(OutputDir, PushUpdatesEnabled, self.ReserveOpenFileSlot) )
-	def AddJSON(self, InputDir, OutputDir, obj, DefaultName, DefaultSource, DefaultSafety, NamelessTags, SourcelessTags, TaglessTags):
+	def AddJSON(self, InputDir, OutputDir, obj, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
 		"Loop through a .json object and load the settings to the FileData object associated with the respective path. If it does not exist, then create it first."
 		for k, v in obj.items():
 			if os.path.join(InputDir, k) not in self.InputPaths:
-				self.AddFile(InputDir, OutputDir, os.path.join(InputDir, k), DefaultName, DefaultSource, DefaultSafety, NamelessTags, SourcelessTags, TaglessTags)
+				self.AddFile(InputDir, OutputDir, os.path.join(InputDir, k), DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags)
 			ControlFile = self.ControlFiles[self.InputPaths.index( os.path.join(InputDir, k) )]
 			ControlFile.PrepareChange()
 			ControlFile.LoadJSON(v)
