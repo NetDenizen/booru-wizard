@@ -41,12 +41,12 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 				self.Sash1Pos = 0.9 - Sash0Pos
 			self._SetSashes()
 		e.Skip()
-	def __init__(self, parent, MaxBufSize, questions, OutputFiles, TagsTracker):
+	def __init__(self, parent, MaxBufSize, questions, OutputFiles, TagsTracker, BackgroundManager):
 		wx.lib.splitter.MultiSplitterWindow.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
 
 		self.Sash0Pos = 0.5
 		self.Sash1Pos = 0.1
-		self.top = ImageContainer(self, MaxBufSize, OutputFiles.InputPaths)
+		self.top = ImageContainer(self, MaxBufSize, OutputFiles.InputPaths, BackgroundManager)
 		self.middle = PromptContainer(self, len(OutputFiles.InputPaths), questions)
 		self.bottom = QuestionsContainer(self, TagsTracker, questions, OutputFiles)
 
@@ -123,7 +123,7 @@ class MainFrame(wx.Frame):
 			self.Close()
 		except:
 			pass
-	def __init__(self, parent, BaseTitle, MaxBufSize, questions, OutputFiles, TagsTracker):
+	def __init__(self, parent, BaseTitle, MaxBufSize, questions, OutputFiles, TagsTracker, BackgroundManager):
 		wx.Frame.__init__(self, parent=parent)
 
 		self.BaseTitle = BaseTitle # Base window title
@@ -131,7 +131,7 @@ class MainFrame(wx.Frame):
 		self.NumQuestions = len(questions)
 		self.pos = 0 # The position in positions
 		self.positions = [0] * len(OutputFiles.InputPaths) # The position in questions corresponding to each image
-		self.main = MainContainer(self, MaxBufSize, questions, OutputFiles, TagsTracker)
+		self.main = MainContainer(self, MaxBufSize, questions, OutputFiles, TagsTracker, BackgroundManager)
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 		self.WrapperSizer = wx.BoxSizer(wx.HORIZONTAL)
 

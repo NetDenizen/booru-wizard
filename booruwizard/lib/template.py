@@ -3,6 +3,7 @@ from enum import Enum
 
 from booruwizard.lib.fileops import safety, SAFETY_NAMES_LOOKUP, DEFAULT_SAFETY, DEFAULT_MAX_OPEN_FILES, DEFAULT_UPDATE_INTERVAL, DEFAULT_MAX_IMAGE_BUFSIZE
 from booruwizard.lib.tag import TagsContainer, ConditionalTagger
+from booruwizard.lib.alphabackground import DEFAULT_COLOR1_PIXEL, DEFAULT_COLOR2_PIXEL, DEFAULT_SQUARE_WIDTH
 
 # Generic template error definition
 class TemplateError(Exception):
@@ -11,48 +12,54 @@ class TemplateError(Exception):
 
 # Key-value pair definition
 class PairKey(Enum):
-	RADIO_QUESTION    = 0
-	CHECK_QUESTION    = 1
-	OPTION_NAME       = 2
-	OPTION_TAG        = 3
-	ENTRY_QUESTION    = 4
-	SESSION_TAGS      = 5
-	NAME_QUESTION     = 6
-	SOURCE_QUESTION   = 7
-	DEFAULT_SOURCE    = 8
-	NAMELESS_TAG      = 9
-	SOURCELESS_TAG    = 10
-	TAGLESS_TAG       = 11
-	SAFETY_QUESTION   = 12
-	DEFAULT_SAFETY    = 13
-	MAX_OPEN_FILES    = 14
-	UPDATE_INTERVAL   = 15
-	MAX_IMAGE_BUFSIZE = 16
-	ALIAS_TAG_TO      = 17
-	ALIAS_TAG_FROM    = 18
+	RADIO_QUESTION                = 0
+	CHECK_QUESTION                = 1
+	OPTION_NAME                   = 2
+	OPTION_TAG                    = 3
+	ENTRY_QUESTION                = 4
+	SESSION_TAGS                  = 5
+	NAME_QUESTION                 = 6
+	SOURCE_QUESTION               = 7
+	DEFAULT_SOURCE                = 8
+	NAMELESS_TAG                  = 9
+	SOURCELESS_TAG                = 10
+	TAGLESS_TAG                   = 11
+	SAFETY_QUESTION               = 12
+	DEFAULT_SAFETY                = 13
+	MAX_OPEN_FILES                = 14
+	UPDATE_INTERVAL               = 15
+	MAX_IMAGE_BUFSIZE             = 16
+	ALIAS_TAG_TO                  = 17
+	ALIAS_TAG_FROM                = 18
+	IMAGE_BACKGROUND_COLOR_ONE    = 19
+	IMAGE_BACKGROUND_COLOR_TWO    = 20
+	IMAGE_BACKGROUND_SQUARE_WIDTH = 21
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 	#TODO: keyboard controls, alias name and alias tag separately, no option tag
 
 PAIR_KEY_NAMES = {
-	'RADIO_QUESTION'    : PairKey.RADIO_QUESTION,
-	'CHECK_QUESTION'    : PairKey.CHECK_QUESTION,
-	'OPTION_NAME'       : PairKey.OPTION_NAME,
-	'OPTION_TAG'        : PairKey.OPTION_TAG,
-	'ENTRY_QUESTION'    : PairKey.ENTRY_QUESTION,
-	'SESSION_TAGS'      : PairKey.SESSION_TAGS,
-	'NAME_QUESTION'     : PairKey.NAME_QUESTION,
-	'SOURCE_QUESTION'   : PairKey.SOURCE_QUESTION,
-	'DEFAULT_SOURCE'    : PairKey.DEFAULT_SOURCE,
-	'NAMELESS_TAG'      : PairKey.NAMELESS_TAG,
-	'SOURCELESS_TAG'    : PairKey.SOURCELESS_TAG,
-	'TAGLESS_TAG'       : PairKey.TAGLESS_TAG,
-	'SAFETY_QUESTION'   : PairKey.SAFETY_QUESTION,
-	'DEFAULT_SAFETY'    : PairKey.DEFAULT_SAFETY,
-	'MAX_OPEN_FILES'    : PairKey.MAX_OPEN_FILES,
-	'UPDATE_INTERVAL'   : PairKey.UPDATE_INTERVAL,
-	'MAX_IMAGE_BUFSIZE' : PairKey.MAX_IMAGE_BUFSIZE,
-	'ALIAS_TAG_TO'      : PairKey.ALIAS_TAG_TO,
-	'ALIAS_TAG_FROM'    : PairKey.ALIAS_TAG_FROM
+	'RADIO_QUESTION'                : PairKey.RADIO_QUESTION,
+	'CHECK_QUESTION'                : PairKey.CHECK_QUESTION,
+	'OPTION_NAME'                   : PairKey.OPTION_NAME,
+	'OPTION_TAG'                    : PairKey.OPTION_TAG,
+	'ENTRY_QUESTION'                : PairKey.ENTRY_QUESTION,
+	'SESSION_TAGS'                  : PairKey.SESSION_TAGS,
+	'NAME_QUESTION'                 : PairKey.NAME_QUESTION,
+	'SOURCE_QUESTION'               : PairKey.SOURCE_QUESTION,
+	'DEFAULT_SOURCE'                : PairKey.DEFAULT_SOURCE,
+	'NAMELESS_TAG'                  : PairKey.NAMELESS_TAG,
+	'SOURCELESS_TAG'                : PairKey.SOURCELESS_TAG,
+	'TAGLESS_TAG'                   : PairKey.TAGLESS_TAG,
+	'SAFETY_QUESTION'               : PairKey.SAFETY_QUESTION,
+	'DEFAULT_SAFETY'                : PairKey.DEFAULT_SAFETY,
+	'MAX_OPEN_FILES'                : PairKey.MAX_OPEN_FILES,
+	'UPDATE_INTERVAL'               : PairKey.UPDATE_INTERVAL,
+	'MAX_IMAGE_BUFSIZE'             : PairKey.MAX_IMAGE_BUFSIZE,
+	'ALIAS_TAG_TO'                  : PairKey.ALIAS_TAG_TO,
+	'ALIAS_TAG_FROM'                : PairKey.ALIAS_TAG_FROM,
+	'IMAGE_BACKGROUND_COLOR_ONE'    : PairKey.IMAGE_BACKGROUND_COLOR_ONE,
+	'IMAGE_BACKGROUND_COLOR_TWO'    : PairKey.IMAGE_BACKGROUND_COLOR_TWO,
+	'IMAGE_BACKGROUND_SQUARE_WIDTH' : PairKey.IMAGE_BACKGROUND_SQUARE_WIDTH,
 }
 
 class KeyValuePair:
@@ -225,6 +232,68 @@ class OptionQuestion(question):
 			output.append(o.tag)
 		return output
 
+# Defining the color container class
+class ColorError(TemplateError):
+	pass
+
+class color:
+	def _ParseHexTriplet(text, line, col):
+		if len(text) != 7:
+			raise ColorError("Value should follow format '#XXXXXX'; exactly 7 characters, with arbitrary whitespace before and after.", line, col)
+		try:
+			self.red = float( int(text[1:3], 16) ) / 255.0
+			self.green = float( int(text[3:5], 16) ) / 255.0
+			self.blue = float( int(text[5:7], 16) ) / 255.0
+		except ValueError as err:
+			raise ColorError(err, line, col)
+	def _ParseParamQuad(text, line, col):
+		inputs = text.split()
+		if len(inputs) != 4:
+			raise ColorError("Value should follow format: '<name> <value 1> <value 2> <value 3>'.", line, col)
+		values = list(3)
+		if inputs[0] == 'rgb':
+			dividers = [255.0, 255.0, 255.0]
+			names = ['red', 'green', 'blue']
+			conv = tuple
+		elif inputs[0] == 'hsv':
+			dividers = [360.0, 100.0, 100.0]
+			names = ['hue', 'saturation', 'value']
+			conv = hsv_to_rgb
+		elif inputs[0] == 'hsl':
+			dividers = [360.0, 100.0, 100.0]
+			names = ['hue', 'saturation', 'lightness']
+			conv = hsl_to_rgb
+		else:
+			raise ColorError(''.join( ("Color type must be 'rgb', 'hsv', or 'hsl'. '", inputs[0], "' is not valid." ) ), line, col)
+		for i, n, v, d in enumerate( zip(names, inputs, dividers) ):
+			try:
+				fv = float(v)
+			except ValueError as err:
+				raise ColorError(err, line, col)
+			if fv > d:
+				raise ColorError(''.join( ("Value ", str(i), " (", n, ") of '", v, "' must be less than '", str(d), "' and non-negative." ) ), line, col)
+			elif fv < 0.0:
+				raise ColorError(''.join( ("Value ", str(i), " (", n, ") of '", v, "' must be less than '", str(d), "' and non-negative." ) ), line, col)
+			values[i] = float(v) / d
+		self.red, self.green, self.blue = conv(values[0], values[1], values[2])
+	def __init__(self, text, line, col):
+		self.red = None
+		self.green = None
+		self.blue = None
+		cleaned = text.strip().lower()
+		if not cleaned:
+			raise ColorError("Value is empty", line, col)
+		if cleaned[0] == '#':
+			self._ParseHexTriplet(cleaned, line, col)
+		else:
+			self._ParseParamQuad(cleaned, line, col)
+	def __bytearray__(self):
+		output = bytearray(3)
+		output[0] = int(self.red * 255.0)
+		output[1] = int(self.green * 255.0)
+		output[2] = int(self.blue * 255.0)
+		return output
+
 # Main parser definition
 class ParserError(TemplateError):
 	pass
@@ -280,6 +349,10 @@ class parser:
 		self.MaxOpenFiles = DEFAULT_MAX_OPEN_FILES
 		self.UpdateInterval = DEFAULT_UPDATE_INTERVAL
 		self.MaxImageBufSize = DEFAULT_MAX_IMAGE_BUFSIZE
+
+		self.BackgroundColor1 = DEFAULT_COLOR1_PIXEL
+		self.BackgroundColor2 = DEFAULT_COLOR2_PIXEL
+		self.BackgroundSquareWidth = DEFAULT_SQUARE_WIDTH
 
 		self.output = [] # Output array of question objects
 	def _IsOptionQuestionPrepared(self):
@@ -406,8 +479,16 @@ class parser:
 			self.MaxImageBufSize = int(val * specifier)
 		elif token.key == PairKey.ALIAS_TAG_FROM:
 			self._AddAliasTagFrom(token)
-		else: #token.key == PairKey.ALIAS_TAG_TO
+		elif token.key == PairKey.ALIAS_TAG_TO:
 			self._AddAliasTagTo(token)
+		elif token.key == PairKey.IMAGE_BACKGROUND_COLOR_ONE or\
+			 token.key == PairKey.IMAGE_BACKGROUND_COLOR_TWO:
+			self.BackgroundColor1 = bytearray( color(token.value, token.line, token.col) )
+		else: #token.key == PairKey.IMAGE_BACKGROUND_SQUARE_WIDTH
+			try:
+				self.BackgroundSquareWidth = int(token.value)
+			except ValueError:
+				raise ParserError(''.join( ("Failed to convert background square width '", token.value, "' to integer.") ), token.line, token.col)
 	def parse(self, string):
 		"Parse the input string and leave the result in the output array."
 		self._lexer.parse(string)

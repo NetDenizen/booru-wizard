@@ -8,12 +8,11 @@ from booruwizard.lib.fileops import safety, FileData, FileManager
 
 #TODO: Should we have a control to affect the scaling (maybe an alternate scrollbar setting), or to change the background color?
 class ImagePanel(wx.Panel):
-	def _SetBitmap(self):
-		"Load the image at pos in the bitmap at array and scale it to fit the panel."
+	def _OnPaint(self, evt):
+		"Load the image at pos in the bitmap at array and scale it to fit the panel. If the image has alpha, overlay it with an image from the background manager."
+		dc = wx.PaintDC(self)
 		image = self.bitmaps.get(self.pos)
 		if image is None:
-			self.DisplayedBitmap.SetBitmap( wx.Bitmap( wx.Image(1, 1) ) )
-			self.sizer.Layout()
 			return
 		ImageWidth = image.GetWidth()
 		ImageHeight = image.GetHeight()
@@ -26,38 +25,40 @@ class ImagePanel(wx.Panel):
 		else:
 			NewWidth = PanelWidth * (ImageWidth / ImageHeight)
 			NewHeight = PanelHeight
+		DiffWidth = (PanelWidth - NewWidth) / 2
+		if DiffWidth < 0:
+			DiffWidth = 0
+		DiffHeight = (PanelHeight - NewHeight) / 2
+		if DiffHeight < 0:
+			DiffHeight = 0
 		image = image.Scale(NewWidth, NewHeight, wx.IMAGE_QUALITY_HIGH) # TODO: Should we use high quality rescaling?
-		self.DisplayedBitmap.SetBitmap( wx.Bitmap(image) )
-		self.sizer.Layout()
-	def _OnSize(self, e):
-		"Bound to EVT_SIZE; mainly to update the scaling of the image on resize of the panel."
-		self._SetBitmap()
-		e.Skip()
+		dc.DrawBitmap( wx.Bitmap.FromBuffer( NewWidth, NewHeight, self.BackgroundManager.get(NewWidth, NewHeight) ), DiffWidth, DiffHeight, True )
+		dc.DrawBitmap( wx.Bitmap(image), DiffWidth, DiffHeight, True )
 	def _OnIndex(self, message, arg2=None):
 		"Change the index to the one specified in the event, if possible."
 		if 0 <= message < len(self.bitmaps.images):
 			self.pos = message
-		self._SetBitmap()
+		self.Refresh()
 	def _OnLeft(self, message, arg2=None):
 		"Shift to the left (-1) image to the current position in the bitmap array if the position is greater than 0. Otherwise, loop around to the last item."
 		if self.pos == 0:
 			self.pos = len(self.bitmaps.images) - 1
 		else:
 			self.pos -= 1
-		self._SetBitmap()
+		self.Refresh()
 	def _OnRight(self, message, arg2=None):
 		"Shift to the right (+1) image to the current position in the bitmap array if the position is less than the length of the bitmap array. Otherwise, loop around to the last item."
 		if self.pos >= len(self.bitmaps.images) - 1:
 			self.pos = 0
 		else:
 			self.pos += 1
-		self._SetBitmap()
-	def __init__(self, parent, MaxBufSize, paths):
+		self.Refresh()
+	def __init__(self, parent, MaxBufSize, paths, BackgroundManager):
 		wx.Panel.__init__(self, parent=parent)
-		self.SetOwnBackgroundColour( wx.Colour(0, 0, 0) ) # Black # TODO: Can we use 'color'? Should we use the color database?
 
 		self.pos = 0 # Position in bitmaps
 		self.bitmaps = ImageReader(MaxBufSize)
+		self.BackgroundManager = BackgroundManager
 		self.DisplayedBitmap = wx.StaticBitmap(self) # Current image loaded and displayed
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -65,9 +66,8 @@ class ImagePanel(wx.Panel):
 		self.SetSizer(self.sizer)
 
 		self.bitmaps.AddPathsList(paths)
-		self._SetBitmap()
 
-		self.Bind(wx.EVT_SIZE, self._OnSize)
+		self.Bind(wx.EVT_PAINT, self._OnPaint)
 		pub.subscribe(self._OnIndex, "IndexImage")
 		pub.subscribe(self._OnLeft, "LeftImage")
 		pub.subscribe(self._OnRight, "RightImage")
@@ -136,10 +136,10 @@ class ImageLabel(wx.Panel):
 		pub.subscribe(self._OnRight, "RightImage")
 
 class ImageContainer(wx.Panel):
-	def __init__(self, parent, MaxBufSize, paths):
+	def __init__(self, parent, MaxBufSize, paths, BackgroundManager):
 		wx.Panel.__init__(self, parent=parent)
 
-		self.image = ImagePanel(self, MaxBufSize, paths)
+		self.image = ImagePanel(self, MaxBufSize, paths, BackgroundManager)
 		self.label = ImageLabel(self, paths)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 

@@ -13,6 +13,7 @@ import jsonschema
 from booruwizard.lib.tag import TagsContainer
 from booruwizard.lib.template import parser
 from booruwizard.lib.fileops import FileManager
+from booruwizard.lib.alphabackground import TransparencyBackground
 from booruwizard.ui.main import FileDialogFrame, MainFrame
 
 APPNAME = 'booru-wizard'
@@ -161,6 +162,8 @@ def main():
 	config = parser()
 	config.parse( ReadTextFile(settings.ConfigFile) )
 
+	BackgroundManager = TransparencyBackground(config.BackgroundColor1, config.BackgroundColor2, config.BackgroundSquareWidth)
+
 	OutputFiles = FileManager(config.MaxOpenFiles, config.UpdateInterval)
 	OutputFiles.FilesLock.acquire()
 	for p in ImagePaths:
@@ -183,7 +186,7 @@ def main():
 		TagsTracker.AddStringList( f.tags.ReturnStringList(), 1 )
 	OutputFiles.FilesLock.release()
 
-	wizard = MainFrame(None, APPTITLE, config.MaxImageBufSize, config.output, OutputFiles, TagsTracker)
+	wizard = MainFrame(None, APPTITLE, config.MaxImageBufSize, config.output, OutputFiles, TagsTracker, BackgroundManager)
 	wizard.Show()
 	app.MainLoop()
 
