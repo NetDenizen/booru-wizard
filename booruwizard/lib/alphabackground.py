@@ -1,4 +1,4 @@
-from math import ceil
+from math import floor
 from ctypes import c_ubyte, memmove, sizeof, byref
 
 DEFAULT_COLOR1_PIXEL = bytearray( (153, 153, 153) )
@@ -11,8 +11,8 @@ class TransparencyBackground:
 		self.Color1Pixel = (c_ubyte * 3)()
 		self.Color2Pixel = (c_ubyte * 3)()
 		#TODO: Fix kludge, if possible
-		memmove(self.Color1Pixel, (c_ubyte * 3).from_buffer_copy( bytearray(Color1) ), 3)
-		memmove(self.Color2Pixel, (c_ubyte * 3).from_buffer_copy( bytearray(Color2) ), 3)
+		memmove(self.Color1Pixel, (c_ubyte * 3).from_buffer_copy(Color1), 3)
+		memmove(self.Color2Pixel, (c_ubyte * 3).from_buffer_copy(Color2), 3)
 	def _RepeatMove(self, StartOffset, dst, src, times):
 		SrcLen = sizeof(src)
 		offset = StartOffset
@@ -89,4 +89,4 @@ class TransparencyBackground:
 			_RepeatMove(offset, image, SingleStrip1, EndLeftoverPixels)
 		return bytearray(image)
 	def get(self, width, height):
-		return self._render( int( ceil(width) ), int( ceil(height) ) )
+		return self._render( int( floor(width) ), int( floor(height) ) )

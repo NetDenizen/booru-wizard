@@ -4,11 +4,6 @@ import wx
 import wx.lib.splitter
 from pubsub import pub
 
-from booruwizard.lib.tag import tag, TagsContainer
-from booruwizard.lib.template import question, option, OptionQuestion, QuestionType, OptionQuestionType
-from booruwizard.lib.imagereader import ManagedImage, ImageReader
-from booruwizard.lib.fileops import safety, FileData, FileManager
-
 from booruwizard.ui.image import ImageContainer
 from booruwizard.ui.prompt import PromptContainer
 from booruwizard.ui.question import QuestionsContainer

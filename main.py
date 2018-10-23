@@ -14,6 +14,7 @@ from booruwizard.lib.tag import TagsContainer
 from booruwizard.lib.template import parser
 from booruwizard.lib.fileops import FileManager
 from booruwizard.lib.alphabackground import TransparencyBackground
+from booruwizard.lib.keyhandler import KeyHandler
 from booruwizard.ui.main import FileDialogFrame, MainFrame
 
 APPNAME = 'booru-wizard'
@@ -23,7 +24,7 @@ APPTITLE = ''.join( ( APPNAME, ' (', APPVERSION, ')' ) )
 #TODO: Better accept dialog?
 class ExceptDialog(wx.Dialog):
 	def _OnClose(self, e):
-		pub.sendMessage("EmergencyExit", message=None)
+		pub.sendMessage("EmergencyExit", message = None)
 		e.Skip()
 	def __init__(self, msg):
 		wx.Dialog.__init__( self, None, title=''.join( (APPTITLE, ' - Exception') ),
@@ -187,6 +188,10 @@ def main():
 	OutputFiles.FilesLock.release()
 
 	wizard = MainFrame(None, APPTITLE, config.MaxImageBufSize, config.output, OutputFiles, TagsTracker, BackgroundManager)
+	keybinds = KeyHandler()
+	keybinds.AddList(config.keybinds)
+	keybinds.RegisterObj(wizard)
+
 	wizard.Show()
 	app.MainLoop()
 

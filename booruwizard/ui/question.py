@@ -2,10 +2,8 @@ import wx
 import wx.lib.scrolledpanel
 from pubsub import pub
 
-from booruwizard.lib.tag import tag, TagsContainer
-from booruwizard.lib.template import question, option, OptionQuestion, QuestionType, OptionQuestionType
-from booruwizard.lib.imagereader import ManagedImage, ImageReader
-from booruwizard.lib.fileops import safety, FileData, FileManager
+from booruwizard.lib.tag import TagsContainer
+from booruwizard.lib.template import QuestionType, OptionQuestionType
 
 class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 	def _UpdateName(self, idx):
@@ -170,7 +168,26 @@ class CheckQuestion(TagChoiceQuestion):
 
 		self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
 
-class EntryQuestion(wx.Panel):
+class EntryBase(wx.Panel):  # This class should never be used on its own
+	def load(self, OutputFile):
+		"Initialize the entry question for a certain case."
+		self.OutputFile = OutputFile
+	def clear(self):
+		"Clear the entry question for the given case."
+		self._UpdateTags()
+	def _OnEntry(self, e):
+		"Bound to EVT_TEXT; when a space is entered, update tags."
+		if self.entry.GetValue() and self.entry.GetValue()[-1].isspace(): # TODO: Handle unicode characters?
+			self._UpdateTags()
+		e.Skip()
+	def _OnWindowDestroy(self, e):
+		"Bound to EVT_WINDOW_DESTROY; update tags."
+		self._UpdateTags()
+		e.Skip()
+	def __init__(self, parent):
+		wx.Panel.__init__(self, parent=parent)
+
+class EntryQuestion(EntryBase):
 	def _UpdateEntryText(self):
 		"Update the current entry text according to which tags can actually be found in the output file."
 		self.CurrentTags = TagsContainer()
@@ -206,21 +223,6 @@ class EntryQuestion(wx.Panel):
 		self.OutputFile.SetTaglessTags(names)
 		self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		self.OutputFile.FinishChange()
-	def _OnEntry(self, e):
-		"Bound to EVT_TEXT; when a space is entered, update tags."
-		if self.entry.GetValue() and self.entry.GetValue()[-1].isspace(): # TODO: Handle unicode characters?
-			self._UpdateTags()
-		e.Skip()
-	def _OnWindowDestroy(self, e):
-		"Bound to EVT_WINDOW_DESTROY; update tags."
-		self._UpdateTags()
-		e.Skip()
-	def load(self, OutputFile):
-		"Initialize the entry question for a certain case."
-		self.OutputFile = OutputFile
-	def clear(self):
-		"Clear the entry question for the given case."
-		self._UpdateTags()
 	def disp(self):
 		"Display the updated entry question for the given case."
 		if self.CurrentTags is None:
@@ -249,7 +251,7 @@ class EntryQuestion(wx.Panel):
 			self.pos -= 1
 		self._UpdateEntryText()
 	def __init__(self, parent, NumImages, TagsTracker):
-		wx.Panel.__init__(self, parent=parent)
+		EntryBase.__init__(self, parent=parent)
 
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
 		self.OutputFile = None # File data object
@@ -267,6 +269,40 @@ class EntryQuestion(wx.Panel):
 		pub.subscribe(self._OnIndexImage, "IndexImage")
 		pub.subscribe(self._OnLeftImage, "LeftImage")
 		pub.subscribe(self._OnRightImage, "RightImage")
+
+class ImageTagsEntry(EntryBase):
+	def _UpdateEntryText(self):
+		"Update the current entry text according to which tags can actually be found in the output file."
+		self.OutputFile.lock()
+		self.entry.ChangeValue( self.OutputFile.tags.ReturnString() )
+		self.OutputFile.unlock()
+	def _UpdateTags(self):
+		"Subtract the previously entered tag string and add the new one"
+		self.OutputFile.PrepareChange()
+		self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
+		for s in self.entry.GetValue().split():
+			self.OutputFile.SetConditionalTags(s)
+		self.OutputFile.tags = TagsContainer()
+		self.OutputFile.tags.SetString( self.entry.GetValue(), 2 )
+		self.OutputFile.SetTaglessTags( self.entry.GetValue().split() )
+		self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
+		self.OutputFile.FinishChange()
+	def disp(self):
+		"Display the updated entry question for the given case."
+		self._UpdateEntryText()
+	def __init__(self, parent, TagsTracker):
+		EntryBase.__init__(self, parent=parent)
+
+		self.TagsTracker = TagsTracker # Global record of the number of tags in use
+		self.OutputFile = None # File data object
+		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
+		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+		self.sizer.Add(self.entry, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.SetSizer(self.sizer)
+
+		self.Bind( wx.EVT_TEXT, self._OnEntry, id=self.entry.GetId() )
+		self.Bind( wx.EVT_WINDOW_DESTROY, self._OnWindowDestroy, id=self.GetId() ) # TODO Should we bind to EVT_SET_FOCUS too?
 
 #TODO: Remove code duplication
 class SessionTags(TagChoiceQuestion):
@@ -315,7 +351,6 @@ class SessionTags(TagChoiceQuestion):
 		self._UpdateChecks()
 		self.OutputFile.unlock()
 		self.CurrentChoices = list( self.choices.GetCheckedItems() )
-		#self._UpdateAllNames()
 		e.Skip()
 	def load(self, OutputFile):
 		"Initialize the question for a certain case."
@@ -386,20 +421,35 @@ class NameQuestion(SingleStringEntry):
 			return name
 	def _SetValue(self):
 		"Set value controlled by the name field."
-		self.OutputFile.PrepareChange()
-		self.OutputFile.SetName( self.entry.GetValue() )
-		self.OutputFile.FinishChange()
+		if self.checkbox.GetValue():
+			self.OutputFile.PrepareChange()
+			self.OutputFile.SetName( self.entry.GetValue() )
+			self.OutputFile.FinishChange()
+		elif self.entry.GetValue() != self.OrigValue:
+			self.OutputFile.PrepareChange()
+			self.OutputFile.SetName(self.OrigValue)
+			self.OutputFile.FinishChange()
+	def load(self, OutputFile):
+		"Initialize the check question for a certain case."
+		self.OutputFile = OutputFile
+		self.OutputFile.lock()
+		self.OrigValue = self.OutputFile.name
+		self.OutputFile.unlock()
 	def __init__(self, parent):
 		SingleStringEntry.__init__(self, parent)
 
 		self.OutputFile = None # File data object
+		self.OrigValue = None # The original value of source
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
+		self.checkbox = wx.CheckBox(self, label= 'Use this name')
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
 		self.sizer.Add(self.entry, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
 		self.SetSizer(self.sizer)
 
 		self.Bind( wx.EVT_TEXT, self._OnChange, id=self.entry.GetId() )
+		self.Bind( wx.EVT_CHECKBOX, self._OnChange, id=self.checkbox.GetId() )
 
 class SourceQuestion(SingleStringEntry):
 	def _GetValue(self):
@@ -553,6 +603,8 @@ class QuestionsContainer(wx.Panel):
 		else:
 			self.positions[self.pos] += 1
 		self._disp()
+	def _OnFocusQuestionBody(self, message, arg2=None):
+		self._CurrentWidget().SetFocus()
 	def __init__(self, parent, TagsTracker, questions, OutputFiles):
 		wx.Panel.__init__(self, parent=parent)
 
@@ -580,9 +632,11 @@ class QuestionsContainer(wx.Panel):
 				self.QuestionWidgets.append( NameQuestion(self) )
 			elif q.type == QuestionType.SOURCE_QUESTION:
 				self.QuestionWidgets.append( SourceQuestion(self) )
-			else: #q.type == QuestionType.SAFETY_QUESTION
+			elif q.type == QuestionType.SAFETY_QUESTION:
 				self.QuestionWidgets.append( SafetyQuestion(self) )
 				proportion = 1
+			else: # q.type == QuestionType.IMAGE_TAGS_ENTRY:
+				self.QuestionWidgets.append( ImageTagsEntry(self, TagsTracker) )
 			self.sizer.Add(self.QuestionWidgets[-1], proportion, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 			self.QuestionWidgets[-1].Hide()
 
@@ -596,3 +650,4 @@ class QuestionsContainer(wx.Panel):
 		pub.subscribe(self._OnRightImage, "RightImage")
 		pub.subscribe(self._OnLeftQuestion, "LeftQuestion")
 		pub.subscribe(self._OnRightQuestion, "RightQuestion")
+		pub.subscribe(self._OnFocusQuestionBody, "FocusQuestionBody")

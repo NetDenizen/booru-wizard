@@ -3,7 +3,7 @@ import os.path
 from enum import Enum
 import json
 
-from booruwizard.lib.tag import tag, TagsContainer
+from booruwizard.lib.tag import TagsContainer
 
 # Post safety settings
 class safety(Enum): #TODO: Change name to rating

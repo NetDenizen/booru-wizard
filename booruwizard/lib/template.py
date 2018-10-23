@@ -1,7 +1,8 @@
 import re
 from enum import Enum
+import colorsys
 
-from booruwizard.lib.fileops import safety, SAFETY_NAMES_LOOKUP, DEFAULT_SAFETY, DEFAULT_MAX_OPEN_FILES, DEFAULT_UPDATE_INTERVAL, DEFAULT_MAX_IMAGE_BUFSIZE
+from booruwizard.lib.fileops import SAFETY_NAMES_LOOKUP, DEFAULT_SAFETY, DEFAULT_MAX_OPEN_FILES, DEFAULT_UPDATE_INTERVAL, DEFAULT_MAX_IMAGE_BUFSIZE
 from booruwizard.lib.tag import TagsContainer, ConditionalTagger
 from booruwizard.lib.alphabackground import DEFAULT_COLOR1_PIXEL, DEFAULT_COLOR2_PIXEL, DEFAULT_SQUARE_WIDTH
 
@@ -34,6 +35,8 @@ class PairKey(Enum):
 	IMAGE_BACKGROUND_COLOR_ONE    = 19
 	IMAGE_BACKGROUND_COLOR_TWO    = 20
 	IMAGE_BACKGROUND_SQUARE_WIDTH = 21
+	KEYBIND                       = 22
+	IMAGE_TAGS_ENTRY              = 23
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 	#TODO: keyboard controls, alias name and alias tag separately, no option tag
 
@@ -60,6 +63,8 @@ PAIR_KEY_NAMES = {
 	'IMAGE_BACKGROUND_COLOR_ONE'    : PairKey.IMAGE_BACKGROUND_COLOR_ONE,
 	'IMAGE_BACKGROUND_COLOR_TWO'    : PairKey.IMAGE_BACKGROUND_COLOR_TWO,
 	'IMAGE_BACKGROUND_SQUARE_WIDTH' : PairKey.IMAGE_BACKGROUND_SQUARE_WIDTH,
+	'KEYBIND'                       : PairKey.KEYBIND,
+	'IMAGE_TAGS_ENTRY'              : PairKey.IMAGE_TAGS_ENTRY
 }
 
 class KeyValuePair:
@@ -184,18 +189,20 @@ class lexer:
 
 # Defining parser question information
 class QuestionType(Enum):
-	ENTRY_QUESTION  = 0  # Marks the beginning of a new prompt consisting of a textbox. Here, tags are entered separated by spaces.
-	SESSION_TAGS    = 1  # Displays a CHECK_QUESTION, containing all of the tags used for the current session.
-	NAME_QUESTION   = 2  # Displays an ENTRY_QUESTION that sets the name/title of the post. In most boorus other than Gelbooru 0.1, this is ignored.
-	SOURCE_QUESTION = 3  # Displays an ENTRY_QUESTION that sets the original source of the work.
-	SAFETY_QUESTION = 4  # Displays a RADIO_QUESTION that sets the content rating to 'Safe', 'Questionable', or 'Explicit'.
+	ENTRY_QUESTION   = 0 # Marks the beginning of a new prompt consisting of a textbox. Here, tags are entered separated by spaces.
+	SESSION_TAGS     = 1 # Displays a CHECK_QUESTION, containing all of the tags used for the current session.
+	NAME_QUESTION    = 2 # Displays an ENTRY_QUESTION that sets the name/title of the post. In most boorus other than Gelbooru 0.1, this is ignored.
+	SOURCE_QUESTION  = 3 # Displays an ENTRY_QUESTION that sets the original source of the work.
+	SAFETY_QUESTION  = 4 # Displays a RADIO_QUESTION that sets the content rating to 'Safe', 'Questionable', or 'Explicit'.
+	IMAGE_TAGS_ENTRY = 5 # Displays an ENTRY_QUESTION with the current tags of the image.
 
 QuestionTypeLookup = {
 	PairKey.ENTRY_QUESTION  : QuestionType.ENTRY_QUESTION,
 	PairKey.SESSION_TAGS    : QuestionType.SESSION_TAGS,
 	PairKey.NAME_QUESTION   : QuestionType.NAME_QUESTION,
 	PairKey.SOURCE_QUESTION : QuestionType.SOURCE_QUESTION,
-	PairKey.SAFETY_QUESTION : QuestionType.SAFETY_QUESTION
+	PairKey.SAFETY_QUESTION : QuestionType.SAFETY_QUESTION,
+	PairKey.IMAGE_TAGS_ENTRY : QuestionType.IMAGE_TAGS_ENTRY,
 }
 
 class OptionQuestionType(Enum):
@@ -237,7 +244,7 @@ class ColorError(TemplateError):
 	pass
 
 class color:
-	def _ParseHexTriplet(text, line, col):
+	def _ParseHexTriplet(self, text, line, col):
 		if len(text) != 7:
 			raise ColorError("Value should follow format '#XXXXXX'; exactly 7 characters, with arbitrary whitespace before and after.", line, col)
 		try:
@@ -246,26 +253,30 @@ class color:
 			self.blue = float( int(text[5:7], 16) ) / 255.0
 		except ValueError as err:
 			raise ColorError(err, line, col)
-	def _ParseParamQuad(text, line, col):
+	def _CopyColor(self, a, b, c):
+		"Copy the three arguments to a tuple, and return it."
+		return (a, b, c)
+	def _ParseParamQuad(self, text, line, col):
 		inputs = text.split()
 		if len(inputs) != 4:
 			raise ColorError("Value should follow format: '<name> <value 1> <value 2> <value 3>'.", line, col)
-		values = list(3)
+		values = [0] * 3
 		if inputs[0] == 'rgb':
 			dividers = [255.0, 255.0, 255.0]
 			names = ['red', 'green', 'blue']
-			conv = tuple
+			conv = self._CopyColor
 		elif inputs[0] == 'hsv':
 			dividers = [360.0, 100.0, 100.0]
 			names = ['hue', 'saturation', 'value']
-			conv = hsv_to_rgb
+			conv = colorsys.hsv_to_rgb
 		elif inputs[0] == 'hsl':
 			dividers = [360.0, 100.0, 100.0]
 			names = ['hue', 'saturation', 'lightness']
-			conv = hsl_to_rgb
+			conv = colorsys.hsl_to_rgb
 		else:
 			raise ColorError(''.join( ("Color type must be 'rgb', 'hsv', or 'hsl'. '", inputs[0], "' is not valid." ) ), line, col)
-		for i, n, v, d in enumerate( zip(names, inputs, dividers) ):
+		i = 0
+		for n, v, d in zip(names, inputs[1:], dividers):
 			try:
 				fv = float(v)
 			except ValueError as err:
@@ -275,6 +286,7 @@ class color:
 			elif fv < 0.0:
 				raise ColorError(''.join( ("Value ", str(i), " (", n, ") of '", v, "' must be less than '", str(d), "' and non-negative." ) ), line, col)
 			values[i] = float(v) / d
+			i += 1
 		self.red, self.green, self.blue = conv(values[0], values[1], values[2])
 	def __init__(self, text, line, col):
 		self.red = None
@@ -287,7 +299,7 @@ class color:
 			self._ParseHexTriplet(cleaned, line, col)
 		else:
 			self._ParseParamQuad(cleaned, line, col)
-	def __bytearray__(self):
+	def ToBytearray(self):
 		output = bytearray(3)
 		output[0] = int(self.red * 255.0)
 		output[1] = int(self.green * 255.0)
@@ -354,6 +366,8 @@ class parser:
 		self.BackgroundColor2 = DEFAULT_COLOR2_PIXEL
 		self.BackgroundSquareWidth = DEFAULT_SQUARE_WIDTH
 
+		self.keybinds = []
+
 		self.output = [] # Output array of question objects
 	def _IsOptionQuestionPrepared(self):
 		"Return True if the state is NORMAL or if the state is OPTION_QUESTION and there is at least one option entry in its array."
@@ -363,7 +377,7 @@ class parser:
 		   self._state == ParserState.ALIAS_FROM  or\
 		   self._state == ParserState.ALIAS_TO:
 			return False
-		if len(self.output[-1].options) == 0:
+		if not self.output[-1].options:
 			return False
 		else:
 			return True
@@ -430,7 +444,8 @@ class parser:
 			 token.key == PairKey.NAME_QUESTION   or\
 			 token.key == PairKey.SOURCE_QUESTION or\
 			 token.key == PairKey.SAFETY_QUESTION or\
-			 token.key == PairKey.SESSION_TAGS:
+			 token.key == PairKey.SESSION_TAGS    or\
+			 token.key == PairKey.IMAGE_TAGS_ENTRY:
 			self._AddQuestion(token)
 		elif token.key == PairKey.OPTION_NAME:
 			self._AddOptionName(token)
@@ -481,14 +496,17 @@ class parser:
 			self._AddAliasTagFrom(token)
 		elif token.key == PairKey.ALIAS_TAG_TO:
 			self._AddAliasTagTo(token)
-		elif token.key == PairKey.IMAGE_BACKGROUND_COLOR_ONE or\
-			 token.key == PairKey.IMAGE_BACKGROUND_COLOR_TWO:
-			self.BackgroundColor1 = bytearray( color(token.value, token.line, token.col) )
-		else: #token.key == PairKey.IMAGE_BACKGROUND_SQUARE_WIDTH
+		elif token.key == PairKey.IMAGE_BACKGROUND_COLOR_ONE:
+			self.BackgroundColor1 = color(token.value, token.line, token.col).ToBytearray()
+		elif token.key == PairKey.IMAGE_BACKGROUND_COLOR_TWO:
+			self.BackgroundColor2 = color(token.value, token.line, token.col).ToBytearray()
+		elif token.key == PairKey.IMAGE_BACKGROUND_SQUARE_WIDTH:
 			try:
 				self.BackgroundSquareWidth = int(token.value)
 			except ValueError:
 				raise ParserError(''.join( ("Failed to convert background square width '", token.value, "' to integer.") ), token.line, token.col)
+		else: #token.key == PairKey.KEYBIND
+			self.keybinds.append(token.value)
 	def parse(self, string):
 		"Parse the input string and leave the result in the output array."
 		self._lexer.parse(string)

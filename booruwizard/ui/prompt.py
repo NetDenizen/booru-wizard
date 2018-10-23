@@ -1,11 +1,6 @@
 import wx
 from pubsub import pub
 
-from booruwizard.lib.tag import tag, TagsContainer
-from booruwizard.lib.template import question, option, OptionQuestion, QuestionType, OptionQuestionType
-from booruwizard.lib.imagereader import ManagedImage, ImageReader
-from booruwizard.lib.fileops import safety, FileData, FileManager
-
 class QuestionDisplayComponent(wx.Panel):  # This class should never be used on its own
 	def _OnIndexImage(self, message, arg2=None):
 		"Change the index index to the one specified in the event, if possible."
@@ -54,12 +49,14 @@ class QuestionLabel(QuestionDisplayComponent):
 		self.IndexEntry.SetValue( str(self.positions[self.pos] + 1) )
 		self.IndexLabel.SetLabel( ''.join( ( ' /', str( len(self.questions) ) ) ) )
 	def _OnIndexEntry(self, e):
-		"Send a LEVT_INDEX_IMAGE event, if the index value can be converted to an Int; otherwise, reset labels."
+		"Send an IndexQuestion event, if the index value can be converted to an Int; otherwise, reset labels."
 		try:
 			pub.sendMessage("IndexQuestion", message=int( self.IndexEntry.GetValue() ) - 1)
 		except ValueError:
 			self._set()
 		e.Skip()
+	def _OnFocusQuestionIndex(self, message, arg2=None):
+		self.IndexEntry.SetFocus()
 	def __init__(self, parent, NumImages, questions):
 		QuestionDisplayComponent.__init__(self, parent)
 
@@ -88,11 +85,14 @@ class QuestionLabel(QuestionDisplayComponent):
 		pub.subscribe(self._OnRightImage, "RightImage")
 		pub.subscribe(self._OnLeftQuestion, "LeftQuestion")
 		pub.subscribe(self._OnRightQuestion, "RightQuestion")
+		pub.subscribe(self._OnFocusQuestionIndex, "FocusQuestionIndex")
 
 class QuestionPanel(QuestionDisplayComponent):
 	def _set(self):
 		"Set body for the question at pos."
 		self.body.SetValue(self.questions[ self.positions[self.pos] ].text)
+	def _OnFocusPromptBody(self, message, arg2=None):
+		self.body.SetFocus()
 	#TODO: Roll these into a function or otherwise cleanup
 	def __init__(self, parent, NumImages, questions):
 		QuestionDisplayComponent.__init__(self, parent)
@@ -118,6 +118,7 @@ class QuestionPanel(QuestionDisplayComponent):
 		pub.subscribe(self._OnRightImage, "RightImage")
 		pub.subscribe(self._OnLeftQuestion, "LeftQuestion")
 		pub.subscribe(self._OnRightQuestion, "RightQuestion")
+		pub.subscribe(self._OnFocusPromptBody, "FocusPromptBody")
 
 class PositionButtons(wx.Panel):
 	def _OnLeftImage(self, e):
