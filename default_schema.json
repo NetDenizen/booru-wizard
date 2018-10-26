@@ -23,6 +23,13 @@
           "type": "string",
           "enum": ["s", "q", "e"]
         },
+		"TagStrings": {
+          "description": "Array of space-separated strings each representing a tag. The index of each string represents the internal level of those tags. '1' is automatically set, and '2' is manually set. Manual settings cannot be overridden by automatic ones.",
+		  "type": "array",
+		  "maxItems": 2,
+		  "minItems": 1,
+		  "items": {"type": "string"}
+		},
         "tags": {
           "description": "Lookup table of tag names and their internal 'level'. '1' is automatically set, and '2' is manually set. Manual settings cannot be overridden by automatic ones.",
           "type": "object",

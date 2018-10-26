@@ -157,9 +157,22 @@ class FileData:
 		source = obj.get('source', None)
 		if source is not None:
 			self.SetSource(source)
+		ContainerSet = False
+		TagStrings = obj.get('TagStrings', None)
+		if TagStrings is not None:
+			if not ContainerSet:
+				self.tags = TagsContainer()
+				ContainerSet = True
+			for l, s in enumerate(TagStrings, start=1):
+				NewTags = TagsContainer()
+				NewTags.SetString(s, l)
+				self.tags.SetContainer(NewTags)
+				self.SetConditionalInitTags( NewTags.ReturnDict() )
 		tags = obj.get('tags', None)
 		if tags is not None:
-			self.tags = TagsContainer()
+			if not ContainerSet:
+				self.tags = TagsContainer()
+				ContainerSet = True
 			self.tags.SetDict(tags)
 			self.SetConditionalInitTags(tags)
 		rating = obj.get('rating', None)
@@ -176,10 +189,10 @@ class FileData:
 	def DataCallback(self):
 		"Return the data fields formatted as a JSON string."
 		obj = { self.path :
-				{ 'name'   : self.name,
-				  'source' : self.source,
-				  'rating' : SAFETY_VALUES_LOOKUP[self.rating],
-				  'tags'   : self.tags.ReturnDict()
+				{ 'name'       : self.name,
+				  'source'     : self.source,
+				  'rating'     : SAFETY_VALUES_LOOKUP[self.rating],
+				  'TagStrings' : self.tags.ReturnOccurrenceStrings()
 				}
 			  }
 		return json.dumps(obj)
