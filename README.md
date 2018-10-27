@@ -30,9 +30,9 @@ These basic steps may be followed to get both the wizard software, and the uploa
 
 1. Download the packaged version for your respective operating system. These links will be updated on each release:
 
-   * [Windows 64-bit](https://github.com/NetDenizen/booru-wizard/releases/download/0.2/booru-wizard-0.2-x86_64-windows.zip)
-   * [Windows 32-bit](https://github.com/NetDenizen/booru-wizard/releases/download/0.2/booru-wizard-0.2-x86-windows.zip)
-   * [Linux 64-bit](https://github.com/NetDenizen/booru-wizard/releases/download/0.2/booru-wizard-0.2-x86_64-linux.tar.gz)
+   * [Windows 64-bit](https://github.com/NetDenizen/booru-wizard/releases/download/0.3/booru-wizard-0.3-x86_64-windows.zip)
+   * [Windows 32-bit](https://github.com/NetDenizen/booru-wizard/releases/download/0.3/booru-wizard-0.3-x86-windows.zip)
+   * [Linux 64-bit](https://github.com/NetDenizen/booru-wizard/releases/download/0.3/booru-wizard-0.3-x86_64-linux.tar.gz)
 
 2. Extract the archive to the directory of your choice.
 
@@ -56,7 +56,7 @@ These basic steps may be followed to get both the wizard software, and the uploa
 
 The basic interface of the software is as follows; each element is annotated with a green number:
 
-![screenshot](https://i.imgur.com/3EZ6VYU.png)
+![screenshot](https://i.imgur.com/IQuJNa9.png)
 
 The image is divided into 3 panes, which can be resized within the window, by click-and-dragging the space between them. Note that text boxes with the same color as the background are not editable.
 
@@ -68,25 +68,27 @@ The image is divided into 3 panes, which can be resized within the window, by cl
 
 4. The number of the current question.
 
-5. The current image is overlaid on a black square.
+5. The resolution of the current image.
 
-6. The name of the current image.
+6. The current image is overlaid on checkered transparency background.
 
-7. The number of the current image. This can be changed to select an arbitrary one.
+7. The name of the current image.
 
-8. The instructions or prompt for the current question are in this text box.
+8. The number of the current image. This can be changed to select an arbitrary one.
 
-9. The number of the current question. This can be changed to select an arbitrary one.
+9. The instructions or prompt for the current question are in this text box.
 
-10. Change to the 'left', or previous image.
+10. The number of the current question. This can be changed to select an arbitrary one.
 
-11. Change to the 'left', or previous question.
+11. Change to the 'left', or previous image.
 
-11. Change to the 'right', or previous image.
+12. Change to the 'left', or previous question.
 
-13. Change to the 'right', or previous question.
+13. Change to the 'right', or previous image.
 
-14. The field in which the prompt at element 8 is filled. It can either be a text box, checklist, or radio-buttons.
+14. Change to the 'right', or previous question.
+
+15. The field in which the prompt at element 8 is filled. It can either be a text box, checklist, or radio-buttons.
 
 ## Building and Dependencies
 
@@ -116,11 +118,9 @@ There are a number of features and changes which I consider for this software. T
 
 * The displayed image is resized to fit its area and the algorithm used for this will distort it, somewhat. wxPython provides multiple choices of algorithm, and I hard-coded in the highest quality, but slowest one. Users with less powerful computers might benefit from the ability to change this.
 
-* A major feature I intend to add is the ability to control the software through keyboard shortcuts. Ideally, it would be usable without ever touching the mouse. These shortcuts could be set from the configuration file.
-
 * A color picker might be added to lend less ambiguity to the process of determining colors in images. A number of colors would be specified in the configuration file, and upon mousing over or clicking a pixel in the image, the closest 'match' among these colors would be shown.
 
-* Especially in the case of imagesets, I consider that the same sequence of tags might be frequently repeated between multiple images. This raises the question as to if it should be possible to copy tags from one image to another. If not directly implemented, a string containing all tags could be presented for copy-and-pasting.
+* Especially in the case of imagesets, I consider that the same sequence of tags might be frequently repeated between multiple images. This raises the question as to if it should be possible to copy tags from one image to another. If not directly implemented, a string containing all tags, in a similar vein to the SESSION_TAGS option can be copy-and-pasted.
 
 * I've considered adding more features to the image-viewer itself, such as the ability to zoom, and the ability to display animation.
 
@@ -128,9 +128,7 @@ There are a number of features and changes which I consider for this software. T
 
 * A scrollable menu of thumbnails for each image, which can be selected to change to a certain image might be handy for navigation. In the current state of the software, the user would need to remember the images by number, alone, to navigate to a specific one.
 
-* At this point, the UI is a bit rough, in that there's not much empty space to separate or align the elements. That should definitely be added at some point. The 'sashes' which are dragged to resize the window panes are also a bit poorly defined. I can probably change that.
-
-* The image is currently overlaid on a black background. If transparency is present, this might cause a measure of confusion to the user, so I will consider changing this to the standard alternating gray boxes pattern.
+* The 'sashes' which are dragged to resize the window panes are also a bit poorly defined. I can probably change that. There also appears to be an issue with selections being entirely hidden, rather than highlighted in the uneditable fields (7 and 9).
 
 * Normally, the software periodically updates its output files, in case it suddenly crashes before its normal closing procedure would be done. Currently, this process runs in the background without any feedback to the user. I consider adding some kind of indication for it.
 
