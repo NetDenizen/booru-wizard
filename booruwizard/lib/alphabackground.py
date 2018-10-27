@@ -20,26 +20,29 @@ class TransparencyBackground:
 			memmove(byref(dst, offset), src, SrcLen)
 			offset += SrcLen
 		return offset
-	def _RenderStrip(self, width, pixel1, pixel2):
+	def _RenderStrip(self, width, pixel1, pixel2, square1, square2):
 		SquareWidth = self.SquareWidth
+		SquareLen = sizeof(square1)
 		_RepeatMove = self._RepeatMove
 
 		BytesWidth = width * 3
-		offset = 0
 		strip = (c_ubyte * BytesWidth)()
+
 		FullSquares = width // SquareWidth
 		LeftoverPixels = width % SquareWidth
 		StartLeftoverPixels = LeftoverPixels // 2
 		EndLeftoverPixels = StartLeftoverPixels + (LeftoverPixels % 2)
-		offset = _RepeatMove(offset, strip, pixel1, StartLeftoverPixels)
-		CurrentColor = pixel2
+
+		offset = _RepeatMove(0, strip, pixel1, StartLeftoverPixels)
+		CurrentColor = square2
 		for s in range(FullSquares):
-			offset = _RepeatMove(offset, strip, CurrentColor, SquareWidth)
-			if CurrentColor == pixel1:
-				CurrentColor = pixel2
+			memmove(byref(strip, offset), CurrentColor, SquareLen)
+			offset += SquareLen
+			if CurrentColor == square1:
+				CurrentColor = square2
 			else:
-				CurrentColor = pixel1
-		if CurrentColor == pixel1:
+				CurrentColor = square1
+		if CurrentColor == square1:
 			_RepeatMove(offset, strip, pixel1, EndLeftoverPixels)
 		else:
 			_RepeatMove(offset, strip, pixel2, EndLeftoverPixels)
@@ -63,8 +66,13 @@ class TransparencyBackground:
 		Color2Pixel = self.Color2Pixel
 		SquareWidth = self.SquareWidth
 
-		SingleStrip1 = _RenderStrip(width, Color1Pixel, Color2Pixel)
-		SingleStrip2 = _RenderStrip(width, Color2Pixel, Color1Pixel)
+		StripSquare1 = (c_ubyte * 3 * SquareWidth)()
+		StripSquare2 = (c_ubyte * 3 * SquareWidth)()
+		_RepeatMove(0, StripSquare1, Color1Pixel, SquareWidth)
+		_RepeatMove(0, StripSquare2, Color2Pixel, SquareWidth)
+
+		SingleStrip1 = _RenderStrip(width, Color1Pixel, Color2Pixel, StripSquare1, StripSquare2)
+		SingleStrip2 = _RenderStrip(width, Color2Pixel, Color1Pixel, StripSquare2, StripSquare1)
 
 		RowLen = sizeof(SingleStrip1) * SquareWidth
 		SingleRow1 = (c_ubyte * RowLen)()
