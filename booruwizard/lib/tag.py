@@ -129,14 +129,12 @@ class TagsContainer:
 	def ReturnOccurrenceStrings(self):
 		"Return all tags with 1 or more occurrences, as a list of ordered space-separated strings, each representing the tags associated with each number of occurrences."
 		OutputLists = []
-		pos = -1
 		for t in self.tags:
 			if t.occurrences < 1:
 				continue
 			if t.occurrences > len(OutputLists):
-				pos += 1
 				OutputLists.append( list() )
-			OutputLists[pos].append(t.name)
+			OutputLists[t.occurrences - 1].append(t.name)
 		return [' '.join(l) for l in OutputLists]
 
 class ConditionalTagger:
