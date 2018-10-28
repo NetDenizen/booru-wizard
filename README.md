@@ -72,23 +72,23 @@ The image is divided into 3 panes, which can be resized within the window, by cl
 
 6. The current image is overlaid on checkered transparency background.
 
-7. The name of the current image.
+7. The name of the current image. The default keybind to select the field is F9.
 
-8. The number of the current image. This can be changed to select an arbitrary one.
+8. The number of the current image. This can be changed to select an arbitrary one. The default keybind to select the field is F6.
 
-9. The instructions or prompt for the current question are in this text box.
+9. The instructions or prompt for the current question are in this text box. The default keybind to select the field is F8.
 
-10. The number of the current question. This can be changed to select an arbitrary one.
+10. The number of the current question. This can be changed to select an arbitrary one. The default keybind to select the field is F7.
 
-11. Change to the 'left', or previous image.
+11. Change to the 'left', or previous image. Default equivalent keybind is F1.
 
-12. Change to the 'left', or previous question.
+12. Change to the 'left', or previous question. Default equivalent keybind is F2.
 
-13. Change to the 'right', or previous image.
+13. Change to the 'right', or next image. Default equivalent keybind is F3.
 
-14. Change to the 'right', or previous question.
+14. Change to the 'right', or next question. Default equivalent keybind is F4.
 
-15. The field in which the prompt at element 8 is filled. It can either be a text box, checklist, or radio-buttons.
+15. The field in which the prompt at element 8 is filled. It can either be a text box, checklist, or radio-buttons. The default keybind to accept it is F5.
 
 ## Building and Dependencies
 
