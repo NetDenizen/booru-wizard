@@ -275,15 +275,21 @@ class ImageTagsEntry(EntryBase):
 		"Update the current entry text according to which tags can actually be found in the output file."
 		self.OutputFile.lock()
 		self.entry.ChangeValue( self.OutputFile.tags.ReturnString() )
+		self.CurrentString = self.OutputFile.tags.ReturnStringList()
 		self.OutputFile.unlock()
 	def _UpdateTags(self):
 		"Subtract the previously entered tag string and add the new one"
 		self.OutputFile.PrepareChange()
 		self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		for s in self.entry.GetValue().split():
-			self.OutputFile.SetConditionalTags(s)
-		self.OutputFile.tags = TagsContainer()
-		self.OutputFile.tags.SetString( self.entry.GetValue(), 2 )
+			if s not in self.CurrentString:
+				self.OutputFile.tags.set(s, 2)
+				self.OutputFile.SetConditionalTags(s)
+		for s in self.CurrentString:
+			if s not in self.entry.GetValue().split():
+				self.OutputFile.tags.clear(s, 2)
+				self.OutputFile.ClearConditionalTags(s)
+		self.CurrentString = self.entry.GetValue().split()
 		self.OutputFile.SetTaglessTags( self.entry.GetValue().split() )
 		self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		self.OutputFile.FinishChange()
@@ -297,6 +303,7 @@ class ImageTagsEntry(EntryBase):
 		self.OutputFile = None # File data object
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.CurrentString = None
 
 		self.sizer.Add(self.entry, 1, wx.ALIGN_CENTER | wx.EXPAND)
 		self.SetSizer(self.sizer)
