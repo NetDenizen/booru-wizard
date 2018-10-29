@@ -2,6 +2,7 @@ import wx
 import wx.lib.scrolledpanel
 from pubsub import pub
 
+from booruwizard.lib.fileops import safety
 from booruwizard.lib.tag import TagsContainer
 from booruwizard.lib.template import QuestionType, OptionQuestionType
 
