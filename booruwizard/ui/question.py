@@ -303,7 +303,7 @@ class ImageTagsEntry(EntryBase):
 		self.OutputFile = None # File data object
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
-		self.CurrentString = None
+		self.CurrentString = []
 
 		self.sizer.Add(self.entry, 1, wx.ALIGN_CENTER | wx.EXPAND)
 		self.SetSizer(self.sizer)
