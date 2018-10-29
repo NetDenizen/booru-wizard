@@ -75,7 +75,7 @@ class ImagePanel(wx.Panel):
 
 		self.pos = 0 # Position in bitmaps
 		self.bitmaps = ImageReader(MaxBufSize)
-		self.ResolutionDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT | wx.LEFT) # Displays the resolution of the current image
+		self.ResolutionDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays the resolution of the current image
 		self.image = ImageDisplay(self, BackgroundManager)
 		self.RightPanelDummy = wx.Window(self)
 		self.LeftPaneSizer = wx.BoxSizer(wx.VERTICAL)

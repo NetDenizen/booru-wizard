@@ -451,7 +451,8 @@ class NameQuestion(SingleStringEntry):
 		self.checkbox = wx.CheckBox(self, label= 'Use this name')
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-		self.sizer.Add(self.entry, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.Add(self.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(1)
 		self.sizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
 		self.SetSizer(self.sizer)
 
@@ -493,7 +494,8 @@ class SourceQuestion(SingleStringEntry):
 		self.checkbox = wx.CheckBox(self, label= 'Use this source')
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-		self.sizer.Add(self.entry, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.Add(self.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(1)
 		self.sizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
 		self.SetSizer(self.sizer)
 

@@ -139,6 +139,7 @@ class MainFrame(wx.Frame):
 		self.WrapperSizer.AddStretchSpacer(1)
 		self.SetSizer(self.WrapperSizer)
 
+		self.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK) )
 		size = self.GetEffectiveMinSize()
 		size.SetHeight( int( float( size.GetHeight() ) * 1.9 ) )
 		size.SetWidth( int( float( size.GetWidth() ) * 1.5 ) )
@@ -232,6 +233,7 @@ class FileDialogFrame(wx.Frame):
 		self.WrapperSizer.AddStretchSpacer(1)
 		self.SetSizer(self.WrapperSizer)
 
+		self.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK) )
 		size = self.GetEffectiveMinSize()
 		size.SetHeight( int( float( size.GetHeight() ) * 1.75 ) )
 		size.SetWidth( int( float( size.GetWidth() ) * 1.5 ) )
