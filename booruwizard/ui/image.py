@@ -38,13 +38,35 @@ class ImageDisplay(wx.Panel):
 		self.Bind(wx.EVT_PAINT, self._OnPaint)
 
 class ImagePanel(wx.Panel):
+	def _HumanSize(self, val):
+		"Return a string containing the human readable representation of size 'val'."
+		if val // 1024 == 0:
+			return ''.join( ( str(val), 'bytes' ) )
+		elif val // 1048576 == 0:
+			return ''.join( ( str( round(val / 1024.0, 3) ), 'KiB' ) )
+		else:
+			return ''.join( ( str( round(val / 1048576.0, 3) ), 'MiB' ) )
 	def _update(self):
 		"Update the current bitmap, and the information display."
-		self.image.bitmap = self.bitmaps.get(self.pos)
+		image = self.bitmaps.get(self.pos)
+		self.image.bitmap = image.image
 		if self.image.bitmap is not None:
 			size = self.image.bitmap.GetSize()
-			self.ResolutionDisplay.SetLabel( ''.join( ( 'Resolution: ', str( size.GetWidth() ), 'x', str( size.GetHeight() ) ) ) )
-			self.RightPanelDummy.SetMinSize( self.ResolutionDisplay.GetTextExtent( ''.join( ( 'Resolution: ', str( size.GetWidth() ), 'x', str( size.GetHeight() ) ) ) ) )
+			ResolutionString = ''.join( ( 'Resolution: ', str( size.GetWidth() ), 'x', str( size.GetHeight() ), ' (', str( size.GetWidth() * size.GetHeight() ), ' pixels)' ) )
+			FileSizeString = ''.join( ( 'File size: ', self._HumanSize( image.FileSize ) ) )
+			DataSizeString = ''.join( ( 'Data size: ', self._HumanSize( image.DataSize ), '/', self._HumanSize( self.bitmaps.GetCurrentBufSize() ), '/', self._HumanSize( self.bitmaps.GetMaxBufSize() ), ' (', str( self.bitmaps.GetNumOpenImages() ), ')' ) )
+			ResolutionExtent = self.ResolutionDisplay.GetTextExtent(ResolutionString)
+			FileSizeExtent = self.ResolutionDisplay.GetTextExtent(FileSizeString)
+			DataSizeExtent = self.ResolutionDisplay.GetTextExtent(DataSizeString)
+			MaxExtent = ResolutionExtent
+			if FileSizeExtent.GetWidth() > MaxExtent.GetWidth():
+				MaxExtent = FileSizeExtent
+			if DataSizeExtent.GetWidth() > MaxExtent.GetWidth():
+				MaxExtent = DataSizeExtent
+			self.ResolutionDisplay.SetLabel(ResolutionString)
+			self.FileSizeDisplay.SetLabel(FileSizeString)
+			self.DataSizeDisplay.SetLabel(DataSizeString)
+			self.RightPanelDummy.SetMinSize(MaxExtent)
 		else:
 			self.ResolutionDisplay.SetLabel('File failed to load')
 			self.RightPanelDummy.SetMinSize( self.ResolutionDisplay.GetTextExtent('File failed to load') )
@@ -76,6 +98,9 @@ class ImagePanel(wx.Panel):
 		self.pos = 0 # Position in bitmaps
 		self.bitmaps = ImageReader(MaxBufSize)
 		self.ResolutionDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays the resolution of the current image
+		self.FileSizeDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays the size of the current image
+		self.DataSizeDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays the size of the current image
+		self.DataSizeTip = wx.ToolTip('Current/Cumulative/Maximum (Number of files loaded)')
 		self.image = ImageDisplay(self, BackgroundManager)
 		self.RightPanelDummy = wx.Window(self)
 		self.LeftPaneSizer = wx.BoxSizer(wx.VERTICAL)
@@ -83,6 +108,8 @@ class ImagePanel(wx.Panel):
 		self.MainSizer = wx.BoxSizer(wx.HORIZONTAL)
 
 		self.LeftPaneSizer.Add(self.ResolutionDisplay, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.TOP | wx.LEFT)
+		self.LeftPaneSizer.Add(self.FileSizeDisplay, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.TOP | wx.LEFT)
+		self.LeftPaneSizer.Add(self.DataSizeDisplay, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.TOP | wx.LEFT)
 
 		self.RightPaneSizer.Add(self.RightPanelDummy, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT | wx.TOP | wx.RIGHT)
 
@@ -91,6 +118,7 @@ class ImagePanel(wx.Panel):
 		self.MainSizer.Add(self.RightPaneSizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.EXPAND)
 		self.SetSizer(self.MainSizer)
 
+		self.DataSizeDisplay.SetToolTip(self.DataSizeTip)
 		self.bitmaps.AddPathsList(paths)
 		self._update()
 

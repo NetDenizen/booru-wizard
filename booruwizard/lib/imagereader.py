@@ -10,26 +10,30 @@ class ManagedImage:
 	def __init__(self, path):
 		self.path = path # Path to image
 		self.image = None # WX image object
-		self.size = 0
+		self.DataSize = 0
+		self.FileSize = 0
 	def open(self):
 		"Open the image path and set the WX image object."
 		try:
 			stream = open(self.path, mode='rb')
 			self.image = wx.Image(stream)
-			self.size = os.fstat( stream.fileno() ).st_size
+			self.FileSize = os.fstat( stream.fileno() ).st_size
 			stream.close()
+			self.DataSize = len( self.image.GetDataBuffer() )
 			if not self.image.IsOk():
 				raise Exception()
 		except: # TODO: Should this be more specific?
 			self.image = None
-			self.size = 0
+			self.DataSize = 0
+			self.FileSize = 0
 	def close(self):
 		"Destroy the WX image object and set it to None"
 		if self.image is None:
 			return
 		self.image.Destroy()
 		self.image = None
-		self.size = 0
+		self.DataSize = 0
+		self.FileSize = 0
 
 class ImageReader:
 	def __init__(self, MaxBufSize):
@@ -42,12 +46,12 @@ class ImageReader:
 		if image.image is None:
 			return
 		self._OpenImages.append(image)
-		self._CurrentBufSize += image.size
+		self._CurrentBufSize += image.DataSize
 	def _add(self, path):
 		"Add path to images array and open it if there is any space remaining."
 		image = ManagedImage(path)
 		image.open()
-		if image.size != 0 and (self._CurrentBufSize + image.size <= self._MaxBufSize or len(self._OpenImages) == 0):
+		if image.DataSize != 0 and (self._CurrentBufSize + image.DataSize <= self._MaxBufSize or len(self._OpenImages) == 0):
 			self._activate(image)
 		else:
 			image.close()
@@ -58,13 +62,19 @@ class ImageReader:
 	def _CullSpace(self, size):
 		"Starting from the first index of the open images array, start closing images until their collective size is below the maximum buffer size."
 		while len(self._OpenImages) > 0 and self._CurrentBufSize - size > self._MaxBufSize:
-			self._CurrentBufSize -= self._OpenImages[0].size
+			self._CurrentBufSize -= self._OpenImages[0].DataSize
 			self._OpenImages[0].close()
 			self._OpenImages.pop(0)
 	def get(self, idx):
 		"Return WX image object for the image managed at the index."
 		if self.images[idx].image is None:
 			self.images[idx].open()
-			self._CullSpace( self.images[idx].size )
+			self._CullSpace(self.images[idx].DataSize)
 			self._activate(self.images[idx])
-		return self.images[idx].image
+		return self.images[idx]
+	def GetMaxBufSize(self):
+		return self._MaxBufSize
+	def GetCurrentBufSize(self):
+		return self._CurrentBufSize
+	def GetNumOpenImages(self):
+		return len(self._OpenImages)
