@@ -118,7 +118,7 @@ def GetDirFiles(DirPath):
 	"Function to get all file paths from a directory."
 	try:
 		output = []
-		for n in os.listdir(DirPath):
+		for n in sorted( os.listdir(DirPath) ):
 			f = os.path.join(DirPath, n)
 			if os.path.isfile(f):
 				output.append(f)
