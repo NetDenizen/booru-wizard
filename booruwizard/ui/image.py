@@ -43,9 +43,9 @@ class ImagePanel(wx.Panel):
 		if val // 1024 == 0:
 			return ''.join( ( str(val), 'bytes' ) )
 		elif val // 1048576 == 0:
-			return ''.join( ( str( round(val / 1024.0, 3) ), 'KiB' ) )
+			return ''.join( ( str( round(val / 1000.0, 3) ), 'kB' ) )
 		else:
-			return ''.join( ( str( round(val / 1048576.0, 3) ), 'MiB' ) )
+			return ''.join( ( str( round(val / 1000000.0, 3) ), 'MB' ) )
 	def _update(self):
 		"Update the current bitmap, and the information display."
 		image = self.bitmaps.get(self.pos)
