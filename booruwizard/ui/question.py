@@ -2,6 +2,8 @@ import wx
 import wx.lib.scrolledpanel
 from pubsub import pub
 
+from kanji_to_romaji import kanji_to_romaji
+
 from booruwizard.lib.fileops import safety
 from booruwizard.lib.tag import TagsContainer
 from booruwizard.lib.template import QuestionType, OptionQuestionType
@@ -251,6 +253,13 @@ class EntryQuestion(EntryBase):
 		else:
 			self.pos -= 1
 		self._UpdateEntryText()
+	def _OnRomanize(self, e):
+		"Replace Kana characters of all tags with their Romaji equivalents, using kanji_to_romaji."
+		self.entry.ChangeValue( ' '.join(
+										 ( kanji_to_romaji(f).replace(' ', '_') for f in self.entry.GetValue().split() )
+										)
+							  )
+		self._UpdateTags()
 	def __init__(self, parent, NumImages, TagsTracker):
 		EntryBase.__init__(self, parent=parent)
 
@@ -260,11 +269,19 @@ class EntryQuestion(EntryBase):
 		self.pos = 0 # Position in entry strings
 		self.EntryStrings = [""] * NumImages # The contents of the entry boxes must be saved between images.
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
-		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
+		self.RomanizeButtonTip = wx.ToolTip('Convert Kana characters of all tags to their Romaji equivalents.')
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
 
 		self.sizer.Add(self.entry, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.RomanizeButton, 0, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
+		self.sizer.AddStretchSpacer(23)
 		self.SetSizer(self.sizer)
 
+		self.Bind( wx.EVT_BUTTON, self._OnRomanize, id=self.RomanizeButton.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnEntry, id=self.entry.GetId() )
 		self.Bind( wx.EVT_WINDOW_DESTROY, self._OnWindowDestroy, id=self.GetId() ) # TODO Should we bind to EVT_SET_FOCUS too?
 		pub.subscribe(self._OnIndexImage, "IndexImage")
