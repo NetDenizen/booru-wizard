@@ -104,6 +104,8 @@ Dependencies should not be an issue to the end-user, since the software will be 
 
 * jsonschema
 
+* kanji_to_romaji3 (A Python 3 port I made of the kanji_to_romaji library, which can be found here: https://github.com/NetDenizen/kanji_to_romaji3)
+
 To build with PyInstaller, use this command from the root directory of the repository:
 
 `pyinstaller --clean --onefile --windowed --strip --name booru-wizard main.py`
