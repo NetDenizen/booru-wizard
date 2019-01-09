@@ -269,12 +269,12 @@ class color:
 			dividers = [360.0, 100.0, 100.0]
 			names = ['hue', 'saturation', 'value']
 			conv = colorsys.hsv_to_rgb
-		elif inputs[0] == 'hsl':
+		elif inputs[0] == 'hls':
 			dividers = [360.0, 100.0, 100.0]
-			names = ['hue', 'saturation', 'lightness']
-			conv = colorsys.hsl_to_rgb
+			names = ['hue', 'lightness', 'saturation']
+			conv = colorsys.hls_to_rgb
 		else:
-			raise ColorError(''.join( ("Color type must be 'rgb', 'hsv', or 'hsl'. '", inputs[0], "' is not valid." ) ), line, col)
+			raise ColorError(''.join( ("Color type must be 'rgb', 'hsv', or 'hls'. '", inputs[0], "' is not valid." ) ), line, col)
 		i = 0
 		for n, v, d in zip(names, inputs[1:], dividers):
 			try:
