@@ -187,6 +187,22 @@ class EntryBase(wx.Panel):  # This class should never be used on its own
 		"Bound to EVT_WINDOW_DESTROY; update tags."
 		self._UpdateTags()
 		e.Skip()
+	def _OnRomanize(self, e):
+		"Replace Kana characters of selected parts of the string with their Romaji equivalents, using kanji_to_romaj, and update the tags accordingly."
+		# XXX: Use this pattern in multiline controls, with great caution.
+		indices = list( self.entry.GetSelection() )
+		text = self.entry.GetValue()
+		if indices[0] == indices[1]:
+			indices[0] = 0
+			indices[1] = len(text)
+		NewText = ' '.join(
+						   (
+							kanji_to_romaji(f).replace(' ', '_')
+							for f in text[ indices[0]:indices[1] ].split(' ')
+						   )
+						  )
+		self.entry.ChangeValue( ''.join( ( text[ 0:indices[0] ], NewText, text[indices[1]:] ) ) )
+		self._UpdateTags()
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent=parent)
 
@@ -253,22 +269,6 @@ class EntryQuestion(EntryBase):
 		else:
 			self.pos -= 1
 		self._UpdateEntryText()
-	def _OnRomanize(self, e):
-		"Replace Kana characters of all tags with their Romaji equivalents, using kanji_to_romaji."
-		# XXX: Use this pattern in multiline controls, with great caution.
-		indices = list( self.entry.GetSelection() )
-		text = self.entry.GetValue()
-		if indices[0] == indices[1]:
-			indices[0] = 0
-			indices[1] = len(text)
-		NewText = ' '.join(
-						   (
-							kanji_to_romaji(f).replace(' ', '_')
-							for f in text[ indices[0]:indices[1] ].split(' ')
-						   )
-						  )
-		self.entry.ChangeValue( ''.join( ( text[ 0:indices[0] ], NewText, text[indices[1]:] ) ) )
-		self._UpdateTags()
 	def __init__(self, parent, NumImages, TagsTracker):
 		EntryBase.__init__(self, parent=parent)
 
@@ -329,12 +329,20 @@ class ImageTagsEntry(EntryBase):
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
 		self.OutputFile = None # File data object
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
-		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
+		self.RomanizeButtonTip = wx.ToolTip('Convert Kana characters of all tags to their Romaji equivalents.')
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
 		self.CurrentString = []
 
+		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
+
 		self.sizer.Add(self.entry, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.RomanizeButton, 0, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
+		self.sizer.AddStretchSpacer(23)
 		self.SetSizer(self.sizer)
 
+		self.Bind( wx.EVT_BUTTON, self._OnRomanize, id=self.RomanizeButton.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnEntry, id=self.entry.GetId() )
 		self.Bind( wx.EVT_WINDOW_DESTROY, self._OnWindowDestroy, id=self.GetId() ) # TODO Should we bind to EVT_SET_FOCUS too?
 
@@ -431,6 +439,21 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 		"Set the value."
 		self._SetValue()
 		e.Skip()
+	def _OnRomanize(self, e):
+		"Replace Kana characters of selected parts of the string with their Romaji equivalents, using kanji_to_romaj, and update the tags accordingly."
+		# XXX: Use this pattern in multiline controls, with great caution.
+		indices = list( self.entry.GetSelection() )
+		text = self.entry.GetValue()
+		if indices[0] == indices[1]:
+			indices[0] = 0
+			indices[1] = len(text)
+		self.entry.ChangeValue( ''.join( ( text[ 0:indices[0] ],
+										   kanji_to_romaji(text[ indices[0]:indices[1] ]),
+										   text[indices[1]:]
+										 )
+									   )
+							  )
+		self._UpdateTags()
 	def load(self, OutputFile):
 		"Initialize the check question for a certain case."
 		self.OutputFile = OutputFile # File data object
@@ -475,14 +498,25 @@ class NameQuestion(SingleStringEntry):
 		self.OutputFile = None # File data object
 		self.OrigValue = None # The original value of source
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
+		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
+		self.RomanizeButtonTip = wx.ToolTip('Convert Kana characters of all tags to their Romaji equivalents.')
 		self.checkbox = wx.CheckBox(self, label= 'Use this name')
-		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.EntrySizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 
-		self.sizer.Add(self.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
-		self.sizer.AddStretchSpacer(1)
-		self.sizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
-		self.SetSizer(self.sizer)
+		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
 
+		self.EntrySizer.Add(self.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
+		self.EntrySizer.AddStretchSpacer(1)
+		self.EntrySizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
+
+		self.MainSizer.Add(self.EntrySizer, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.AddStretchSpacer(1)
+		self.MainSizer.Add(self.RomanizeButton, 0, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
+		self.MainSizer.AddStretchSpacer(23)
+		self.SetSizer(self.MainSizer)
+
+		self.Bind( wx.EVT_BUTTON, self._OnRomanize, id=self.RomanizeButton.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnChange, id=self.entry.GetId() )
 		self.Bind( wx.EVT_CHECKBOX, self._OnChange, id=self.checkbox.GetId() )
 
@@ -518,14 +552,25 @@ class SourceQuestion(SingleStringEntry):
 		self.OutputFile = None # File data object
 		self.OrigValue = None # The original value of source
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
+		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
+		self.RomanizeButtonTip = wx.ToolTip('Convert Kana characters of all tags to their Romaji equivalents.')
 		self.checkbox = wx.CheckBox(self, label= 'Use this source')
-		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.EntrySizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 
-		self.sizer.Add(self.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
-		self.sizer.AddStretchSpacer(1)
-		self.sizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
-		self.SetSizer(self.sizer)
+		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
 
+		self.EntrySizer.Add(self.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
+		self.EntrySizer.AddStretchSpacer(1)
+		self.EntrySizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
+
+		self.MainSizer.Add(self.EntrySizer, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.AddStretchSpacer(1)
+		self.MainSizer.Add(self.RomanizeButton, 0, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
+		self.MainSizer.AddStretchSpacer(23)
+		self.SetSizer(self.MainSizer)
+
+		self.Bind( wx.EVT_BUTTON, self._OnRomanize, id=self.RomanizeButton.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnChange, id=self.entry.GetId() )
 		self.Bind( wx.EVT_CHECKBOX, self._OnChange, id=self.checkbox.GetId() )
 
