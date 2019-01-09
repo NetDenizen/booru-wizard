@@ -284,10 +284,9 @@ class EntryQuestion(EntryBase):
 
 		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
 
-		self.sizer.Add(self.entry, 1, wx.ALIGN_CENTER | wx.EXPAND)
-		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.entry, 40, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(15)
 		self.sizer.Add(self.RomanizeButton, 0, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
-		self.sizer.AddStretchSpacer(23)
 		self.SetSizer(self.sizer)
 
 		self.Bind( wx.EVT_BUTTON, self._OnRomanize, id=self.RomanizeButton.GetId() )
@@ -336,10 +335,9 @@ class ImageTagsEntry(EntryBase):
 
 		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
 
-		self.sizer.Add(self.entry, 1, wx.ALIGN_CENTER | wx.EXPAND)
-		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.entry, 40, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(15)
 		self.sizer.Add(self.RomanizeButton, 0, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
-		self.sizer.AddStretchSpacer(23)
 		self.SetSizer(self.sizer)
 
 		self.Bind( wx.EVT_BUTTON, self._OnRomanize, id=self.RomanizeButton.GetId() )
@@ -511,10 +509,9 @@ class NameQuestion(SingleStringEntry):
 		self.EntrySizer.AddStretchSpacer(1)
 		self.EntrySizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
 
-		self.MainSizer.Add(self.EntrySizer, 0, wx.ALIGN_CENTER | wx.EXPAND)
-		self.MainSizer.AddStretchSpacer(1)
+		self.MainSizer.Add(self.EntrySizer, 40, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.AddStretchSpacer(15)
 		self.MainSizer.Add(self.RomanizeButton, 0, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
-		self.MainSizer.AddStretchSpacer(23)
 		self.SetSizer(self.MainSizer)
 
 		self.Bind( wx.EVT_BUTTON, self._OnRomanize, id=self.RomanizeButton.GetId() )
@@ -565,10 +562,9 @@ class SourceQuestion(SingleStringEntry):
 		self.EntrySizer.AddStretchSpacer(1)
 		self.EntrySizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
 
-		self.MainSizer.Add(self.EntrySizer, 0, wx.ALIGN_CENTER | wx.EXPAND)
-		self.MainSizer.AddStretchSpacer(1)
+		self.MainSizer.Add(self.EntrySizer, 40, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.AddStretchSpacer(15)
 		self.MainSizer.Add(self.RomanizeButton, 0, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
-		self.MainSizer.AddStretchSpacer(23)
 		self.SetSizer(self.MainSizer)
 
 		self.Bind( wx.EVT_BUTTON, self._OnRomanize, id=self.RomanizeButton.GetId() )
