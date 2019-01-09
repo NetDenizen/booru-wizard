@@ -255,10 +255,19 @@ class EntryQuestion(EntryBase):
 		self._UpdateEntryText()
 	def _OnRomanize(self, e):
 		"Replace Kana characters of all tags with their Romaji equivalents, using kanji_to_romaji."
-		self.entry.ChangeValue( ' '.join(
-										 ( kanji_to_romaji(f).replace(' ', '_') for f in self.entry.GetValue().split() )
-										)
-							  )
+		# XXX: Use this pattern in multiline controls, with great caution.
+		indices = list( self.entry.GetSelection() )
+		text = self.entry.GetValue()
+		if indices[0] == indices[1]:
+			indices[0] = 0
+			indices[1] = len(text)
+		NewText = ' '.join(
+						   (
+							kanji_to_romaji(f).replace(' ', '_')
+							for f in text[ indices[0]:indices[1] ].split(' ')
+						   )
+						  )
+		self.entry.ChangeValue( ''.join( ( text[ 0:indices[0] ], NewText, text[indices[1]:] ) ) )
 		self._UpdateTags()
 	def __init__(self, parent, NumImages, TagsTracker):
 		EntryBase.__init__(self, parent=parent)
