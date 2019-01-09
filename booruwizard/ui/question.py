@@ -510,7 +510,7 @@ class NameQuestion(SingleStringEntry):
 		self.EntrySizer.AddStretchSpacer(1)
 		self.EntrySizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
 
-		self.MainSizer.Add(self.EntrySizer, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.Add(self.EntrySizer, 0, wx.ALIGN_CENTER | wx.EXPAND)
 		self.MainSizer.AddStretchSpacer(1)
 		self.MainSizer.Add(self.RomanizeButton, 0, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
 		self.MainSizer.AddStretchSpacer(23)
@@ -564,7 +564,7 @@ class SourceQuestion(SingleStringEntry):
 		self.EntrySizer.AddStretchSpacer(1)
 		self.EntrySizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
 
-		self.MainSizer.Add(self.EntrySizer, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.Add(self.EntrySizer, 0, wx.ALIGN_CENTER | wx.EXPAND)
 		self.MainSizer.AddStretchSpacer(1)
 		self.MainSizer.Add(self.RomanizeButton, 0, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
 		self.MainSizer.AddStretchSpacer(23)
