@@ -447,13 +447,14 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 		if indices[0] == indices[1]:
 			indices[0] = 0
 			indices[1] = len(text)
-		self.entry.ChangeValue( ''.join( ( text[ 0:indices[0] ],
+		self.entry.ChangeValue( ''.join( (
+										   text[ 0:indices[0] ],
 										   kanji_to_romaji(text[ indices[0]:indices[1] ]),
 										   text[indices[1]:]
 										 )
 									   )
 							  )
-		self._UpdateTags()
+		self._SetValue()
 	def load(self, OutputFile):
 		"Initialize the check question for a certain case."
 		self.OutputFile = OutputFile # File data object
