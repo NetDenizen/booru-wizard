@@ -132,7 +132,7 @@ class TagsContainer:
 		for t in self.tags:
 			if t.occurrences < 1:
 				continue
-			if t.occurrences > len(OutputLists):
+			while t.occurrences > len(OutputLists):
 				OutputLists.append( list() )
 			OutputLists[t.occurrences - 1].append(t.name)
 		return [' '.join(l) for l in OutputLists]
