@@ -43,9 +43,9 @@ class ImagePanel(wx.Panel):
 		if val // 1024 == 0:
 			return ''.join( ( str(val), 'bytes' ) )
 		elif val // 1048576 == 0:
-			return ''.join( ( str( round(val / 1000.0, 3) ), 'kB' ) )
+			return ''.join( ( str( round(val / 1000.0, 3) ), ' kB' ) )
 		else:
-			return ''.join( ( str( round(val / 1000000.0, 3) ), 'MB' ) )
+			return ''.join( ( str( round(val / 1000000.0, 6) ), ' MB' ) )
 	def _update(self):
 		"Update the current bitmap, and the information display."
 		image = self.bitmaps.get(self.pos)
@@ -54,7 +54,7 @@ class ImagePanel(wx.Panel):
 			size = self.image.bitmap.GetSize()
 			ResolutionString = ''.join( ( 'Resolution: ', str( size.GetWidth() ), 'x', str( size.GetHeight() ), ' (', str( size.GetWidth() * size.GetHeight() ), ' pixels)' ) )
 			FileSizeString = ''.join( ( 'File size: ', self._HumanSize( image.FileSize ) ) )
-			DataSizeString = ''.join( ( 'Data size: ', self._HumanSize( image.DataSize ), '/', self._HumanSize( self.bitmaps.GetCurrentBufSize() ), '/', self._HumanSize( self.bitmaps.GetMaxBufSize() ), ' (', str( self.bitmaps.GetNumOpenImages() ), ')' ) )
+			DataSizeString = ''.join( ( 'Data size: ', self._HumanSize( image.DataSize ), ' / ', self._HumanSize( self.bitmaps.GetCurrentBufSize() ), ' / ', self._HumanSize( self.bitmaps.GetMaxBufSize() ), ' (', str( self.bitmaps.GetNumOpenImages() ), ')' ) )
 			ResolutionExtent = self.ResolutionDisplay.GetTextExtent(ResolutionString)
 			FileSizeExtent = self.ResolutionDisplay.GetTextExtent(FileSizeString)
 			DataSizeExtent = self.ResolutionDisplay.GetTextExtent(DataSizeString)
