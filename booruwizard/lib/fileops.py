@@ -197,7 +197,7 @@ class FileData:
 		TagStrings = self.tags.ReturnOccurrenceStrings()
 		if TagStrings:
 			output['TagStrings'] = TagStrings
-		return json.dumps(obj)
+		return json.dumps( obj, separators=(',',':') )
 	def GetManagedFile(self, OutputDir, PushUpdatesEnabled, ReserveCallback):
 		"Create and return associated ManagedFile object."
 		manager = ManagedFile(OutputDir, PushUpdatesEnabled, self.path, self.IsChangedCallback, self.DataCallback, ReserveCallback)
