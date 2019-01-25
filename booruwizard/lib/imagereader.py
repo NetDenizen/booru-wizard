@@ -61,7 +61,7 @@ class ImageReader:
 			self._add(p)
 	def _CullSpace(self, size):
 		"Starting from the first index of the open images array, start closing images until their collective size is below the maximum buffer size."
-		while len(self._OpenImages) > 0 and self._CurrentBufSize - size > self._MaxBufSize:
+		while len(self._OpenImages) > 0 and self._CurrentBufSize + size > self._MaxBufSize:
 			self._CurrentBufSize -= self._OpenImages[0].DataSize
 			self._OpenImages[0].close()
 			self._OpenImages.pop(0)
