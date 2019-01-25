@@ -188,13 +188,15 @@ class FileData:
 		return IsChanged
 	def DataCallback(self):
 		"Return the data fields formatted as a JSON string."
-		obj = { self.path :
-				{ 'name'       : self.name,
-				  'source'     : self.source,
-				  'rating'     : SAFETY_VALUES_LOOKUP[self.rating],
-				  'TagStrings' : self.tags.ReturnOccurrenceStrings()
-				}
-			  }
+		output = {'rating' : SAFETY_VALUES_LOOKUP[self.rating]}
+		obj = {self.path : output}
+		if self.name is not None:
+			output['name'] = self.name
+		if self.source is not None:
+			output['source'] = self.source
+		TagStrings = self.tags.ReturnOccurrenceStrings()
+		if TagStrings:
+			output['TagStrings'] = TagStrings
 		return json.dumps(obj)
 	def GetManagedFile(self, OutputDir, PushUpdatesEnabled, ReserveCallback):
 		"Create and return associated ManagedFile object."
