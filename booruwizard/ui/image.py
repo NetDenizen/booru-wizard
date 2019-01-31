@@ -46,6 +46,14 @@ class ImagePanel(wx.Panel):
 			return ''.join( ( str( round(val / 1000.0, 3) ), ' kB' ) )
 		else:
 			return ''.join( ( str( round(val / 1000000.0, 6) ), ' MB' ) )
+	def _MaxExtent(self, items, strings):
+		MaxWidth = 0
+		MaxExtent = None
+		for i, s in zip(items, strings):
+			extent = i.GetTextExtent(s)
+			if extent.GetWidth() > MaxWidth:
+				MaxExtent = extent
+		return MaxExtent
 	def _update(self):
 		"Update the current bitmap, and the information display."
 		image = self.bitmaps.get(self.pos)
@@ -55,14 +63,10 @@ class ImagePanel(wx.Panel):
 			ResolutionString = ''.join( ( 'Resolution: ', str( size.GetWidth() ), 'x', str( size.GetHeight() ), ' (', str( size.GetWidth() * size.GetHeight() ), ' pixels)' ) )
 			FileSizeString = ''.join( ( 'File size: ', self._HumanSize( image.FileSize ) ) )
 			DataSizeString = ''.join( ( 'Data size: ', self._HumanSize( image.DataSize ), ' / ', self._HumanSize( self.bitmaps.GetCurrentBufSize() ), ' / ', self._HumanSize( self.bitmaps.GetMaxBufSize() ), ' (', str( self.bitmaps.GetNumOpenImages() ), ')' ) )
-			ResolutionExtent = self.ResolutionDisplay.GetTextExtent(ResolutionString)
-			FileSizeExtent = self.ResolutionDisplay.GetTextExtent(FileSizeString)
-			DataSizeExtent = self.ResolutionDisplay.GetTextExtent(DataSizeString)
-			MaxExtent = ResolutionExtent
-			if FileSizeExtent.GetWidth() > MaxExtent.GetWidth():
-				MaxExtent = FileSizeExtent
-			if DataSizeExtent.GetWidth() > MaxExtent.GetWidth():
-				MaxExtent = DataSizeExtent
+			MaxExtent = self._MaxExtent(
+										 (self.ResolutionDisplay, self.FileSizeDisplay, self.DataSizeDisplay),
+										 (ResolutionString, FileSizeString, DataSizeString)
+									   )
 			self.ResolutionDisplay.SetLabel(ResolutionString)
 			self.FileSizeDisplay.SetLabel(FileSizeString)
 			self.DataSizeDisplay.SetLabel(DataSizeString)
