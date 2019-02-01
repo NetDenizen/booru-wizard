@@ -187,7 +187,7 @@ def main():
 		TagsTracker.AddStringList( f.tags.ReturnStringList(), 1 )
 	OutputFiles.FilesLock.release()
 
-	wizard = MainFrame(None, APPTITLE, config.MaxImageBufSize, config.output, OutputFiles, TagsTracker, BackgroundManager)
+	wizard = MainFrame(None, APPTITLE, config.MaxImageBufSize, config.DefaultImageQuality, config.output, OutputFiles, TagsTracker, BackgroundManager)
 	keybinds = KeyHandler()
 	keybinds.AddList(config.keybinds)
 	keybinds.RegisterObj(wizard)

@@ -2,7 +2,7 @@ import re
 from enum import Enum
 import colorsys
 
-from booruwizard.lib.fileops import SAFETY_NAMES_LOOKUP, DEFAULT_SAFETY, DEFAULT_MAX_OPEN_FILES, DEFAULT_UPDATE_INTERVAL, DEFAULT_MAX_IMAGE_BUFSIZE
+from booruwizard.lib.fileops import SAFETY_NAMES_LOOKUP, DEFAULT_SAFETY, DEFAULT_MAX_OPEN_FILES, DEFAULT_UPDATE_INTERVAL, DEFAULT_MAX_IMAGE_BUFSIZE, DEFAULT_IMAGE_QUALITY, IMAGE_QUALITY_LOOKUP
 from booruwizard.lib.tag import TagsContainer, ConditionalTagger
 from booruwizard.lib.alphabackground import DEFAULT_COLOR1_PIXEL, DEFAULT_COLOR2_PIXEL, DEFAULT_SQUARE_WIDTH
 
@@ -37,6 +37,7 @@ class PairKey(Enum):
 	IMAGE_BACKGROUND_SQUARE_WIDTH = 21
 	KEYBIND                       = 22
 	IMAGE_TAGS_ENTRY              = 23
+	DEFAULT_IMAGE_QUALITY         = 24
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 	#TODO: keyboard controls, alias name and alias tag separately, no option tag
 
@@ -64,7 +65,8 @@ PAIR_KEY_NAMES = {
 	'IMAGE_BACKGROUND_COLOR_TWO'    : PairKey.IMAGE_BACKGROUND_COLOR_TWO,
 	'IMAGE_BACKGROUND_SQUARE_WIDTH' : PairKey.IMAGE_BACKGROUND_SQUARE_WIDTH,
 	'KEYBIND'                       : PairKey.KEYBIND,
-	'IMAGE_TAGS_ENTRY'              : PairKey.IMAGE_TAGS_ENTRY
+	'IMAGE_TAGS_ENTRY'              : PairKey.IMAGE_TAGS_ENTRY,
+	'DEFAULT_IMAGE_QUALITY'         : PairKey.DEFAULT_IMAGE_QUALITY
 }
 
 class KeyValuePair:
@@ -361,6 +363,7 @@ class parser:
 		self.MaxOpenFiles = DEFAULT_MAX_OPEN_FILES
 		self.UpdateInterval = DEFAULT_UPDATE_INTERVAL
 		self.MaxImageBufSize = DEFAULT_MAX_IMAGE_BUFSIZE
+		self.DefaultImageQuality = DEFAULT_IMAGE_QUALITY
 
 		self.BackgroundColor1 = DEFAULT_COLOR1_PIXEL
 		self.BackgroundColor2 = DEFAULT_COLOR2_PIXEL
@@ -505,8 +508,13 @@ class parser:
 				self.BackgroundSquareWidth = int(token.value)
 			except ValueError:
 				raise ParserError(''.join( ("Failed to convert background square width '", token.value, "' to integer.") ), token.line, token.col)
-		else: #token.key == PairKey.KEYBIND
+		elif token.key == PairKey.KEYBIND:
 			self.keybinds.append(token.value)
+		else: # token.key == PairKey.DEFAULT_IMAGE_QUALITY
+			found = IMAGE_QUALITY_LOOKUP.get(token.value, None)
+			if found is None:
+				raise ParserError(''.join( ("Invalid image quality name '", token.value, "'") ), token.line, token.col)
+			self.DefaultImageQuality = found
 	def parse(self, string):
 		"Parse the input string and leave the result in the output array."
 		self._lexer.parse(string)

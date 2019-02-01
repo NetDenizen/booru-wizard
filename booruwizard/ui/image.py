@@ -27,13 +27,14 @@ class ImageDisplay(wx.Panel):
 		DiffHeight = (PanelHeight - NewHeight) / 2
 		if DiffHeight < 0:
 			DiffHeight = 0
-		image = self.bitmap.Scale(NewWidth, NewHeight, wx.IMAGE_QUALITY_HIGH) # TODO: Should we use high quality rescaling?
+		image = self.bitmap.Scale(NewWidth, NewHeight, self.quality) # TODO: Should we use high quality rescaling?
 		dc.DrawBitmap( wx.Bitmap.FromBuffer( NewWidth, NewHeight, self.BackgroundManager.get(NewWidth, NewHeight) ), DiffWidth, DiffHeight, True )
 		dc.DrawBitmap( wx.Bitmap(image), DiffWidth, DiffHeight, True )
-	def __init__(self, parent, BackgroundManager):
+	def __init__(self, parent, quality, BackgroundManager):
 		wx.Panel.__init__(self, parent=parent)
 		self.bitmap = None
 		self.BackgroundManager = BackgroundManager
+		self.quality = quality
 
 		self.Bind(wx.EVT_PAINT, self._OnPaint)
 
@@ -50,9 +51,13 @@ class ImagePanel(wx.Panel):
 		MaxWidth = 0
 		MaxExtent = None
 		for i, s in zip(items, strings):
-			extent = i.GetTextExtent(s)
+			if s is not None:
+				extent = i.GetTextExtent(s)
+			else:
+				extent = i.GetSize()
 			if extent.GetWidth() > MaxWidth:
 				MaxExtent = extent
+				MaxWidth = extent.GetWidth()
 		return MaxExtent
 	def _update(self):
 		"Update the current bitmap, and the information display."
@@ -63,20 +68,75 @@ class ImagePanel(wx.Panel):
 			ResolutionString = ''.join( ( 'Resolution: ', str( size.GetWidth() ), 'x', str( size.GetHeight() ), ' (', str( size.GetWidth() * size.GetHeight() ), ' pixels)' ) )
 			FileSizeString = ''.join( ( 'File size: ', self._HumanSize( image.FileSize ) ) )
 			DataSizeString = ''.join( ( 'Data size: ', self._HumanSize( image.DataSize ), ' / ', self._HumanSize( self.bitmaps.GetCurrentBufSize() ), ' / ', self._HumanSize( self.bitmaps.GetMaxBufSize() ), ' (', str( self.bitmaps.GetNumOpenImages() ), ')' ) )
-			MaxExtent = self._MaxExtent(
-										 (self.ResolutionDisplay, self.FileSizeDisplay, self.DataSizeDisplay),
-										 (ResolutionString, FileSizeString, DataSizeString)
-									   )
-			self.ResolutionDisplay.SetLabel(ResolutionString)
-			self.FileSizeDisplay.SetLabel(FileSizeString)
-			self.DataSizeDisplay.SetLabel(DataSizeString)
-			self.RightPanelDummy.SetMinSize(MaxExtent)
 		else:
-			self.ResolutionDisplay.SetLabel('File failed to load')
-			self.RightPanelDummy.SetMinSize( self.ResolutionDisplay.GetTextExtent('File failed to load') )
+			ResolutionString = 'File failed to load'
+			FileSizeString = ''
+			DataSizeString = ''
+		MaxExtent = self._MaxExtent(
+									(self.ResolutionDisplay, self.FileSizeDisplay, self.DataSizeDisplay, self.ImageQualityControl),
+									(ResolutionString, FileSizeString, DataSizeString, None)
+								   )
+		self.ResolutionDisplay.SetLabel(ResolutionString)
+		self.FileSizeDisplay.SetLabel(FileSizeString)
+		self.DataSizeDisplay.SetLabel(DataSizeString)
+		self.RightPanelDummy.SetMinSize(MaxExtent)
 		self.Update()
 		self.Layout()
 		self.Refresh()
+	def _OnImageQualityHigh21(self, message, arg2=None):
+		"Set image quality to high 2+1 (box average on downscale, bicubic on upscale), update the radio button, and repaint the image."
+		self.ImageQualityControl.SetSelection(0)
+		self.image.quality = wx.IMAGE_QUALITY_HIGH
+		self.image.Update()
+		self.image.Refresh()
+	def _OnImageQualityHigh2(self, message, arg2=None):
+		"Set image quality to high 2 (bicubic), update the radio button, and repaint the image."
+		self.ImageQualityControl.SetSelection(1)
+		self.image.quality = wx.IMAGE_QUALITY_BICUBIC
+		self.image.Update()
+		self.image.Refresh()
+	def _OnImageQualityHigh1(self, message, arg2=None):
+		"Set image quality to high 1 (box average), update the radio button, and repaint the image."
+		self.ImageQualityControl.SetSelection(2)
+		self.image.quality = wx.IMAGE_QUALITY_BOX_AVERAGE
+		self.image.Update()
+		self.image.Refresh()
+	def _OnImageQualityMedium(self, message, arg2=None):
+		"Set image quality to medium (bilinear), update the radio button, and repaint the image."
+		self.ImageQualityControl.SetSelection(3)
+		self.image.quality = wx.IMAGE_QUALITY_BILINEAR
+		self.image.Update()
+		self.image.Refresh()
+	def _OnImageQualityLow(self, message, arg2=None):
+		"Set image quality to low (nearest neighbor), update the radio button, and repaint the image."
+		self.ImageQualityControl.SetSelection(4)
+		self.image.quality = wx.IMAGE_QUALITY_NEAREST
+		self.image.Update()
+		self.image.Refresh()
+	def _OnImageQualityLeft(self, message, arg2=None):
+		"Cycle through 'L', 'M', 'H1', 'H2', and 'H2+1' image quality radio button settings."
+		if self.image.quality == wx.IMAGE_QUALITY_HIGH:
+			self._OnImageQualityLow(None)
+		elif self.image.quality == wx.IMAGE_QUALITY_BICUBIC:
+			self._OnImageQualityHigh21(None)
+		elif self.image.quality == wx.IMAGE_QUALITY_BOX_AVERAGE:
+			self._OnImageQualityHigh2(None)
+		elif self.image.quality == wx.IMAGE_QUALITY_BILINEAR:
+			self._OnImageQualityHigh1(None)
+		else: # self.image.quality == wx.IMAGE_QUALITY_NEAREST
+			self._OnImageQualityMedium(None)
+	def _OnImageQualityRight(self, message, arg2=None):
+		"Cycle through 'H2+1', 'H2', 'H1', 'M', and 'L' image quality radio button settings."
+		if self.image.quality == wx.IMAGE_QUALITY_HIGH:
+			self._OnImageQualityHigh2(None)
+		elif self.image.quality == wx.IMAGE_QUALITY_BICUBIC:
+			self._OnImageQualityHigh1(None)
+		elif self.image.quality == wx.IMAGE_QUALITY_BOX_AVERAGE:
+			self._OnImageQualityMedium(None)
+		elif self.image.quality == wx.IMAGE_QUALITY_BILINEAR:
+			self._OnImageQualityLow(None)
+		else: # self.image.quality == wx.IMAGE_QUALITY_NEAREST
+			self._OnImageQualityHigh21(None)
 	def _OnIndex(self, message, arg2=None):
 		"Change the index to the one specified in the event, if possible."
 		if 0 <= message < len(self.bitmaps.images):
@@ -96,16 +156,44 @@ class ImagePanel(wx.Panel):
 		else:
 			self.pos += 1
 		self._update()
-	def __init__(self, parent, MaxBufSize, paths, BackgroundManager):
+	def _OnImageQualitySelect(self, e):
+		"Bound to EVT_RADIOBOX; update image quality from the relevant radio box."
+		selection = self.ImageQualityControl.GetSelection()
+		if selection == 0 and self.image.quality != wx.IMAGE_QUALITY_HIGH:
+			self.image.quality = wx.IMAGE_QUALITY_HIGH
+			self.image.Update()
+			self.image.Refresh()
+		elif selection == 1 and self.image.quality != wx.IMAGE_QUALITY_BICUBIC:
+			self.image.quality = wx.IMAGE_QUALITY_BICUBIC
+			self.image.Update()
+			self.image.Refresh()
+		elif selection == 2 and self.image.quality != wx.IMAGE_QUALITY_BOX_AVERAGE:
+			self.image.quality = wx.IMAGE_QUALITY_BOX_AVERAGE
+			self.image.Update()
+			self.image.Refresh()
+		elif selection == 3 and self.image.quality != wx.IMAGE_QUALITY_BILINEAR:
+			self.image.quality = wx.IMAGE_QUALITY_BILINEAR
+			self.image.Update()
+			self.image.Refresh()
+		elif selection == 4 and self.image.quality != wx.IMAGE_QUALITY_NEAREST:
+			self.image.quality = wx.IMAGE_QUALITY_NEAREST
+			self.image.Update()
+			self.image.Refresh()
+		e.Skip()
+	def __init__(self, parent, MaxBufSize, ImageQuality, paths, BackgroundManager):
 		wx.Panel.__init__(self, parent=parent)
 
 		self.pos = 0 # Position in bitmaps
 		self.bitmaps = ImageReader(MaxBufSize)
 		self.ResolutionDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays the resolution of the current image
 		self.FileSizeDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays the size of the current image
-		self.DataSizeDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays the size of the current image
+		self.DataSizeDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays statistics about imagebuffer usage
 		self.DataSizeTip = wx.ToolTip('Current/Cumulative/Maximum (Number of files loaded)')
-		self.image = ImageDisplay(self, BackgroundManager)
+		self.ImageQualityControl = wx.RadioBox(self, label='Image Quality:',
+											   choices= ('H2+1', 'H2', 'H1', 'M', 'L'),
+											   style= wx.RA_SPECIFY_COLS | wx.ALIGN_LEFT
+											  )
+		self.image = ImageDisplay(self, ImageQuality, BackgroundManager)
 		self.RightPanelDummy = wx.Window(self)
 		self.LeftPaneSizer = wx.BoxSizer(wx.VERTICAL)
 		self.RightPaneSizer = wx.BoxSizer(wx.VERTICAL)
@@ -114,6 +202,7 @@ class ImagePanel(wx.Panel):
 		self.LeftPaneSizer.Add(self.ResolutionDisplay, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.TOP | wx.LEFT)
 		self.LeftPaneSizer.Add(self.FileSizeDisplay, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.TOP | wx.LEFT)
 		self.LeftPaneSizer.Add(self.DataSizeDisplay, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.TOP | wx.LEFT)
+		self.LeftPaneSizer.Add(self.ImageQualityControl, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.TOP | wx.LEFT)
 
 		self.RightPaneSizer.Add(self.RightPanelDummy, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT | wx.TOP | wx.RIGHT)
 
@@ -123,9 +212,33 @@ class ImagePanel(wx.Panel):
 		self.SetSizer(self.MainSizer)
 
 		self.DataSizeDisplay.SetToolTip(self.DataSizeTip)
+		self.ImageQualityControl.SetItemToolTip(0, 'Box Average Algorithm on Downscale, Bicubic Algorithm on Upscale')
+		self.ImageQualityControl.SetItemToolTip(1, 'Bicubic Algorithm')
+		self.ImageQualityControl.SetItemToolTip(2, 'Box Average Algorithm')
+		self.ImageQualityControl.SetItemToolTip(3, 'Bilinear Algorithm')
+		self.ImageQualityControl.SetItemToolTip(4, 'Nearest Neighbor Algorithm')
 		self.bitmaps.AddPathsList(paths)
 		self._update()
+		if self.image.quality == wx.IMAGE_QUALITY_HIGH:
+			self.ImageQualityControl.SetSelection(0)
+		elif self.image.quality == wx.IMAGE_QUALITY_BICUBIC:
+			self.ImageQualityControl.SetSelection(1)
+		elif self.image.quality == wx.IMAGE_QUALITY_BOX_AVERAGE:
+			self.ImageQualityControl.SetSelection(2)
+		elif self.image.quality == wx.IMAGE_QUALITY_BILINEAR:
+			self.ImageQualityControl.SetSelection(3)
+		else: # self.image.quality == wx.IMAGE_QUALITY_NEAREST
+			self.ImageQualityControl.SetSelection(4)
 
+		self.Bind( wx.EVT_RADIOBOX, self._OnImageQualitySelect, id=self.ImageQualityControl.GetId() )
+
+		pub.subscribe(self._OnImageQualityLeft, "ImageQualityLeft")
+		pub.subscribe(self._OnImageQualityRight, "ImageQualityRight")
+		pub.subscribe(self._OnImageQualityHigh21, "ImageQualityHigh21")
+		pub.subscribe(self._OnImageQualityHigh2, "ImageQualityHigh2")
+		pub.subscribe(self._OnImageQualityHigh1, "ImageQualityHigh1")
+		pub.subscribe(self._OnImageQualityMedium, "ImageQualityMedium")
+		pub.subscribe(self._OnImageQualityLow, "ImageQualityLow")
 		pub.subscribe(self._OnIndex, "IndexImage")
 		pub.subscribe(self._OnLeft, "LeftImage")
 		pub.subscribe(self._OnRight, "RightImage")
@@ -200,10 +313,10 @@ class ImageLabel(wx.Panel):
 		pub.subscribe(self._OnFocusPathLabel, "FocusPathLabel")
 
 class ImageContainer(wx.Panel):
-	def __init__(self, parent, MaxBufSize, paths, BackgroundManager):
+	def __init__(self, parent, MaxBufSize, ImageQuality, paths, BackgroundManager):
 		wx.Panel.__init__(self, parent=parent)
 
-		self.image = ImagePanel(self, MaxBufSize, paths, BackgroundManager)
+		self.image = ImagePanel(self, MaxBufSize, ImageQuality, paths, BackgroundManager)
 		self.label = ImageLabel(self, paths)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 

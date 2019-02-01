@@ -14,7 +14,7 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 	def _SetSashes(self):
 		"Set the sash locations to be relative to the window size."
 		height = float( self.GetSize().GetHeight() )
-		self.SetMinimumPaneSize( int(height * 0.1) )
+		self.SetMinimumPaneSize( int(height * 0.2) )
 		self.SetSashPosition(0, int(height * self.Sash0Pos) )
 		self.SetSashPosition(1, int(height * self.Sash1Pos) )
 	def _OnSizeChild(self, e):
@@ -36,12 +36,12 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 				self.Sash1Pos = 0.9 - Sash0Pos
 			self._SetSashes()
 		e.Skip()
-	def __init__(self, parent, MaxBufSize, questions, OutputFiles, TagsTracker, BackgroundManager):
+	def __init__(self, parent, MaxBufSize, ImageQuality, questions, OutputFiles, TagsTracker, BackgroundManager):
 		wx.lib.splitter.MultiSplitterWindow.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
 
 		self.Sash0Pos = 0.5
 		self.Sash1Pos = 0.1
-		self.top = ImageContainer(self, MaxBufSize, OutputFiles.InputPaths, BackgroundManager)
+		self.top = ImageContainer(self, MaxBufSize, ImageQuality, OutputFiles.InputPaths, BackgroundManager)
 		self.middle = PromptContainer(self, len(OutputFiles.InputPaths), questions)
 		self.bottom = QuestionsContainer(self, TagsTracker, questions, OutputFiles)
 
@@ -118,7 +118,7 @@ class MainFrame(wx.Frame):
 			self.Close()
 		except:
 			pass
-	def __init__(self, parent, BaseTitle, MaxBufSize, questions, OutputFiles, TagsTracker, BackgroundManager):
+	def __init__(self, parent, BaseTitle, MaxBufSize, ImageQuality, questions, OutputFiles, TagsTracker, BackgroundManager):
 		wx.Frame.__init__(self, parent=parent)
 
 		self.BaseTitle = BaseTitle # Base window title
@@ -126,7 +126,7 @@ class MainFrame(wx.Frame):
 		self.NumQuestions = len(questions)
 		self.pos = 0 # The position in positions
 		self.positions = [0] * len(OutputFiles.InputPaths) # The position in questions corresponding to each image
-		self.main = MainContainer(self, MaxBufSize, questions, OutputFiles, TagsTracker, BackgroundManager)
+		self.main = MainContainer(self, MaxBufSize, ImageQuality, questions, OutputFiles, TagsTracker, BackgroundManager)
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 		self.WrapperSizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -141,7 +141,7 @@ class MainFrame(wx.Frame):
 
 		self.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK) )
 		size = self.GetEffectiveMinSize()
-		size.SetHeight( int( float( size.GetHeight() ) * 1.5 ) )
+		size.SetHeight( int( float( size.GetHeight() ) * 1.25 ) )
 		size.SetWidth( int( float( size.GetWidth() ) * 1.0 ) )
 		self.SetMinSize(size)
 		self.SetSize( self.GetSize() ) # XXX: Windows does not automatically update the size when the minimum is set.

@@ -11,29 +11,50 @@ ID_FOCUS_PATH_LABEL = wx.NewId()
 ID_FOCUS_QUESTION_INDEX = wx.NewId()
 ID_FOCUS_PROMPT_BODY = wx.NewId()
 ID_FOCUS_QUESTION_BODY = wx.NewId()
+ID_IMAGE_QUALITY_LEFT = wx.NewId()
+ID_IMAGE_QUALITY_RIGHT = wx.NewId()
+ID_IMAGE_QUALITY_HIGH_2_1 = wx.NewId()
+ID_IMAGE_QUALITY_HIGH_2 = wx.NewId()
+ID_IMAGE_QUALITY_HIGH_1 = wx.NewId()
+ID_IMAGE_QUALITY_MEDIUM = wx.NewId()
+ID_IMAGE_QUALITY_LOW = wx.NewId()
 KEYBIND_IDS = {
-	'exit'                  : ID_EMERGENCY_EXIT      ,
-	'left_image'            : ID_LEFT_IMAGE          ,
-	'right_image'           : ID_RIGHT_IMAGE         ,
-	'left_question'         : ID_LEFT_QUESTION       ,
-	'right_question'        : ID_RIGHT_QUESTION      ,
-	'select_image_index'    : ID_FOCUS_IMAGE_INDEX   ,
-	'select_image_path'     : ID_FOCUS_PATH_LABEL    ,
-	'select_question_index' : ID_FOCUS_QUESTION_INDEX,
-	'select_instructions'   : ID_FOCUS_PROMPT_BODY   ,
-	'select_question'       : ID_FOCUS_QUESTION_BODY ,
+	'exit'                   : ID_EMERGENCY_EXIT        ,
+	'left_image'             : ID_LEFT_IMAGE            ,
+	'right_image'            : ID_RIGHT_IMAGE           ,
+	'left_question'          : ID_LEFT_QUESTION         ,
+	'right_question'         : ID_RIGHT_QUESTION        ,
+	'select_image_index'     : ID_FOCUS_IMAGE_INDEX     ,
+	'select_image_path'      : ID_FOCUS_PATH_LABEL      ,
+	'select_question_index'  : ID_FOCUS_QUESTION_INDEX  ,
+	'select_instructions'    : ID_FOCUS_PROMPT_BODY     ,
+	'select_question'        : ID_FOCUS_QUESTION_BODY   ,
+	'image_quality_left'     : ID_IMAGE_QUALITY_LEFT    ,
+	'image_quality_right'    : ID_IMAGE_QUALITY_RIGHT   ,
+	'image_quality_high_2_1' : ID_IMAGE_QUALITY_HIGH_2_1,
+	'image_quality_high_2'   : ID_IMAGE_QUALITY_HIGH_2  ,
+	'image_quality_high_1'   : ID_IMAGE_QUALITY_HIGH_1  ,
+	'image_quality_medium'   : ID_IMAGE_QUALITY_MEDIUM  ,
+	'image_quality_low'      : ID_IMAGE_QUALITY_LOW
 }
 KEYBIND_MESSAGES = {
-	ID_EMERGENCY_EXIT       : 'EmergencyExit'     ,
-	ID_LEFT_IMAGE           : 'LeftImage'         ,
-	ID_RIGHT_IMAGE          : 'RightImage'        ,
-	ID_LEFT_QUESTION        : 'LeftQuestion'      ,
-	ID_RIGHT_QUESTION       : 'RightQuestion'     ,
-	ID_FOCUS_IMAGE_INDEX    : 'FocusImageIndex'   ,
-	ID_FOCUS_PATH_LABEL     : 'FocusPathLabel'    ,
-	ID_FOCUS_QUESTION_INDEX : 'FocusQuestionIndex',
-	ID_FOCUS_PROMPT_BODY    : 'FocusPromptBody'   ,
-	ID_FOCUS_QUESTION_BODY  : 'FocusQuestionBody' ,
+	ID_EMERGENCY_EXIT         : 'EmergencyExit'      ,
+	ID_LEFT_IMAGE             : 'LeftImage'          ,
+	ID_RIGHT_IMAGE            : 'RightImage'         ,
+	ID_LEFT_QUESTION          : 'LeftQuestion'       ,
+	ID_RIGHT_QUESTION         : 'RightQuestion'      ,
+	ID_FOCUS_IMAGE_INDEX      : 'FocusImageIndex'    ,
+	ID_FOCUS_PATH_LABEL       : 'FocusPathLabel'     ,
+	ID_FOCUS_QUESTION_INDEX   : 'FocusQuestionIndex' ,
+	ID_FOCUS_PROMPT_BODY      : 'FocusPromptBody'    ,
+	ID_FOCUS_QUESTION_BODY    : 'FocusQuestionBody'  ,
+	ID_IMAGE_QUALITY_LEFT     : 'ImageQualityLeft'   ,
+	ID_IMAGE_QUALITY_RIGHT    : 'ImageQualityRight'  ,
+	ID_IMAGE_QUALITY_HIGH_2_1 : 'ImageQualityHigh21' ,
+	ID_IMAGE_QUALITY_HIGH_2   : 'ImageQualityHigh2'  ,
+	ID_IMAGE_QUALITY_HIGH_1   : 'ImageQualityHigh1'  ,
+	ID_IMAGE_QUALITY_MEDIUM   : 'ImageQualityMedium' ,
+	ID_IMAGE_QUALITY_LOW      : 'ImageQualityLow'
 }
 
 class KeyHandlerError(Exception):
@@ -51,16 +72,30 @@ class KeyHandler(wx.Object):
 		self.FocusQuestionIndexItem = wx.MenuItem(id=wx.NewId(), text="FocusQuestionIndex", helpString="Focus on the question index entry.")
 		self.FocusInstructionsItem = wx.MenuItem(id=wx.NewId(), text="FocusPromptBody", helpString="Focus on the prompt text.")
 		self.FocusQuestionsItem = wx.MenuItem(id=wx.NewId(), text="FocusQuestionBody", helpString="Focus on the question field.")
-		self.MenuItems = {'exit'                  : self.EmergencyExitItem     ,
-						  'left_image'            : self.LeftImageItem         ,
-						  'right_image'           : self.RightImageItem        ,
-						  'left_question'         : self.LeftQuestionItem      ,
-						  'right_question'        : self.RightQuestionItem     ,
-						  'select_image_index'    : self.FocusImageIndexItem   ,
-						  'select_image_path'     : self.FocusImagePathItem    ,
-						  'select_question_index' : self.FocusQuestionIndexItem,
-						  'select_instructions'   : self.FocusInstructionsItem ,
-						  'select_question'       : self.FocusQuestionsItem    ,
+		self.ImageQualityLeftItem = wx.MenuItem(id=wx.NewId(), text="ImageQualityLeft", helpString="Cycle through image quality from low to high.")
+		self.ImageQualityRightItem = wx.MenuItem(id=wx.NewId(), text="ImageQualityRight", helpString="Cycle through image quality from high to low.")
+		self.ImageQualityHigh21Item = wx.MenuItem(id=wx.NewId(), text="ImageQualityHigh21", helpString="Set image quality to high (box average on downscale, bicubic on upscale).")
+		self.ImageQualityHigh2Item = wx.MenuItem(id=wx.NewId(), text="ImageQualityHigh2", helpString="Set image quality to high (bicubic).")
+		self.ImageQualityHigh1Item = wx.MenuItem(id=wx.NewId(), text="ImageQualityHigh1", helpString="Set image quality to high (box average).")
+		self.ImageQualityMediumItem = wx.MenuItem(id=wx.NewId(), text="ImageQualityMedium", helpString="Set image quality to medium.")
+		self.ImageQualityLowItem = wx.MenuItem(id=wx.NewId(), text="ImageQualityLow", helpString="Set image quality to low.")
+		self.MenuItems = {'exit'                   : self.EmergencyExitItem      ,
+						  'left_image'             : self.LeftImageItem          ,
+						  'right_image'            : self.RightImageItem         ,
+						  'left_question'          : self.LeftQuestionItem       ,
+						  'right_question'         : self.RightQuestionItem      ,
+						  'select_image_index'     : self.FocusImageIndexItem    ,
+						  'select_image_path'      : self.FocusImagePathItem     ,
+						  'select_question_index'  : self.FocusQuestionIndexItem ,
+						  'select_instructions'    : self.FocusInstructionsItem  ,
+						  'select_question'        : self.FocusQuestionsItem     ,
+						  'image_quality_left'     : self.ImageQualityLeftItem   ,
+						  'image_quality_right'    : self.ImageQualityRightItem  ,
+						  'image_quality_high_2_1' : self.ImageQualityHigh21Item ,
+						  'image_quality_high_2'   : self.ImageQualityHigh2Item  ,
+						  'image_quality_high_1'   : self.ImageQualityHigh1Item  ,
+						  'image_quality_medium'   : self.ImageQualityMediumItem ,
+						  'image_quality_low'      : self.ImageQualityLowItem
 						 }
 		self.entries = []
 	def _OnEntry(self, e):
@@ -78,6 +113,13 @@ class KeyHandler(wx.Object):
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_FOCUS_QUESTION_INDEX)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_FOCUS_PROMPT_BODY)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_FOCUS_QUESTION_BODY)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_IMAGE_QUALITY_LEFT)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_IMAGE_QUALITY_RIGHT)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_IMAGE_QUALITY_HIGH_2_1)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_IMAGE_QUALITY_HIGH_2)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_IMAGE_QUALITY_HIGH_1)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_IMAGE_QUALITY_MEDIUM)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_IMAGE_QUALITY_LOW)
 	def add(self, text):
 		"Add a keybind to the handler."
 		values = text.split()
