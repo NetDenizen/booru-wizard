@@ -14,7 +14,7 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 	def _SetSashes(self):
 		"Set the sash locations to be relative to the window size."
 		height = float( self.GetSize().GetHeight() )
-		self.SetMinimumPaneSize( int(height * 0.2) )
+		self.SetMinimumPaneSize( int(height * 0.1) )
 		self.SetSashPosition(0, int(height * self.Sash0Pos) )
 		self.SetSashPosition(1, int(height * self.Sash1Pos) )
 	def _OnSizeChild(self, e):
@@ -26,6 +26,10 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 		height = float( self.GetSize().GetHeight() )
 		Sash0Pos = float( self.GetSashPosition(0) ) / height
 		Sash1Pos = float( self.GetSashPosition(1) ) / height
+		reset = False
+		if Sash0Pos < 0.2:
+			Sash0Pos = 0.2
+			reset = True
 		if Sash0Pos + Sash1Pos < 0.9:
 			self.Sash0Pos = Sash0Pos
 			self.Sash1Pos = Sash1Pos
@@ -34,13 +38,15 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 				self.Sash0Pos = 0.9 - Sash1Pos
 			else:
 				self.Sash1Pos = 0.9 - Sash0Pos
+			reset = True
+		if reset:
 			self._SetSashes()
 		e.Skip()
 	def __init__(self, parent, MaxBufSize, ImageQuality, questions, OutputFiles, TagsTracker, BackgroundManager):
 		wx.lib.splitter.MultiSplitterWindow.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
 
-		self.Sash0Pos = 0.5
-		self.Sash1Pos = 0.1
+		self.Sash0Pos = 0.4
+		self.Sash1Pos = 0.2
 		self.top = ImageContainer(self, MaxBufSize, ImageQuality, OutputFiles.InputPaths, BackgroundManager)
 		self.middle = PromptContainer(self, len(OutputFiles.InputPaths), questions)
 		self.bottom = QuestionsContainer(self, TagsTracker, questions, OutputFiles)
@@ -154,6 +160,8 @@ class MainFrame(wx.Frame):
 		pub.subscribe(self._OnLeftQuestion, "LeftQuestion")
 		pub.subscribe(self._OnRightQuestion, "RightQuestion")
 		pub.subscribe(self._OnEmergencyExit, "EmergencyExit")
+
+		pub.sendMessage("StartUpdateTimer", message=None)
 
 class FilePicker(wx.Panel):
 	def GetPath(self):

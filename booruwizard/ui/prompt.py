@@ -191,7 +191,5 @@ class PromptContainer(wx.Panel):
 		self.MainSizer.AddStretchSpacer(1)
 		self.MainSizer.Add(self.buttons, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.ALIGN_RIGHT)
 
-		self.WrapperSizer.AddStretchSpacer(1)
 		self.WrapperSizer.Add(self.MainSizer, 5, wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
-		self.WrapperSizer.AddStretchSpacer(1)
 		self.SetSizer(self.WrapperSizer)
