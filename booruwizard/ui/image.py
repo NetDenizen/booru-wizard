@@ -242,7 +242,6 @@ class ImagePanel(wx.Panel):
 		self.ImageQualityControl.SetItemToolTip(3, 'Bilinear Algorithm')
 		self.ImageQualityControl.SetItemToolTip(4, 'Nearest Neighbor Algorithm')
 		self.bitmaps.AddPathsList(paths)
-		self._OnFileUpdatePending(None)
 		self._update()
 		if self.image.quality == wx.IMAGE_QUALITY_HIGH:
 			self.ImageQualityControl.SetSelection(0)
