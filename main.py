@@ -180,7 +180,6 @@ def main():
 
 	if not OutputFiles.ControlFiles:
 		raise MainError('No input files found.')
-	OutputFiles.StartUpdateTimer()
 
 	TagsTracker = TagsContainer()
 	for f in OutputFiles.ControlFiles:

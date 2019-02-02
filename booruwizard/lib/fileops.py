@@ -4,6 +4,7 @@ from enum import Enum
 import json
 
 import wx
+from pubsub import pub
 
 from booruwizard.lib.tag import TagsContainer
 
@@ -94,6 +95,12 @@ class ManagedFile:
 			self._handle.close()
 			self._handle = None
 		self.lock.release()
+	def check(self):
+		"Determine if the file has been changed."
+		self.lock.acquire()
+		result = self._IsChangedCallback()
+		self.lock.release()
+		return result
 	def update(self):
 		"Update changes to the file."
 		self.lock.acquire()
@@ -220,12 +227,11 @@ class FileData:
 				raise ControlFileError( ''.join( ("Invalid safety name '", rating, "'") ) )
 			self.rating = found
 	def IsChangedCallback(self):
-		"Return whether or not any of the data has been changed. Once that has been checked, set the change status to false."
-		IsChanged = self._IsChanged
-		self._IsChanged = False
-		return IsChanged
+		"Return whether or not any of the data has been changed."
+		return self._IsChanged
 	def DataCallback(self):
-		"Return the data fields formatted as a JSON string."
+		"Return the data fields formatted as a JSON string, and set the change status to false.."
+		self._IsChanged = False
 		output = {'rating' : SAFETY_VALUES_LOOKUP[self.rating]}
 		obj = {self.path : output}
 		if self.name is not None:
@@ -252,6 +258,23 @@ class FileManagerError(Exception):
 
 #TODO: Use semaphore for MaxOpenFiles itself?
 class FileManager:
+	def UpdateAll(self):
+		for f in self._files:
+			f.update()
+	def _OnStartUpdateTimer(self, message, arg2=None):
+		if self._UpdateInterval == -1.0:
+			return
+		if self._UpdateInterval == 0.0:
+			sendMessage("FileUpdateClear", message=None)
+			return
+		self._UpdateTimer = threading.Thread( name='Update Timer', target=self._UpdateThread, daemon=True )
+		self._UpdateTimerRunning.set()
+		self._UpdateTimer.start()
+	def _OnFileUpdateForce(self, message, arg2=None):
+		if self._UpdateInterval == -1.0:
+			self.UpdateAll()
+		else:
+			self._UpdateTimerDelay.set()
 	def __init__(self, MaxOpenFiles, UpdateInterval):
 		if MaxOpenFiles < 0:
 			raise FileManagerError( ''.join( ('MAX_OPEN_FILES of "', str(MaxOpenFiles), '" specified. This value must be greater than or equal to 0.') ) )
@@ -271,22 +294,58 @@ class FileManager:
 		self.ControlFiles = [] # List of FileData objects
 		self.paths = [] # List of original paths for the respective FileData objects
 		self.InputPaths = [] # List of paths for the respective FileData objects with prepended input directories
-	def UpdateAll(self):
+
+		pub.subscribe(self._OnStartUpdateTimer, "StartUpdateTimer")
+		pub.subscribe(self._OnFileUpdateForce, "FileUpdateForce")
+	def CheckAny(self):
+		"Return if True on the first file in need of updating. Otherwise, return False."
+		result = False
 		for f in self._files:
-			f.update()
+			result = f.check()
+			if result:
+				break
+		return result
 	def _UpdateThread(self):
 		"The worker thread to loop through files and flush any changes to the disk."
-		while self._UpdateTimerRunning.is_set():
-			self._UpdateTimerDelay.wait(self._UpdateInterval)
-			self.FilesLock.acquire()
-			self.UpdateAll()
-			self.FilesLock.release()
-	def StartUpdateTimer(self):
-		if self._UpdateInterval == -1.0 or self._UpdateInterval == 0.0:
-			return
-		self._UpdateTimer = threading.Thread( name='Update Timer', target=self._UpdateThread, daemon=True )
-		self._UpdateTimerRunning.set()
-		self._UpdateTimer.start()
+		running = self._UpdateTimerRunning.is_set
+		wait = self._UpdateTimerDelay.wait
+		clear = self._UpdateTimerDelay.clear
+		interrupted = self._UpdateTimerDelay.is_set
+		UpdateInterval = self._UpdateInterval
+		CheckAny = self.CheckAny
+		sendMessage = pub.sendMessage
+		acquire = self.FilesLock.acquire
+		UpdateAll = self.UpdateAll
+		release = self.FilesLock.release
+		UpdateState = False
+		while running():
+			CurrentTime = 0.0
+			while True:
+				interval = UpdateInterval - CurrentTime
+				sendMessage("FileUpdateTick", message=interval)
+				if interval >= 1.0:
+					wait(1.0)
+					if interrupted():
+						break
+					CurrentTime += 1.0
+					NewUpdateState = CheckAny()
+					if NewUpdateState != UpdateState:
+						UpdateState = NewUpdateState
+						if UpdateState:
+							sendMessage("FileUpdatePending", message=None)
+						else:
+							sendMessage("FileUpdateClear", message=None)
+				elif interval > 0:
+					wait(interval)
+					break
+				else:
+					break
+			acquire()
+			UpdateAll()
+			release()
+			clear()
+			sendMessage("FileUpdateClear", message=None)
+			UpdateState = False
 	def _StopUpdateTimer(self):
 		if self._UpdateInterval == -1.0 or self._UpdateInterval == 0.0:
 			return

@@ -73,8 +73,8 @@ class ImagePanel(wx.Panel):
 			FileSizeString = ''
 			DataSizeString = ''
 		MaxExtent = self._MaxExtent(
-									(self.ResolutionDisplay, self.FileSizeDisplay, self.DataSizeDisplay, self.ImageQualityControl),
-									(ResolutionString, FileSizeString, DataSizeString, None)
+									(self.ResolutionDisplay, self.FileSizeDisplay, self.DataSizeDisplay, self.ImageQualityControl, self.OutputUpdateTimer, self.OutputUpdateButton),
+									(ResolutionString, FileSizeString, DataSizeString, None, None, None)
 								   )
 		self.ResolutionDisplay.SetLabel(ResolutionString)
 		self.FileSizeDisplay.SetLabel(FileSizeString)
@@ -83,6 +83,15 @@ class ImagePanel(wx.Panel):
 		self.Update()
 		self.Layout()
 		self.Refresh()
+	def _OnFileUpdatePending(self, message, arg2=None):
+		wx.CallAfter(self.OutputUpdateButton.Enable)
+	def _OnFileUpdateClear(self, message, arg2=None):
+		wx.CallAfter(self.OutputUpdateButton.Disable)
+	def _OnFileUpdateTick(self, message, arg2=None):
+		minutes = int(message // 60.0)
+		seconds = message % 60.0
+		output = ''.join( ( 'Until Next Flush: ', str(minutes).zfill(2), ':', str(seconds).zfill(4) ) )
+		wx.CallAfter(self.OutputUpdateTimer.SetLabel, output)
 	def _OnImageQualityHigh21(self, message, arg2=None):
 		"Set image quality to high 2+1 (box average on downscale, bicubic on upscale), update the radio button, and repaint the image."
 		self.ImageQualityControl.SetSelection(0)
@@ -180,6 +189,9 @@ class ImagePanel(wx.Panel):
 			self.image.Update()
 			self.image.Refresh()
 		e.Skip()
+	def _OnOutputUpdateButton(self, e):
+		pub.sendMessage("FileUpdateForce", message=None)
+		e.Skip()
 	def __init__(self, parent, MaxBufSize, ImageQuality, paths, BackgroundManager):
 		wx.Panel.__init__(self, parent=parent)
 
@@ -194,6 +206,10 @@ class ImagePanel(wx.Panel):
 											   style= wx.RA_SPECIFY_COLS | wx.ALIGN_LEFT
 											  )
 		self.image = ImageDisplay(self, ImageQuality, BackgroundManager)
+		self.OutputUpdateTimer = wx.StaticText(self, label='Automatic Flushing Disabled', style= wx.ALIGN_LEFT)
+		self.OutputUpdateTimerTip = wx.ToolTip('Time until next automatic flush')
+		self.OutputUpdateButton = wx.Button(self, label='Flush Output', style=wx.BU_EXACTFIT)
+		self.OutputUpdateButtonTip = wx.ToolTip('Immediately flush output files to hard drive, if available.')
 		self.RightPanelDummy = wx.Window(self)
 		self.LeftPaneSizer = wx.BoxSizer(wx.VERTICAL)
 		self.RightPaneSizer = wx.BoxSizer(wx.VERTICAL)
@@ -202,7 +218,13 @@ class ImagePanel(wx.Panel):
 		self.LeftPaneSizer.Add(self.ResolutionDisplay, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.TOP | wx.LEFT)
 		self.LeftPaneSizer.Add(self.FileSizeDisplay, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.TOP | wx.LEFT)
 		self.LeftPaneSizer.Add(self.DataSizeDisplay, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.TOP | wx.LEFT)
+		self.LeftPaneSizer.AddStretchSpacer(3)
 		self.LeftPaneSizer.Add(self.ImageQualityControl, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.TOP | wx.LEFT)
+		self.LeftPaneSizer.AddStretchSpacer(3)
+		self.LeftPaneSizer.Add(self.OutputUpdateTimer, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.TOP | wx.LEFT)
+		self.LeftPaneSizer.AddStretchSpacer(1)
+		self.LeftPaneSizer.Add(self.OutputUpdateButton, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.TOP | wx.LEFT)
+		self.LeftPaneSizer.AddStretchSpacer(50)
 
 		self.RightPaneSizer.Add(self.RightPanelDummy, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT | wx.TOP | wx.RIGHT)
 
@@ -212,12 +234,15 @@ class ImagePanel(wx.Panel):
 		self.SetSizer(self.MainSizer)
 
 		self.DataSizeDisplay.SetToolTip(self.DataSizeTip)
+		self.OutputUpdateTimer.SetToolTip(self.OutputUpdateTimerTip)
+		self.OutputUpdateButton.SetToolTip(self.OutputUpdateButtonTip)
 		self.ImageQualityControl.SetItemToolTip(0, 'Box Average Algorithm on Downscale, Bicubic Algorithm on Upscale')
 		self.ImageQualityControl.SetItemToolTip(1, 'Bicubic Algorithm')
 		self.ImageQualityControl.SetItemToolTip(2, 'Box Average Algorithm')
 		self.ImageQualityControl.SetItemToolTip(3, 'Bilinear Algorithm')
 		self.ImageQualityControl.SetItemToolTip(4, 'Nearest Neighbor Algorithm')
 		self.bitmaps.AddPathsList(paths)
+		self._OnFileUpdatePending(None)
 		self._update()
 		if self.image.quality == wx.IMAGE_QUALITY_HIGH:
 			self.ImageQualityControl.SetSelection(0)
@@ -230,8 +255,12 @@ class ImagePanel(wx.Panel):
 		else: # self.image.quality == wx.IMAGE_QUALITY_NEAREST
 			self.ImageQualityControl.SetSelection(4)
 
+		self.Bind( wx.EVT_BUTTON, self._OnOutputUpdateButton, id=self.OutputUpdateButton.GetId() )
 		self.Bind( wx.EVT_RADIOBOX, self._OnImageQualitySelect, id=self.ImageQualityControl.GetId() )
 
+		pub.subscribe(self._OnFileUpdatePending, "FileUpdatePending")
+		pub.subscribe(self._OnFileUpdateClear, "FileUpdateClear")
+		pub.subscribe(self._OnFileUpdateTick, "FileUpdateTick")
 		pub.subscribe(self._OnImageQualityLeft, "ImageQualityLeft")
 		pub.subscribe(self._OnImageQualityRight, "ImageQualityRight")
 		pub.subscribe(self._OnImageQualityHigh21, "ImageQualityHigh21")
