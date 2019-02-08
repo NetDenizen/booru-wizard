@@ -176,6 +176,7 @@ class FileData:
 		self.SetTaglessTags()
 
 		self._IsChanged = True
+		self._DataState = '' # The current output of the DataCallback, used to determine if _IsChanged should be set.
 		self._lock = None # A lock within the ManagedFile object, used to synchronize updates.
 		self._PushUpdate = None # A callback to push data to the associated ManagedFile object
 		#TODO: Other default tag stuff
@@ -190,10 +191,26 @@ class FileData:
 			self._lock.release()
 	def PrepareChange(self):
 		self.lock()
+	def _BuildData(self):
+		"Return the data fields formatted as a JSON string, and set the change status to false.."
+		self._IsChanged = False
+		output = {'rating' : SAFETY_VALUES_LOOKUP[self.rating]}
+		obj = {self.path : output}
+		if self.name is not None:
+			output['name'] = self.name
+		if self.source is not None:
+			output['source'] = self.source
+		TagStrings = self.tags.ReturnOccurrenceStrings()
+		if TagStrings:
+			output['TagStrings'] = TagStrings
+		return json.dumps( obj, separators=(',',':') )
 	def FinishChange(self):
 		"Release self._lock if it is not None and set IsChanged to True."
+		DataState = self._BuildData()
+		if self._DataState == DataState:
+			self._IsChanged = True
+			self._DataState = DataState
 		self.unlock()
-		self._IsChanged = True
 	def LoadJSON(self, obj):
 		"Load the settings from a string containing JSON data to this object."
 		name = obj.get('name', None)
@@ -230,18 +247,7 @@ class FileData:
 		"Return whether or not any of the data has been changed."
 		return self._IsChanged
 	def DataCallback(self):
-		"Return the data fields formatted as a JSON string, and set the change status to false.."
-		self._IsChanged = False
-		output = {'rating' : SAFETY_VALUES_LOOKUP[self.rating]}
-		obj = {self.path : output}
-		if self.name is not None:
-			output['name'] = self.name
-		if self.source is not None:
-			output['source'] = self.source
-		TagStrings = self.tags.ReturnOccurrenceStrings()
-		if TagStrings:
-			output['TagStrings'] = TagStrings
-		return json.dumps( obj, separators=(',',':') )
+		return _DataState
 	def GetManagedFile(self, OutputDir, PushUpdatesEnabled, ReserveCallback):
 		"Create and return associated ManagedFile object."
 		manager = ManagedFile(OutputDir, PushUpdatesEnabled, self.path, self.IsChangedCallback, self.DataCallback, ReserveCallback)
