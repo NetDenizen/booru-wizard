@@ -182,6 +182,7 @@ class FilePicker(wx.Panel):
 		self.SetSizer(self.sizer)
 
 		self.FileChooser.SetInitialDirectory( os.path.dirname(path) )
+		self.FileChooser.SetPath(path)
 
 class DirPicker(wx.Panel):
 	def GetPath(self):
@@ -199,6 +200,7 @@ class DirPicker(wx.Panel):
 		self.SetSizer(self.sizer)
 
 		self.DirChooser.SetInitialDirectory( os.path.dirname(path) )
+		self.DirChooser.SetPath(path)
 
 class FileDialogFrame(wx.Frame):
 	def _OnOK(self, e):
