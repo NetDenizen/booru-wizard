@@ -178,13 +178,8 @@ class EntryBase(wx.Panel):  # This class should never be used on its own
 	def clear(self):
 		"Clear the entry question for the given case."
 		self._UpdateTags()
-	def _OnEntry(self, e):
-		"Bound to EVT_TEXT; when a space is entered, update tags."
-		if self.entry.GetValue() and self.entry.GetValue()[-1].isspace(): # TODO: Handle unicode characters?
-			self._UpdateTags()
-		e.Skip()
-	def _OnWindowDestroy(self, e):
-		"Bound to EVT_WINDOW_DESTROY; update tags."
+	def _OnUpdateEvent(self, e):
+		"Generic event handler, to update tags based on the contents of the field."
 		self._UpdateTags()
 		e.Skip()
 	def _OnRomanize(self, e):
@@ -290,8 +285,8 @@ class EntryQuestion(EntryBase):
 		self.SetSizer(self.sizer)
 
 		self.Bind( wx.EVT_BUTTON, self._OnRomanize, id=self.RomanizeButton.GetId() )
-		self.Bind( wx.EVT_TEXT, self._OnEntry, id=self.entry.GetId() )
-		self.Bind( wx.EVT_WINDOW_DESTROY, self._OnWindowDestroy, id=self.GetId() ) # TODO Should we bind to EVT_SET_FOCUS too?
+		self.Bind( wx.EVT_TEXT, self._OnUpdateEvent, id=self.entry.GetId() )
+		self.Bind( wx.EVT_WINDOW_DESTROY, self._OnUpdateEvent, id=self.GetId() ) # TODO Should we bind to EVT_SET_FOCUS too?
 		pub.subscribe(self._OnIndexImage, "IndexImage")
 		pub.subscribe(self._OnLeftImage, "LeftImage")
 		pub.subscribe(self._OnRightImage, "RightImage")
@@ -341,8 +336,8 @@ class ImageTagsEntry(EntryBase):
 		self.SetSizer(self.sizer)
 
 		self.Bind( wx.EVT_BUTTON, self._OnRomanize, id=self.RomanizeButton.GetId() )
-		self.Bind( wx.EVT_TEXT, self._OnEntry, id=self.entry.GetId() )
-		self.Bind( wx.EVT_WINDOW_DESTROY, self._OnWindowDestroy, id=self.GetId() ) # TODO Should we bind to EVT_SET_FOCUS too?
+		self.Bind( wx.EVT_TEXT, self._OnUpdateEvent, id=self.entry.GetId() )
+		self.Bind( wx.EVT_WINDOW_DESTROY, self._OnUpdateEvent, id=self.GetId() ) # TODO Should we bind to EVT_SET_FOCUS too?
 
 #TODO: Remove code duplication
 class SessionTags(TagChoiceQuestion):
