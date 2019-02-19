@@ -243,6 +243,8 @@ class FileData:
 			if found is None:
 				raise ControlFileError( ''.join( ("Invalid safety name '", rating, "'") ) )
 			self.rating = found
+		self._DataState = self._BuildData() # The current output of the DataCallback, used to determine if _IsChanged should be set.
+		self._IsChanged = True
 	def IsChangedCallback(self):
 		"Return whether or not any of the data has been changed."
 		return self._IsChanged
