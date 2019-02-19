@@ -135,13 +135,13 @@ class PositionButtons(wx.Panel):
 		e.Skip()
 	def _OnFocusQuestionBody(self, message, arg2=None):
 		self._CurrentWidget().SetFocus()
-	def _OnLeftImage(self, message, arg2=None):
+	def _OnLeftImageReceived(self, message, arg2=None):
 		self.LeftImage.SetFocus()
-	def _OnLeftQuestion(self, message, arg2=None):
+	def _OnLeftQuestionReceived(self, message, arg2=None):
 		self.LeftQuestion.SetFocus()
-	def _OnRightQuestion(self, message, arg2=None):
+	def _OnRightQuestionReceived(self, message, arg2=None):
 		self.RightQuestion.SetFocus()
-	def _OnRightImage(self, message, arg2=None):
+	def _OnRightImageReceived(self, message, arg2=None):
 		self.RightImage.SetFocus()
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent=parent)
@@ -175,10 +175,10 @@ class PositionButtons(wx.Panel):
 		self.Bind( wx.EVT_BUTTON, self._OnRightQuestion, id=self.RightQuestion.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnRightImage, id=self.RightImage.GetId() )
 
-		pub.subscribe(self._OnLeftImage, "LeftImage")
-		pub.subscribe(self._OnLeftQuestion, "LeftQuestion")
-		pub.subscribe(self._OnRightQuestion, "RightQuestion")
-		pub.subscribe(self._OnRightImage, "RightImage")
+		pub.subscribe(self._OnLeftImageReceived, "LeftImage")
+		pub.subscribe(self._OnLeftQuestionReceived, "LeftQuestion")
+		pub.subscribe(self._OnRightQuestionReceived, "RightQuestion")
+		pub.subscribe(self._OnRightImageReceived, "RightImage")
 
 class PromptControls(wx.Panel):
 	def __init__(self, parent, NumImages, questions):
