@@ -41,7 +41,7 @@ KEYBIND_IDS = {
 }
 KEYBIND_MESSAGES = {
 	ID_EMERGENCY_EXIT         : 'EmergencyExit'      ,
-	ID_FILE_UPDATE_FORCE      : 'FileUpdateForce'
+	ID_FILE_UPDATE_FORCE      : 'FileUpdateForce'    ,
 	ID_LEFT_IMAGE             : 'LeftImage'          ,
 	ID_RIGHT_IMAGE            : 'RightImage'         ,
 	ID_LEFT_QUESTION          : 'LeftQuestion'       ,
