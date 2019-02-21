@@ -2,6 +2,7 @@ import wx
 from pubsub import pub
 
 ID_EMERGENCY_EXIT = wx.NewId()
+ID_FILE_UPDATE_FORCE = wx.NewId()
 ID_LEFT_IMAGE = wx.NewId()
 ID_RIGHT_IMAGE = wx.NewId()
 ID_LEFT_QUESTION = wx.NewId()
@@ -20,6 +21,7 @@ ID_IMAGE_QUALITY_MEDIUM = wx.NewId()
 ID_IMAGE_QUALITY_LOW = wx.NewId()
 KEYBIND_IDS = {
 	'exit'                   : ID_EMERGENCY_EXIT        ,
+	'flush_changes'          : ID_FILE_UPDATE_FORCE     ,
 	'left_image'             : ID_LEFT_IMAGE            ,
 	'right_image'            : ID_RIGHT_IMAGE           ,
 	'left_question'          : ID_LEFT_QUESTION         ,
@@ -39,6 +41,7 @@ KEYBIND_IDS = {
 }
 KEYBIND_MESSAGES = {
 	ID_EMERGENCY_EXIT         : 'EmergencyExit'      ,
+	ID_FILE_UPDATE_FORCE      : 'FileUpdateForce'
 	ID_LEFT_IMAGE             : 'LeftImage'          ,
 	ID_RIGHT_IMAGE            : 'RightImage'         ,
 	ID_LEFT_QUESTION          : 'LeftQuestion'       ,
@@ -63,6 +66,7 @@ class KeyHandlerError(Exception):
 class KeyHandler(wx.Object):
 	def __init__(self):
 		self.EmergencyExitItem = wx.MenuItem(id=wx.NewId(), text="EmergencyExit", helpString="Exit the application.")
+		self.FileUpdateForceItem = wx.MenuItem(id=wx.NewId(), text="FileUpdateForce", helpString="Flush output files to hard drive, if changed.")
 		self.LeftImageItem = wx.MenuItem(id=wx.NewId(), text="LeftImage", helpString="Switch to the 'left' or previous image.")
 		self.RightImageItem = wx.MenuItem(id=wx.NewId(), text="RightImage", helpString="Switch to the 'right' or next image.")
 		self.LeftQuestionItem = wx.MenuItem(id=wx.NewId(), text="LeftQuestion", helpString="Switch to the 'left' or previous image.")
@@ -80,6 +84,7 @@ class KeyHandler(wx.Object):
 		self.ImageQualityMediumItem = wx.MenuItem(id=wx.NewId(), text="ImageQualityMedium", helpString="Set image quality to medium.")
 		self.ImageQualityLowItem = wx.MenuItem(id=wx.NewId(), text="ImageQualityLow", helpString="Set image quality to low.")
 		self.MenuItems = {'exit'                   : self.EmergencyExitItem      ,
+						  'flush_changes'          : self.FileUpdateForceItem    ,
 						  'left_image'             : self.LeftImageItem          ,
 						  'right_image'            : self.RightImageItem         ,
 						  'left_question'          : self.LeftQuestionItem       ,
@@ -104,6 +109,7 @@ class KeyHandler(wx.Object):
 		obj.SetAcceleratorTable( wx.AcceleratorTable(self.entries) )
 
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_EMERGENCY_EXIT)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_FILE_UPDATE_FORCE)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_LEFT_IMAGE)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_RIGHT_IMAGE)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_LEFT_QUESTION)
