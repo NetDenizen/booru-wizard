@@ -249,6 +249,7 @@ class FileData:
 		"Return whether or not any of the data has been changed."
 		return self._IsChanged
 	def DataCallback(self):
+		self._IsChanged = False
 		return self._DataState
 	def GetManagedFile(self, OutputDir, PushUpdatesEnabled, ReserveCallback):
 		"Create and return associated ManagedFile object."
