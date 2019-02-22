@@ -159,7 +159,6 @@ class FileData:
 		self.ConditionalTags.ClearTags(name, self.tags)
 	def _BuildData(self):
 		"Return the data fields formatted as a JSON string, and set the change status to false.."
-		self._IsChanged = False
 		output = {'rating' : SAFETY_VALUES_LOOKUP[self.rating]}
 		obj = {self.path : output}
 		if self.name is not None:
@@ -188,8 +187,8 @@ class FileData:
 		self.TaglessTags = TaglessTags
 		self.SetTaglessTags()
 
-		self._DataState = self._BuildData() # The current output of the DataCallback, used to determine if _IsChanged should be set.
 		self._IsChanged = True
+		self._DataState = self._BuildData() # The current output of the DataCallback, used to determine if _IsChanged should be set.
 		self._lock = None # A lock within the ManagedFile object, used to synchronize updates.
 		self._PushUpdate = None # A callback to push data to the associated ManagedFile object
 		#TODO: Other default tag stuff
