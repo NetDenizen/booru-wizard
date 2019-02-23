@@ -500,9 +500,9 @@ class NameQuestion(SingleStringEntry):
 
 		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
 
-		self.EntrySizer.Add(self.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
-		self.EntrySizer.AddStretchSpacer(1)
 		self.EntrySizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
+		self.EntrySizer.AddStretchSpacer(1)
+		self.EntrySizer.Add(self.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
 
 		self.MainSizer.Add(self.EntrySizer, 40, wx.ALIGN_CENTER | wx.EXPAND)
 		self.MainSizer.AddStretchSpacer(15)
@@ -553,9 +553,9 @@ class SourceQuestion(SingleStringEntry):
 
 		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
 
-		self.EntrySizer.Add(self.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
-		self.EntrySizer.AddStretchSpacer(1)
 		self.EntrySizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
+		self.EntrySizer.AddStretchSpacer(1)
+		self.EntrySizer.Add(self.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
 
 		self.MainSizer.Add(self.EntrySizer, 40, wx.ALIGN_CENTER | wx.EXPAND)
 		self.MainSizer.AddStretchSpacer(15)

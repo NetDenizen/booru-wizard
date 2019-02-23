@@ -202,9 +202,9 @@ class PromptContainer(wx.Panel):
 		self.MainSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.WrapperSizer = wx.BoxSizer(wx.VERTICAL)
 
-		self.MainSizer.Add(self.prompt, 100, wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.ALIGN_LEFT | wx.EXPAND)
-		self.MainSizer.AddStretchSpacer(1)
 		self.MainSizer.Add(self.buttons, 0, wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.ALIGN_RIGHT)
+		self.MainSizer.AddStretchSpacer(1)
+		self.MainSizer.Add(self.prompt, 100, wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.ALIGN_LEFT | wx.EXPAND)
 
 		self.WrapperSizer.Add(self.MainSizer, 5, wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 		self.SetSizer(self.WrapperSizer)
