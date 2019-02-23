@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from bisect import bisect_right
 
 class tag:
 	def __init__(self, name):
@@ -13,6 +14,7 @@ class tag:
 class TagsContainer:
 	def __init__(self):
 		self.lookup = {} # Lookup table for quickly locating tags
+		self.names = []
 		self.tags = []
 	def register(self, name):
 		"Add a single tag object with zero occurrences; if it already exists, then do nothing. Return the registered tag."
@@ -20,9 +22,12 @@ class TagsContainer:
 		NameLower = name.lower()
 		found = lookup.get(NameLower, None)
 		if found is None:
+			names = self.names
 			new = tag(NameLower)
 			lookup[NameLower] = new
-			self.tags.append(new)
+			idx = bisect_right(names, NameLower)
+			names.insert(idx, NameLower)
+			self.tags.insert(idx, new)
 			return new
 		else:
 			return found
