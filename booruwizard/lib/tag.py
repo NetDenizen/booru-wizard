@@ -16,10 +16,12 @@ class TagsContainer:
 		self.tags = []
 	def register(self, name):
 		"Add a single tag object with zero occurrences; if it already exists, then do nothing. Return the registered tag."
-		found = self.lookup.get(name.lower(), None)
+		lookup = self.lookup
+		NameLower = name.lower()
+		found = lookup.get(NameLower, None)
 		if found is None:
-			new = tag( name.lower() )
-			self.lookup[name.lower()] = new
+			new = tag(NameLower)
+			lookup[NameLower] = new
 			self.tags.append(new)
 			return new
 		else:
