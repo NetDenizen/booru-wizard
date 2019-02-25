@@ -273,7 +273,7 @@ class FileManager:
 		if self._UpdateInterval == -1.0:
 			return
 		if self._UpdateInterval == 0.0:
-			sendMessage("FileUpdateClear", message=None)
+			pub.sendMessage("FileUpdateClear", message=None)
 			return
 		self._UpdateTimer = threading.Thread( name='Update Timer', target=self._UpdateThread, daemon=True )
 		self._UpdateTimerRunning.set()
