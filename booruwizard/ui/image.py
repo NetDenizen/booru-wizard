@@ -59,6 +59,10 @@ class ImageDisplay(wx.Panel):
 		bitmap = self.bitmap
 		if bitmap is None:
 			return
+		if self.quality != self.CurrentQuality:
+			self.CurrentQuality = self.quality
+			bitmap = wx.Bitmap( self.image.Scale(self.width, self.height, self.quality) )
+			self.bitmap = bitmap
 		if self.ClearOnPaint:
 			dc.Clear()
 		dc.DrawBitmap( self.BackgroundBitmap, self.DiffWidth, self.DiffHeight, True )
@@ -78,6 +82,7 @@ class ImageDisplay(wx.Panel):
 		self.ClearOnPaint = False
 		self.BackgroundManager = BackgroundManager
 		self.quality = quality
+		self.CurrentQuality = quality
 
 		self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
 
