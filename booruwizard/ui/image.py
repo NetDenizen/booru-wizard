@@ -5,13 +5,11 @@ from booruwizard.lib.imagereader import ImageReader
 
 #TODO: Should we have a control to affect the scaling (maybe an alternate scrollbar setting), or to change the background color?
 class ImageDisplay(wx.Panel):
-	def _OnPaint(self, e):
-		"Load the image at pos in the bitmap at array and scale it to fit the panel. If the image has alpha, overlay it with an image from the background manager."
-		dc = wx.PaintDC(self)
-		if self.bitmap is None:
+	def _CalculateSize(self, NewImage):
+		if self.image is None:
 			return
-		ImageWidth = self.bitmap.GetWidth()
-		ImageHeight = self.bitmap.GetHeight()
+		ImageWidth = self.image.GetWidth()
+		ImageHeight = self.image.GetHeight()
 		PanelSize = self.GetSize()
 		PanelWidth = PanelSize.GetWidth()
 		PanelHeight = PanelSize.GetHeight()
@@ -27,16 +25,64 @@ class ImageDisplay(wx.Panel):
 		DiffHeight = (PanelHeight - NewHeight) / 2
 		if DiffHeight < 0:
 			DiffHeight = 0
-		image = self.bitmap.Scale(NewWidth, NewHeight, self.quality) # TODO: Should we use high quality rescaling?
-		dc.DrawBitmap( wx.Bitmap.FromBuffer( NewWidth, NewHeight, self.BackgroundManager.get(NewWidth, NewHeight) ), DiffWidth, DiffHeight, True )
-		dc.DrawBitmap( wx.Bitmap(image), DiffWidth, DiffHeight, True )
+		UpdateBackground = False
+		if NewWidth != self.width:
+			self.width = NewWidth
+			self.ClearOnPaint = True
+			UpdateBackground = True
+		if NewHeight != self.height:
+			self.height = NewHeight
+			self.ClearOnPaint = True
+			UpdateBackground = True
+		if DiffWidth != self.DiffWidth:
+			self.DiffWidth = DiffWidth
+			UpdateBackground = True
+		if DiffHeight != self.DiffHeight:
+			self.DiffHeight = DiffHeight
+			UpdateBackground = True
+		UpdateImage = NewImage
+		if NewWidth == 0 and NewHeight == 0:
+			UpdateBackground = False
+			UpdateImage = False
+		if UpdateBackground:
+			self.BackgroundBitmap = wx.Bitmap.FromBuffer( NewWidth, NewHeight, self.BackgroundManager.get(NewWidth, NewHeight) )
+			UpdateImage = True
+		if UpdateImage:
+			self.bitmap = wx.Bitmap( self.image.Scale(NewWidth, NewHeight, self.quality) )
+	def _OnSize(self, e):
+		"Bound to EVT_SIZE to adjust the display to a change in size."
+		self._CalculateSize(False)
+		e.Skip()
+	def _OnPaint(self, e):
+		"Load the image at pos in the bitmap at array and scale it to fit the panel. If the image has alpha, overlay it with an image from the background manager."
+		dc = wx.AutoBufferedPaintDC(self)
+		bitmap = self.bitmap
+		if bitmap is None:
+			return
+		if self.ClearOnPaint:
+			dc.Clear()
+		dc.DrawBitmap( self.BackgroundBitmap, self.DiffWidth, self.DiffHeight, True )
+		dc.DrawBitmap( bitmap, self.DiffWidth, self.DiffHeight, True )
+	def SetImage(self, image):
+		self.image = image
+		self._CalculateSize(True)
 	def __init__(self, parent, quality, BackgroundManager):
 		wx.Panel.__init__(self, parent=parent)
+		self.BackgroundBitmap = None
+		self.image = None
 		self.bitmap = None
+		self.height = None
+		self.width = None
+		self.DiffHeight = None
+		self.DiffWidth = None
+		self.ClearOnPaint = False
 		self.BackgroundManager = BackgroundManager
 		self.quality = quality
 
+		self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
+
 		self.Bind(wx.EVT_PAINT, self._OnPaint)
+		self.Bind(wx.EVT_SIZE, self._OnSize)
 
 class ImagePanel(wx.Panel):
 	def _HumanSize(self, val):
@@ -62,9 +108,9 @@ class ImagePanel(wx.Panel):
 	def _update(self):
 		"Update the current bitmap, and the information display."
 		image = self.bitmaps.get(self.pos)
-		self.image.bitmap = image.image
-		if self.image.bitmap is not None:
-			size = self.image.bitmap.GetSize()
+		self.image.SetImage(image.image)
+		if self.image.image is not None:
+			size = self.image.image.GetSize()
 			ResolutionString = ''.join( ( 'Resolution: ', str( size.GetWidth() ), 'x', str( size.GetHeight() ), ' (', str( size.GetWidth() * size.GetHeight() ), ' pixels)' ) )
 			FileSizeString = ''.join( ( 'File size: ', self._HumanSize( image.FileSize ) ) )
 			DataSizeString = ''.join( ( 'Data size: ', self._HumanSize( image.DataSize ), ' / ', self._HumanSize( self.bitmaps.GetCurrentBufSize() ), ' / ', self._HumanSize( self.bitmaps.GetMaxBufSize() ), ' (', str( self.bitmaps.GetNumOpenImages() ), ')' ) )
