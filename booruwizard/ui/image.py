@@ -69,6 +69,7 @@ class ImageDisplay(wx.Panel):
 		dc.DrawBitmap( bitmap, self.DiffWidth, self.DiffHeight, True )
 	def SetImage(self, image):
 		self.image = image
+		self.bitmap = None
 		self._CalculateSize(True)
 	def __init__(self, parent, quality, BackgroundManager):
 		wx.Panel.__init__(self, parent=parent)
