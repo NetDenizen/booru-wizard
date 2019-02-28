@@ -116,9 +116,20 @@ class ImagePanel(wx.Panel):
 		self.image.SetImage(image.image)
 		if self.image.image is not None:
 			size = self.image.image.GetSize()
-			ResolutionString = ''.join( ( 'Resolution: ', str( size.GetWidth() ), 'x', str( size.GetHeight() ), ' (', str( size.GetWidth() * size.GetHeight() ), ' pixels)' ) )
+			ResolutionString = ''.join( (
+										 'Resolution: ', str( size.GetWidth() ), 'x', str( size.GetHeight() ),
+										 ' (', str( size.GetWidth() * size.GetHeight() ), ' pixels)'
+										)
+									  )
 			FileSizeString = ''.join( ( 'File size: ', self._HumanSize( image.FileSize ) ) )
-			DataSizeString = ''.join( ( 'Data size: ', self._HumanSize( image.DataSize ), ' / ', self._HumanSize( self.bitmaps.GetCurrentBufSize() ), ' / ', self._HumanSize( self.bitmaps.GetMaxBufSize() ), ' (', str( self.bitmaps.GetNumOpenImages() ), ')' ) )
+			DataSizeString = ''.join(
+									  (
+									   'Data size: ', self._HumanSize( image.DataSize ), ' / ',
+									   self._HumanSize( self.bitmaps.GetCurrentBufSize() ), ' / ',
+									   self._HumanSize( self.bitmaps.GetMaxBufSize() ),
+									   ' (', str( self.bitmaps.GetNumOpenImages() ), ')'
+									  )
+									)
 		else:
 			ResolutionString = 'File failed to load'
 			FileSizeString = ''
@@ -252,7 +263,7 @@ class ImagePanel(wx.Panel):
 		self.ResolutionDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays the resolution of the current image
 		self.FileSizeDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays the size of the current image
 		self.DataSizeDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays statistics about imagebuffer usage
-		self.DataSizeTip = wx.ToolTip('Current/Cumulative/Maximum (Number of files loaded)')
+		self.DataSizeTip = wx.ToolTip('Current/Cumulative/Maximum (Cache Index/Number of files loaded)')
 		self.ImageQualityControl = wx.RadioBox(self, label='Image Quality:',
 											   choices= ('H2+1', 'H2', 'H1', 'M', 'L'),
 											   style= wx.RA_SPECIFY_COLS | wx.ALIGN_LEFT
