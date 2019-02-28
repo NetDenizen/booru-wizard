@@ -315,11 +315,15 @@ class FileManager:
 		return result
 	def _UpdateThread(self):
 		"The worker thread to loop through files and flush any changes to the disk."
+		sw = wx.StopWatch()
+		swStart = sw.Start
+		swPause = sw.Pause
+		swTimeInMicro = sw.TimeInMicro
 		running = self._UpdateTimerRunning.is_set
 		wait = self._UpdateTimerDelay.wait
 		clear = self._UpdateTimerDelay.clear
 		interrupted = self._UpdateTimerDelay.is_set
-		UpdateInterval = self._UpdateInterval
+		UpdateInterval = self._UpdateInterval * 1000000.0
 		CheckAny = self.CheckAny
 		sendMessage = pub.sendMessage
 		acquire = self.FilesLock.acquire
@@ -328,14 +332,19 @@ class FileManager:
 		UpdateState = False
 		while running():
 			CurrentTime = 0.0
+			delta = 1000000.0
 			while True:
+				swStart()
+				delta = float(delta) - 1000000.0
 				interval = UpdateInterval - CurrentTime
 				sendMessage("FileUpdateTick", message=interval)
-				if interval >= 1.0:
-					wait(1.0)
+				if interval >= 1000000.0:
+					WaitTime = 1000000.0 - delta
+					wait(WaitTime / 1000000.0)
 					if interrupted():
+						swPause()
 						break
-					CurrentTime += 1.0
+					CurrentTime += WaitTime
 					NewUpdateState = CheckAny()
 					if NewUpdateState != UpdateState:
 						UpdateState = NewUpdateState
@@ -344,10 +353,13 @@ class FileManager:
 						else:
 							sendMessage("FileUpdateClear", message=None)
 				elif interval > 0:
-					wait(interval)
+					wait( (interval - delta) / 1000000.0 )
+					swPause()
 					break
 				else:
+					swPause()
 					break
+				delta = swTimeInMicro()
 			acquire()
 			UpdateAll()
 			release()

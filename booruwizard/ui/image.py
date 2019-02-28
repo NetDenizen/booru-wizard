@@ -139,8 +139,9 @@ class ImagePanel(wx.Panel):
 	def _OnFileUpdateClear(self, message, arg2=None):
 		wx.CallAfter(self.OutputUpdateButton.Disable)
 	def _OnFileUpdateTick(self, message, arg2=None):
-		minutes = int(message // 60.0)
-		seconds = message % 60.0
+		MessageSeconds = message / 1000000.0
+		minutes = int(MessageSeconds // 60.0)
+		seconds = MessageSeconds % 60.0
 		output = ''.join( ( 'Until Next Flush: ', str(minutes).zfill(2), ':', str(seconds).zfill(4) ) )
 		wx.CallAfter(self.OutputUpdateTimer.SetLabel, output)
 	def _OnImageQualityHigh21(self, message, arg2=None):
