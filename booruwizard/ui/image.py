@@ -127,7 +127,7 @@ class ImagePanel(wx.Panel):
 									   'Data size: ', self._HumanSize( image.DataSize ), ' / ',
 									   self._HumanSize( self.bitmaps.GetCurrentBufSize() ), ' / ',
 									   self._HumanSize( self.bitmaps.GetMaxBufSize() ),
-									   ' (', str( self.bitmaps.GetNumOpenImages() ), ')'
+									   ' (', str( self.bitmaps.GetCacheIndex(image) + 1 ), '/', str( self.bitmaps.GetNumOpenImages() ), ')'
 									  )
 									)
 		else:

@@ -78,3 +78,5 @@ class ImageReader:
 		return self._CurrentBufSize
 	def GetNumOpenImages(self):
 		return len(self._OpenImages)
+	def GetCacheIndex(self, image):
+		return self._OpenImages.index(image)
