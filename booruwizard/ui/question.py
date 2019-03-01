@@ -70,8 +70,6 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 			self._UpdateName(i)
 	def _OnSelect(self, e):
 		"Bound to EVT_RADIOBOX; set selected tag and remove the previously selected one."
-		if self.CurrentChoice == self.choices.GetSelection():
-			return
 		self.OutputFile.PrepareChange()
 		self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		self.OutputFile.tags.clear(self.TagNames[self.CurrentChoice], 2)
@@ -97,15 +95,20 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		self.OutputFile.PrepareChange()
 		self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		Last = 0
+		LastOccurrences = 0
 		names = []
 		for i, n in enumerate(self.TagNames):
-			if n and self.OutputFile.tags.ReturnStringOccurrences(n) > 1:
+			if not n:
+				continue
+			occurrences = self.OutputFile.tags.ReturnStringOccurrences(n)
+			if occurrences > 0:
 				self.OutputFile.tags.clear(n, 2)
 				self.OutputFile.ClearConditionalTags(n)
 				Last = i
+				LastOccurences = occurrences
 				names.append(n)
 		self.choices.SetSelection(Last)
-		self.OutputFile.tags.set(self.TagNames[self.choices.GetSelection()], 2)
+		self.OutputFile.tags.set(self.TagNames[self.choices.GetSelection()], LastOccurences)
 		self.OutputFile.SetConditionalTags(self.TagNames[self.choices.GetSelection()])
 		self.OutputFile.SetTaglessTags(names)
 		self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
