@@ -359,6 +359,24 @@ class ImageTagsEntry(EntryBase):
 
 #TODO: Remove code duplication
 class SessionTags(TagChoiceQuestion):
+	def _MakeNames(self):
+		RawNames = self.TagsTracker.ReturnStringList()
+		UserNames = []
+		AutoNames = []
+		NoneNames = []
+		for n in RawNames:
+			occurrences = self.OutputFile.tags.ReturnStringOccurrences(n)
+			if occurrences == 2:
+				UserNames.append(n)
+			elif occurrences == 1:
+				AutoNames.append(n)
+			else:
+				NoneNames.append(n)
+		output = []
+		output.extend(UserNames)
+		output.extend(AutoNames)
+		output.extend(NoneNames)
+		return output
 	def _OnScrollTop(self, e):
 		"Prevent the widget from scrolling to the top when a box is checked."
 		e.StopPropagation()
@@ -382,7 +400,7 @@ class SessionTags(TagChoiceQuestion):
 			self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 			self.OutputFile.FinishChange()
 			self.CurrentChoices.append( e.GetInt() )
-		ChoiceNames = self.TagsTracker.ReturnStringList()
+		ChoiceNames = self._MakeNames()
 		added = False
 		for c in ChoiceNames:
 			if c not in self.ChoiceNames:
@@ -416,7 +434,7 @@ class SessionTags(TagChoiceQuestion):
 			self.sizer.Remove(0)
 			self.choices.Destroy()
 			self.choices = None
-		self.ChoiceNames = self.TagsTracker.ReturnStringList()
+		self.ChoiceNames = self._MakeNames()
 		self.TagNames = self.ChoiceNames
 		self.choices = wx.CheckListBox( self, choices= self.ChoiceNames )
 		self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
