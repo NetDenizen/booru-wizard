@@ -11,10 +11,19 @@ from booruwizard.lib.template import QuestionType, OptionQuestionType
 class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 	def _UpdateName(self, idx):
 		"Update the name of a choice at the specified index, with the current number of occurrences for the related tag from the tag tracker."
+		TagName = self.TagNames[idx]
+		occurrences = self.OutputFile.tags.ReturnStringOccurrences(TagName)
+		if occurrences == 2:
+			status = '[user] '
+		elif occurrences == 1:
+			status = '[auto] '
+		else:
+			status = '[none] '
 		self.choices.SetString(idx,
 							   ''.join( ( '[',
-										  str( self.TagsTracker.ReturnStringOccurrences(self.TagNames[idx]) ),
+										  str( self.TagsTracker.ReturnStringOccurrences(TagName) ),
 										  '] ',
+										  status,
 										  self.ChoiceNames[idx]
 										)
 									  )
@@ -39,10 +48,19 @@ class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 	def _UpdateName(self, idx):
 		"Update the name of a choice at the specified index, with the current number of occurrences for the related tag from the tag tracker."
+		TagName = self.TagNames[idx]
+		occurrences = self.OutputFile.tags.ReturnStringOccurrences(TagName)
+		if occurrences == 2:
+			status = '[user] '
+		elif occurrences == 1:
+			status = '[auto] '
+		else:
+			status = '[none] '
 		self.choices.SetString(idx,
 							   ''.join( ( '[',
-										  str( self.TagsTracker.ReturnStringOccurrences(self.TagNames[idx]) ),
+										  str( self.TagsTracker.ReturnStringOccurrences(TagName) ),
 										  '] ',
+										  status,
 										  self.ChoiceNames[idx]
 										)
 									  )
@@ -81,7 +99,7 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		Last = 0
 		names = []
 		for i, n in enumerate(self.TagNames):
-			if n and self.OutputFile.tags.ReturnStringOccurrences(n) > 0:
+			if n and self.OutputFile.tags.ReturnStringOccurrences(n) > 1:
 				self.OutputFile.tags.clear(n, 2)
 				self.OutputFile.ClearConditionalTags(n)
 				Last = i
