@@ -147,28 +147,47 @@ class TagsContainer:
 class ConditionalTagger:
 	def __init__(self):
 		self.lookup = {} # A dictionary of tag names to correspond to containers of tags.
+		self.ReverseLookup = {} # A dictionary of containers to correspond to tag names; reverse of self.lookup.
 	def AddString(self, keys, tags):
 		"Keys and tags are space separated lists of tags. Make it so that any of the first will retrieve a container with the latter."
 		if not keys or not tags:
 			return
-		container = TagsContainer()
-		container.SetString(tags, 1)
-		for k in keys.lower().split():
-			self.lookup[k] = container
+		KeysList = keys.lower().split()
+		TagsList = tags.lower().split()
+		for k in KeysList:
+			found = self.lookup.get(k, None)
+			if found is None:
+				self.lookup[k] = TagsList
+			else:
+				self.lookup[k].extend(t for t in TagsList if t not in self.lookup[k])
+		for t in TagsList:
+			found = self.ReverseLookup.get(t, None)
+			if found is None:
+				self.ReverseLookup[t] = KeysList
+			else:
+				self.ReverseLookup[t].extend(k for k in KeysList if k not in self.ReverseLookup[t])
 	def SetTags(self, name, target):
 		"Search for the name in lookup, and if it is found, then set the target container with the found one."
 		if not name:
 			return
 		found = self.lookup.get(name.lower(), None)
 		if found is not None:
-			target.SetContainer(found)
+			target.SetStringList(found, 1)
 	def ClearTags(self, name, target):
 		"Search for the name in lookup, and if it is found, then clear the target container with the found one."
 		if not name:
 			return
 		found = self.lookup.get(name.lower(), None)
-		if found is not None:
-			target.ClearContainer(found)
+		if found is None:
+			return
+		for t in found:
+			DoClear = True
+			for k in self.ReverseLookup[t]:
+				if target.ReturnStringOccurrences(k) > 0 and k != name:
+					DoClear = False
+					break
+			if DoClear:
+				target.clear(t, 1)
 	def SetTagsInit(self, obj, target):
 		"Set tags using each entry from a dictionary."
 		for k, v in obj.items():
