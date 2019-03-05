@@ -149,7 +149,7 @@ class ConditionalTagger:
 		self.lookup = {} # A dictionary of tag names to correspond to containers of tags.
 		self.ReverseLookup = {} # A dictionary of containers to correspond to tag names; reverse of self.lookup.
 	def AddString(self, keys, tags):
-		"Keys and tags are space separated lists of tags. Make it so that any of the first will retrieve a container with the latter."
+		"Keys and tags are space separated lists of tags. Make it so that each key will retrieve a list of its associated tags, and vice-versa."
 		if not keys or not tags:
 			return
 		KeysList = keys.lower().split()
@@ -174,7 +174,7 @@ class ConditionalTagger:
 		if found is not None:
 			target.SetStringList(found, 1)
 	def ClearTags(self, name, target):
-		"Search for the name in lookup, and if it is found, then clear the target container with the found one."
+		"Search for the name in lookup, and if it (or any other name controlling the associated tags) is found, then clear the target container with the found one."
 		if not name:
 			return
 		found = self.lookup.get(name.lower(), None)
