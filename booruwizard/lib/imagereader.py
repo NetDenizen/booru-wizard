@@ -20,8 +20,9 @@ class ManagedImage:
 			self.FileSize = os.fstat( stream.fileno() ).st_size
 			stream.close()
 			self.DataSize = len( self.image.GetDataBuffer() )
-			if not self.image.IsOk():
-				raise Exception()
+			# TODO: What was this for again?
+			#if not self.image.IsOk():
+			#	raise Exception()
 		except: # TODO: Should this be more specific?
 			self.image = None
 			self.DataSize = 0
