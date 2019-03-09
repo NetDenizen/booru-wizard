@@ -13,7 +13,7 @@ import jsonschema
 from booruwizard.lib.tag import TagsContainer
 from booruwizard.lib.template import parser
 from booruwizard.lib.fileops import FileManager
-from booruwizard.lib.alphabackground import TransparencyBackground
+from booruwizard.lib.viewport import ViewPort
 from booruwizard.lib.keyhandler import KeyHandler
 from booruwizard.ui.main import FileDialogFrame, MainFrame
 
@@ -163,7 +163,8 @@ def main():
 	config = parser()
 	config.parse( ReadTextFile(settings.ConfigFile) )
 
-	BackgroundManager = TransparencyBackground(config.BackgroundColor1, config.BackgroundColor2, config.BackgroundSquareWidth)
+	viewport = ViewPort(config.BackgroundColor1, config.BackgroundColor2, config.BackgroundSquareWidth,
+						config.StartZoomInterval, config.ZoomAccel, config.ZoomAccelSteps, config.PanInterval)
 
 	OutputFiles = FileManager(config.MaxOpenFiles, config.UpdateInterval)
 	OutputFiles.FilesLock.acquire()
@@ -186,7 +187,7 @@ def main():
 		TagsTracker.AddStringList( f.tags.ReturnStringList(), 1 )
 	OutputFiles.FilesLock.release()
 
-	wizard = MainFrame(None, APPTITLE, config.MaxImageBufSize, config.DefaultImageQuality, config.output, OutputFiles, TagsTracker, BackgroundManager)
+	wizard = MainFrame(None, APPTITLE, config.MaxImageBufSize, config.DefaultImageQuality, config.output, OutputFiles, TagsTracker, viewport)
 	keybinds = KeyHandler()
 	keybinds.AddList(config.keybinds)
 	keybinds.RegisterObj(wizard)

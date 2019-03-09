@@ -5,6 +5,7 @@ import colorsys
 from booruwizard.lib.fileops import SAFETY_NAMES_LOOKUP, DEFAULT_SAFETY, DEFAULT_MAX_OPEN_FILES, DEFAULT_UPDATE_INTERVAL, DEFAULT_MAX_IMAGE_BUFSIZE, DEFAULT_IMAGE_QUALITY, IMAGE_QUALITY_LOOKUP
 from booruwizard.lib.tag import TagsContainer, ConditionalTagger
 from booruwizard.lib.alphabackground import DEFAULT_COLOR1_PIXEL, DEFAULT_COLOR2_PIXEL, DEFAULT_SQUARE_WIDTH
+from booruwizard.lib.viewport import DEFAULT_ZOOM_INTERVAL, DEFAULT_ZOOM_ACCEL, DEFAULT_ZOOM_ACCEL_STEPS, DEFAULT_PAN_INTERVAL
 
 # Generic template error definition
 class TemplateError(Exception):
@@ -38,6 +39,10 @@ class PairKey(Enum):
 	KEYBIND                       = 22
 	IMAGE_TAGS_ENTRY              = 23
 	DEFAULT_IMAGE_QUALITY         = 24
+	START_ZOOM_INTERVAL           = 25
+	ZOOM_ACCEL                    = 26
+	ZOOM_ACCEL_STEPS              = 27
+	PAN_INTERVAL                  = 28
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 	#TODO: keyboard controls, alias name and alias tag separately, no option tag
 
@@ -66,7 +71,11 @@ PAIR_KEY_NAMES = {
 	'IMAGE_BACKGROUND_SQUARE_WIDTH' : PairKey.IMAGE_BACKGROUND_SQUARE_WIDTH,
 	'KEYBIND'                       : PairKey.KEYBIND,
 	'IMAGE_TAGS_ENTRY'              : PairKey.IMAGE_TAGS_ENTRY,
-	'DEFAULT_IMAGE_QUALITY'         : PairKey.DEFAULT_IMAGE_QUALITY
+	'DEFAULT_IMAGE_QUALITY'         : PairKey.DEFAULT_IMAGE_QUALITY,
+	'START_ZOOM_INTERVAL'           : PairKey.START_ZOOM_INTERVAL,
+	'ZOOM_ACCEL'                    : PairKey.ZOOM_ACCEL,
+	'ZOOM_ACCEL_STEPS'              : PairKey.ZOOM_ACCEL_STEPS,
+	'PAN_INTERVAL'                  : PairKey.PAN_INTERVAL
 }
 
 class KeyValuePair:
@@ -369,6 +378,11 @@ class parser:
 		self.BackgroundColor2 = DEFAULT_COLOR2_PIXEL
 		self.BackgroundSquareWidth = DEFAULT_SQUARE_WIDTH
 
+		self.StartZoomInterval = DEFAULT_ZOOM_INTERVAL
+		self.ZoomAccel = DEFAULT_ZOOM_ACCEL
+		self.ZoomAccelSteps = DEFAULT_ZOOM_ACCEL_STEPS
+		self.PanInterval = DEFAULT_PAN_INTERVAL
+
 		self.keybinds = []
 
 		self.output = [] # Output array of question objects
@@ -478,7 +492,7 @@ class parser:
 			try:
 				self.UpdateInterval = float(token.value)
 			except ValueError:
-				raise ParserError(''.join( ("Failed to convert update interval '", token.value, "' to integer.") ), token.line, token.col)
+				raise ParserError(''.join( ("Failed to convert update interval '", token.value, "' to float.") ), token.line, token.col)
 		elif token.key == PairKey.MAX_IMAGE_BUFSIZE:
 			m = RE_HUMANSIZE.match(token.value)
 			if m is None:
@@ -510,11 +524,31 @@ class parser:
 				raise ParserError(''.join( ("Failed to convert background square width '", token.value, "' to integer.") ), token.line, token.col)
 		elif token.key == PairKey.KEYBIND:
 			self.keybinds.append(token.value)
-		else: # token.key == PairKey.DEFAULT_IMAGE_QUALITY
+		elif token.key == PairKey.DEFAULT_IMAGE_QUALITY:
 			found = IMAGE_QUALITY_LOOKUP.get(token.value, None)
 			if found is None:
 				raise ParserError(''.join( ("Invalid image quality name '", token.value, "'") ), token.line, token.col)
 			self.DefaultImageQuality = found
+		elif token.key == PairKey.START_ZOOM_INTERVAL:
+			try:
+				self.StartZoomInterval = float(token.value)
+			except ValueError:
+				raise ParserError(''.join( ("Failed to convert start zoom interval '", token.value, "' to float.") ), token.line, token.col)
+		elif token.key == PairKey.ZOOM_ACCEL:
+			try:
+				self.ZoomAccel = float(token.value)
+			except ValueError:
+				raise ParserError(''.join( ("Failed to convert zoom accel '", token.value, "' to float.") ), token.line, token.col)
+		elif token.key == PairKey.ZOOM_ACCEL_STEPS:
+			try:
+				self.ZoomAccelSteps = float(token.value)
+			except ValueError:
+				raise ParserError(''.join( ("Failed to convert zoom accel steps '", token.value, "' to float.") ), token.line, token.col)
+		else: # token.key == PairKey.PAN_INTERVAL:
+			try:
+				self.PanInterval = float(token.value)
+			except ValueError:
+				raise ParserError(''.join( ("Failed to convert pan interval '", token.value, "' to float.") ), token.line, token.col)
 	def parse(self, string):
 		"Parse the input string and leave the result in the output array."
 		self._lexer.parse(string)

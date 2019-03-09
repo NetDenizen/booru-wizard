@@ -19,6 +19,14 @@ ID_IMAGE_QUALITY_HIGH_2 = wx.NewId()
 ID_IMAGE_QUALITY_HIGH_1 = wx.NewId()
 ID_IMAGE_QUALITY_MEDIUM = wx.NewId()
 ID_IMAGE_QUALITY_LOW = wx.NewId()
+ID_PAN_LEFT = wx.NewId()
+ID_PAN_RIGHT = wx.NewId()
+ID_PAN_UP = wx.NewId()
+ID_PAN_DOWN = wx.NewId()
+ID_ZOOM_IN = wx.NewId()
+ID_ZOOM_OUT = wx.NewId()
+ID_ZOOM_FIT = wx.NewId()
+ID_ZOOM_ACTUAL_SIZE = wx.NewId()
 KEYBIND_IDS = {
 	'exit'                   : ID_EMERGENCY_EXIT        ,
 	'flush_changes'          : ID_FILE_UPDATE_FORCE     ,
@@ -37,7 +45,15 @@ KEYBIND_IDS = {
 	'image_quality_high_2'   : ID_IMAGE_QUALITY_HIGH_2  ,
 	'image_quality_high_1'   : ID_IMAGE_QUALITY_HIGH_1  ,
 	'image_quality_medium'   : ID_IMAGE_QUALITY_MEDIUM  ,
-	'image_quality_low'      : ID_IMAGE_QUALITY_LOW
+	'image_quality_low'      : ID_IMAGE_QUALITY_LOW     ,
+	'pan_left'               : ID_PAN_LEFT              ,
+	'pan_right'              : ID_PAN_RIGHT             ,
+	'pan_up'                 : ID_PAN_UP                ,
+	'pan_down'               : ID_PAN_DOWN              ,
+	'zoom_in'                : ID_ZOOM_IN               ,
+	'zoom_out'               : ID_ZOOM_OUT              ,
+	'zoom_fit'               : ID_ZOOM_FIT              ,
+	'zoom_actual_size'       : ID_ZOOM_ACTUAL_SIZE
 }
 KEYBIND_MESSAGES = {
 	ID_EMERGENCY_EXIT         : 'EmergencyExit'      ,
@@ -57,7 +73,15 @@ KEYBIND_MESSAGES = {
 	ID_IMAGE_QUALITY_HIGH_2   : 'ImageQualityHigh2'  ,
 	ID_IMAGE_QUALITY_HIGH_1   : 'ImageQualityHigh1'  ,
 	ID_IMAGE_QUALITY_MEDIUM   : 'ImageQualityMedium' ,
-	ID_IMAGE_QUALITY_LOW      : 'ImageQualityLow'
+	ID_IMAGE_QUALITY_LOW      : 'ImageQualityLow'    ,
+	ID_PAN_LEFT               : 'PanLeft'            ,
+	ID_PAN_RIGHT              : 'PanRight'           ,
+	ID_PAN_UP                 : 'PanUp'              ,
+	ID_PAN_DOWN               : 'PanDown'            ,
+	ID_ZOOM_IN                : 'ZoomIn'             ,
+	ID_ZOOM_OUT               : 'ZoomOut'            ,
+	ID_ZOOM_FIT               : 'ZoomFit'            ,
+	ID_ZOOM_ACTUAL_SIZE       : 'ZoomActualSize'
 }
 
 class KeyHandlerError(Exception):
@@ -83,6 +107,14 @@ class KeyHandler(wx.Object):
 		self.ImageQualityHigh1Item = wx.MenuItem(id=wx.NewId(), text="ImageQualityHigh1", helpString="Set image quality to high (box average).")
 		self.ImageQualityMediumItem = wx.MenuItem(id=wx.NewId(), text="ImageQualityMedium", helpString="Set image quality to medium.")
 		self.ImageQualityLowItem = wx.MenuItem(id=wx.NewId(), text="ImageQualityLow", helpString="Set image quality to low.")
+		self.PanLeftItem = wx.MenuItem(id=wx.NewId(), text="PanLeft", helpString="Pan image left.")
+		self.PanRightItem = wx.MenuItem(id=wx.NewId(), text="PanRight", helpString="Pan image right.")
+		self.PanUpItem = wx.MenuItem(id=wx.NewId(), text="PanUp", helpString="Pan image up.")
+		self.PanDownItem = wx.MenuItem(id=wx.NewId(), text="PanDown", helpString="Pan image down.")
+		self.ZoomInItem = wx.MenuItem(id=wx.NewId(), text="ZoomIn", helpString="Zoom in image.")
+		self.ZoomOutItem = wx.MenuItem(id=wx.NewId(), text="ZoomOut", helpString="Zoom out image.")
+		self.ZoomFitItem = wx.MenuItem(id=wx.NewId(), text="ZoomFit", helpString="Zoom image to fit perfectly in the window.")
+		self.ZoomActualSizeItem = wx.MenuItem(id=wx.NewId(), text="ZoomActualSize", helpString="Zoom image so it is displayed at actual size, whether or not it fits in the window.")
 		self.MenuItems = {'exit'                   : self.EmergencyExitItem      ,
 						  'flush_changes'          : self.FileUpdateForceItem    ,
 						  'left_image'             : self.LeftImageItem          ,
@@ -100,11 +132,19 @@ class KeyHandler(wx.Object):
 						  'image_quality_high_2'   : self.ImageQualityHigh2Item  ,
 						  'image_quality_high_1'   : self.ImageQualityHigh1Item  ,
 						  'image_quality_medium'   : self.ImageQualityMediumItem ,
-						  'image_quality_low'      : self.ImageQualityLowItem
+						  'image_quality_low'      : self.ImageQualityLowItem    ,
+						  'pan_left'               : self.PanLeftItem            ,
+						  'pan_right'              : self.PanRightItem           ,
+						  'pan_up'                 : self.PanUpItem              ,
+						  'pan_down'               : self.PanDownItem            ,
+						  'zoom_in'                : self.ZoomInItem             ,
+						  'zoom_out'               : self.ZoomOutItem            ,
+						  'zoom_fit'               : self.ZoomFitItem            ,
+						  'zoom_actual_size'       : self.ZoomActualSizeItem
 						 }
 		self.entries = []
 	def _OnEntry(self, e):
-			pub.sendMessage(KEYBIND_MESSAGES[e.GetId()], message = None)
+		pub.sendMessage(KEYBIND_MESSAGES[e.GetId()], message = None)
 	def RegisterObj(self, obj):
 		obj.SetAcceleratorTable( wx.AcceleratorTable(self.entries) )
 
@@ -126,6 +166,14 @@ class KeyHandler(wx.Object):
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_IMAGE_QUALITY_HIGH_1)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_IMAGE_QUALITY_MEDIUM)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_IMAGE_QUALITY_LOW)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_PAN_LEFT)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_PAN_RIGHT)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_PAN_UP)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_PAN_DOWN)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_ZOOM_IN)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_ZOOM_OUT)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_ZOOM_FIT)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_ZOOM_ACTUAL_SIZE)
 	def add(self, text):
 		"Add a keybind to the handler."
 		values = text.split()
