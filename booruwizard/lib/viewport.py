@@ -40,7 +40,8 @@ class ViewPort:
 		else:
 			NewZoomIntervalTimes = 1.0
 			OldZoomIntervalTimes = float(times - 1)
-		self.ZoomInterval += (self.ZoomAccel * AccelChange)
+		ZoomIntervalIncrease = self.ZoomAccel * AccelChange
+		self.ZoomInterval += ZoomIntervalIncrease
 		self.ZoomLevel = self.ZoomLevel + OldZoomInterval * OldZoomIntervalTimes * direction + self.ZoomInterval * NewZoomIntervalTimes * direction + ZoomIntervalIncrease
 		self.AccelSteps += int(times * direction)
 		if self.ZoomInterval <= 0.0:
@@ -154,6 +155,9 @@ class ViewPort:
 			NewImage = image.Scale(self._ActualDisplayWidth, self._ActualDisplayHeight, quality)
 
 		self.ImageBitmap = wx.Bitmap(NewImage)
+	def GetActualSizeRatio(self, image):
+		"Return the zoom level relative to the actual size of the image, rather than the display."
+		return (width * height) /  (self.SampleWidth * width * self.SampleHeight * height)
 	def __init__(self, BackgroundColor1, BackgroundColor2, BackgroundSquareWidth, ZoomStartInterval, ZoomAccel, ZoomAccelSteps, PanInterval):
 		self.BackgroundManager = TransparencyBackground(BackgroundColor1, BackgroundColor2, BackgroundSquareWidth)
 		self.ZoomStartInterval = ZoomStartInterval # Start amount ZoomLevel is increased or decreased by each zoom step.
