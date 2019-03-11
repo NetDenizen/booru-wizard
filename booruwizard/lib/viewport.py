@@ -28,22 +28,27 @@ class ViewPort:
 		"Calculate zooming in or out a number of times."
 		if direction == -1.0 and self.ZoomLevel <= self.ZoomInterval:
 			return
-		if self.AccelSteps != 0:
-			time = float(times / self.AccelSteps)
+		AccelChange = ( (self.AccelSteps + times * direction) / self.ZoomAccelSteps )
+		if AccelChange < 0.0:
+			AccelChange = ceil(AccelChange)
+		elif AccelChange > 0.0:
+			AccelChange = floor(AccelChange)
+		OldZoomInterval = self.ZoomInterval
+		if times == 1:
+			NewZoomIntervalTimes = 0.0
+			OldZoomIntervalTimes = 1.0
 		else:
-			time = 0.0
-		ZoomIntervalIncrease = ( self.ZoomAccel * (time * time) )
-		self.ZoomLevel = self.ZoomLevel + self.ZoomInterval * float(times) * direction + ZoomIntervalIncrease
-		self.ZoomInterval = self.ZoomInterval + ZoomIntervalIncrease
+			NewZoomIntervalTimes = 1.0
+			OldZoomIntervalTimes = float(times - 1)
+		self.ZoomInterval += (self.ZoomAccel * AccelChange)
+		self.ZoomLevel = self.ZoomLevel + OldZoomInterval * OldZoomIntervalTimes * direction + self.ZoomInterval * NewZoomIntervalTimes * direction + ZoomIntervalIncrease
 		self.AccelSteps += int(times * direction)
 		if self.ZoomInterval <= 0.0:
 			self.ZoomInterval = self.ZoomAccel
 		if self.ZoomLevel <= 0.0:
 			self.ZoomLevel = self.ZoomInterval
-		if self.AccelSteps >= self.ZoomAccelSteps:
-			self.AccelSteps = self.AccelSteps % self.ZoomAccelSteps
-		elif self.AccelSteps < 0:
-			self.AccelSteps = 0
+		if fabs(self.AccelSteps) >= self.ZoomAccelSteps:
+			self.AccelSteps = int(self.AccelSteps % self.ZoomAccelSteps)
 	def _ConstrainSample(self):
 		"Ensure that the sample area remains within 0.0-1.0 bounds."
 		if self.SampleXPos < 0.0:
@@ -92,9 +97,9 @@ class ViewPort:
 		ImageSize = image.GetSize()
 		OldZoomLevel = self.ZoomLevel
 
-		self.ZoomLevel = ( ImageSize.GetWidth() * ImageSize.GetHeight() ) / (self.DisplayWidth * self.DisplayHeight)
+		self.ZoomLevel = sqrt( ( ImageSize.GetWidth() * ImageSize.GetHeight() ) / (self.DisplayWidth * self.DisplayHeight) )
 		self.ZoomInterval = sqrt( 2 * (self.ZoomAccel / self.ZoomAccelSteps) * fabs(OldZoomLevel - self.ZoomLevel) + self.ZoomStartInterval * self.ZoomStartInterval ) #FIXME
-		self.AccelSteps = ceil( (fabs(self.ZoomInterval - self.ZoomStartInterval) / self.ZoomAccel) * self.ZoomAccelSteps ) % self.ZoomAccelSteps
+		self.AccelSteps = int(ceil( (fabs(self.ZoomInterval - self.ZoomStartInterval) / self.ZoomAccel) * self.ZoomAccelSteps ) % self.ZoomAccelSteps)
 
 		self._CalcSample()
 		self._ConstrainSample()
