@@ -619,7 +619,7 @@ class SessionTagsImporter(wx.SplitterWindow):
 		self.OwnTags = SessionTags(self, TagsTracker)
 
 		self.SetMinimumPaneSize(1)
-		self.SplitVertically(self.SourceTags, self.OwnTags)
+		self.SplitVertically(self.SourceTags, self.OwnTags) # TODO: For some reason, this does not want to split in the center, by default.
 
 class SingleStringEntry(wx.Panel): # This class should never be used on its own
 	def _GetValue(self): # This determines where the field gets its value initial; define it in child classes
