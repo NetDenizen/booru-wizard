@@ -39,6 +39,9 @@ class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 				self.choices.Check(i)
 			else:
 				self.choices.Check(i, False)
+	def load(self, OutputFile):
+		"Initialize the question for a certain case."
+		self.OutputFile = OutputFile
 	def clear(self):
 		"Clear the question for the given case."
 		return
@@ -167,9 +170,6 @@ class CheckQuestion(TagChoiceQuestion):
 		self._UpdateChecks()
 		self.OutputFile.unlock()
 		e.Skip()
-	def load(self, OutputFile):
-		"Initialize the question for a certain case."
-		self.OutputFile = OutputFile
 	def disp(self):
 		"Display the updated check question for the given case."
 		self.OutputFile.lock()
@@ -426,9 +426,6 @@ class SessionTags(TagChoiceQuestion):
 		self.OutputFile.unlock()
 		self.CurrentChoices = list( self.choices.GetCheckedItems() )
 		e.Skip()
-	def load(self, OutputFile):
-		"Initialize the question for a certain case."
-		self.OutputFile = OutputFile
 	def disp(self):
 		"Display the updated check question for the given case."
 		if self.choices is not None:
@@ -459,6 +456,170 @@ class SessionTags(TagChoiceQuestion):
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.SetSizer(self.sizer)
+
+class ImageTagsList(TagChoiceQuestion): # This class should never be used on its own
+	def _SetIndex(self):
+		self.IndexLabel.SetLabel( ''.join( ( ' /', str( len(self.OutputFiles) ) ) ) )
+		self.IndexEntry.SetValue( str(self.CurrentSource + 1) )
+	def _MakeNames(self):
+		RawNames = self.OutputFile.tags.ReturnStringList()
+		UserNames = []
+		AutoNames = []
+		for n in RawNames:
+			if self.parent.OwnTags.OutputFile.tags.ReturnStringOccurrences(n) > 0:
+				continue
+			occurrences = self.OutputFile.tags.ReturnStringOccurrences(n)
+			if occurrences == 2:
+				UserNames.append(n)
+			elif occurrences == 1:
+				AutoNames.append(n)
+		output = []
+		output.extend(UserNames)
+		output.extend(AutoNames)
+		return output
+	def _OnSelect(self, e):
+		"Bound to EVT_CHECKLISTBOX; add or remove the selected or unselected choice to or from CurrentChoices."
+		if e.GetInt() in self.CurrentChoices:
+			self.CurrentChoices.remove( e.GetInt() )
+		else:
+			self.CurrentChoices.append( e.GetInt() )
+		e.Skip()
+	def _OnIndexEntry(self, e):
+		"Switch the OutputFile selected by the value of the index entry, or reset to the last valid one."
+		value = int( self.IndexEntry.GetValue() ) - 1
+		if value >= 0 and value < len(self.OutputFiles):
+			self.CurrentSource = value
+			self.OutputFile = self.OutputFiles[value]
+			self.disp()
+		else:
+			self._SetIndex()
+		e.Skip()
+	def _OnLeft(self, e):
+		"Shift to the left (-1) image to the current position in the OutputFiles array, if the position is greater than 0. Otherwise, loop around to the last item. Then, load the relevant file."
+		if self.CurrentSource == 0:
+			self.CurrentSource = len(self.OutputFiles) - 1
+		else:
+			self.CurrentSource -= 1
+		self.OutputFile = self.OutputFiles[self.CurrentSource]
+		self.disp()
+		e.Skip()
+	def _OnRight(self, e):
+		"Shift to the right (+1) image to the current position in the output files array if the position is less than the length of the output files array. Otherwise, loop around to the last item. Then, load the relevant file."
+		if self.CurrentSource >= len(self.OutputFiles) - 1:
+			self.CurrentSource = 0
+		else:
+			self.CurrentSource += 1
+		self.OutputFile = self.OutputFiles[self.CurrentSource]
+		self.disp()
+		e.Skip()
+	def _OnCommit(self, e):
+		"Copy the selected tags to the output SessionTags field of the parent class."
+		for c in self.CurrentChoices:
+			self.parent.OwnTags.OutputFile.PrepareChange()
+			self.TagsTracker.SubStringList(self.parent.OwnTags.OutputFile.tags.ReturnStringList(), 1)
+			self.parent.OwnTags.OutputFile.tags.set( self.TagNames[c],
+													 self.OutputFile.tags.ReturnStringOccurrences(self.TagNames[c])
+												   )
+			self.TagsTracker.AddStringList(self.parent.OwnTags.OutputFile.tags.ReturnStringList(), 1)
+			self.parent.OwnTags.OutputFile.FinishChange()
+		self.parent.disp()
+		e.Skip()
+	def load(self, OutputFile):
+		"Initialize the question for a certain case."
+		return
+	def disp(self):
+		"Display the updated question for the given case."
+		if self.choices is not None:
+			self.Unbind( wx.EVT_CHECKLISTBOX, id=self.choices.GetId() )
+			self.sizer.Remove(2)
+			self.choices.Destroy()
+			self.choices = None
+		self.ChoiceNames = self._MakeNames()
+		self.TagNames = self.ChoiceNames
+		self.choices = wx.CheckListBox( self, choices= self.ChoiceNames )
+		self.sizer.Add(self.choices, 100, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
+		self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
+		self.OutputFile.lock()
+		self._UpdateChecks()
+		self.OutputFile.unlock()
+		self.CurrentChoices = list( self.choices.GetCheckedItems() ) # Currently selected checkboxes
+		self._SetIndex()
+		self.Layout()
+	def __init__(self, parent, OutputFiles, TagsTracker):
+		TagChoiceQuestion.__init__(self, parent)
+
+		self.parent = parent
+		self.CurrentSource = 0 # Current index in output files, for the source items
+		self.OutputFiles = OutputFiles # Array of all output files
+		self.TagsTracker = TagsTracker # Global record of the number of tags in use
+		self.OutputFile = OutputFiles[self.CurrentSource] # File data object
+		self.TagNames = [] # Names of tags corresponding to each selection name
+		self.ChoiceNames = self.TagNames # Names of each selection
+		self.choices = None
+		self.CurrentChoices = [] # Currently selected checkboxes
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+		self.ButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+		self.LeftSource = wx.Button(self, label = '<', style=wx.BU_EXACTFIT)
+		self.IndexEntry = wx.TextCtrl(self, style= wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Editable display for current image index
+		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER) # Static part of image index display
+		self.RightSource = wx.Button(self, label = '>', style=wx.BU_EXACTFIT)
+		self.commit = wx.Button(self, label = 'Copy >')
+
+		self.LeftSourceTip = wx.ToolTip('Previous Image')
+		self.IndexEntryTip = wx.ToolTip('Source image entry')
+		self.IndexLabelTip = wx.ToolTip('Total number of images')
+		self.RightSourceTip = wx.ToolTip('Next Image')
+		self.CommitTip = wx.ToolTip('Copy Selected Tags')
+
+		self.LeftSource.SetToolTip(self.LeftSourceTip)
+		self.IndexEntry.SetToolTip(self.IndexEntryTip)
+		self.IndexLabel.SetToolTip(self.IndexLabelTip)
+		self.RightSource.SetToolTip(self.RightSourceTip)
+		self.commit.SetToolTip(self.CommitTip)
+
+		self.ButtonSizer.AddStretchSpacer(10)
+		self.ButtonSizer.Add(self.LeftSource, 0, wx.ALIGN_CENTER_VERTICAL)
+		self.ButtonSizer.AddStretchSpacer(1)
+		self.ButtonSizer.Add(self.IndexEntry, 0, wx.ALIGN_CENTER)
+		self.ButtonSizer.AddStretchSpacer(1)
+		self.ButtonSizer.Add(self.IndexLabel, 0, wx.ALIGN_CENTER)
+		self.ButtonSizer.AddStretchSpacer(1)
+		self.ButtonSizer.Add(self.RightSource, 0, wx.ALIGN_CENTER_VERTICAL)
+		self.ButtonSizer.AddStretchSpacer(1)
+		self.ButtonSizer.Add(self.commit, 0, wx.ALIGN_CENTER_VERTICAL)
+		self.ButtonSizer.AddStretchSpacer(10)
+		self.sizer.Add(self.ButtonSizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_TOP | wx.TOP | wx.EXPAND)
+		self.sizer.AddStretchSpacer(3)
+		self.SetSizer(self.sizer)
+
+		self.Bind( wx.EVT_BUTTON, self._OnLeft, id=self.LeftSource.GetId() )
+		self.Bind( wx.EVT_TEXT_ENTER, self._OnIndexEntry, id=self.IndexEntry.GetId() )
+		self.Bind( wx.EVT_BUTTON, self._OnRight, id=self.RightSource.GetId() )
+		self.Bind( wx.EVT_BUTTON, self._OnCommit, id=self.commit.GetId() )
+
+class SessionTagsImporter(wx.SplitterWindow):
+	def load(self, OutputFile):
+		"Initialize the question for a certain case."
+		self.SourceTags.load(OutputFile)
+		self.OwnTags.load(OutputFile)
+	def clear(self):
+		"Clear the question for the given case."
+		self.SourceTags.clear()
+		self.OwnTags.clear()
+	def disp(self):
+		"Display the updated question for the given case."
+		self.SourceTags.disp()
+		self.OwnTags.disp()
+		self.OwnTags.Layout()
+	def __init__(self, parent, OutputFiles, TagsTracker):
+		wx.SplitterWindow.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
+
+		self.SourceTags = ImageTagsList(self, OutputFiles, TagsTracker)
+		self.OwnTags = SessionTags(self, TagsTracker)
+
+		self.SetMinimumPaneSize(1)
+		self.SplitVertically(self.SourceTags, self.OwnTags)
 
 class SingleStringEntry(wx.Panel): # This class should never be used on its own
 	def _GetValue(self): # This determines where the field gets its value initial; define it in child classes
@@ -747,8 +908,11 @@ class QuestionsContainer(wx.Panel):
 			elif q.type == QuestionType.SAFETY_QUESTION:
 				self.QuestionWidgets.append( SafetyQuestion(self) )
 				proportion = 1
-			else: # q.type == QuestionType.IMAGE_TAGS_ENTRY:
+			elif q.type == QuestionType.IMAGE_TAGS_ENTRY:
 				self.QuestionWidgets.append( ImageTagsEntry(self, TagsTracker) )
+			else: # q.type == QuestionType.SESSION_TAGS_IMPORTER
+				self.QuestionWidgets.append( SessionTagsImporter(self, OutputFiles.ControlFiles, TagsTracker) )
+				proportion = 1
 			self.sizer.Add(self.QuestionWidgets[-1], proportion, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 			self.QuestionWidgets[-1].Hide()
 

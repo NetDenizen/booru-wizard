@@ -43,6 +43,7 @@ class PairKey(Enum):
 	ZOOM_ACCEL                    = 26
 	ZOOM_ACCEL_STEPS              = 27
 	PAN_INTERVAL                  = 28
+	SESSION_TAGS_IMPORTER         = 29
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 	#TODO: keyboard controls, alias name and alias tag separately, no option tag
 
@@ -75,7 +76,8 @@ PAIR_KEY_NAMES = {
 	'START_ZOOM_INTERVAL'           : PairKey.START_ZOOM_INTERVAL,
 	'ZOOM_ACCEL'                    : PairKey.ZOOM_ACCEL,
 	'ZOOM_ACCEL_STEPS'              : PairKey.ZOOM_ACCEL_STEPS,
-	'PAN_INTERVAL'                  : PairKey.PAN_INTERVAL
+	'PAN_INTERVAL'                  : PairKey.PAN_INTERVAL,
+	'SESSION_TAGS_IMPORTER'         : PairKey.SESSION_TAGS_IMPORTER
 }
 
 class KeyValuePair:
@@ -200,20 +202,22 @@ class lexer:
 
 # Defining parser question information
 class QuestionType(Enum):
-	ENTRY_QUESTION   = 0 # Marks the beginning of a new prompt consisting of a textbox. Here, tags are entered separated by spaces.
-	SESSION_TAGS     = 1 # Displays a CHECK_QUESTION, containing all of the tags used for the current session.
-	NAME_QUESTION    = 2 # Displays an ENTRY_QUESTION that sets the name/title of the post. In most boorus other than Gelbooru 0.1, this is ignored.
-	SOURCE_QUESTION  = 3 # Displays an ENTRY_QUESTION that sets the original source of the work.
-	SAFETY_QUESTION  = 4 # Displays a RADIO_QUESTION that sets the content rating to 'Safe', 'Questionable', or 'Explicit'.
-	IMAGE_TAGS_ENTRY = 5 # Displays an ENTRY_QUESTION with the current tags of the image.
+	ENTRY_QUESTION        = 0 # Marks the beginning of a new prompt consisting of a textbox. Here, tags are entered separated by spaces.
+	SESSION_TAGS          = 1 # Displays a CHECK_QUESTION, containing all of the tags used for the current session.
+	NAME_QUESTION         = 2 # Displays an ENTRY_QUESTION that sets the name/title of the post. In most boorus other than Gelbooru 0.1, this is ignored.
+	SOURCE_QUESTION       = 3 # Displays an ENTRY_QUESTION that sets the original source of the work.
+	SAFETY_QUESTION       = 4 # Displays a RADIO_QUESTION that sets the content rating to 'Safe', 'Questionable', or 'Explicit'.
+	IMAGE_TAGS_ENTRY      = 5 # Displays an ENTRY_QUESTION with the current tags of the image.
+	SESSION_TAGS_IMPORTER = 6 # Displays a pane split between controls to select an image and commit its tags to the current one, check boxes to select which tags to move, and SESSION_TAGS for the current file on the right side.
 
 QuestionTypeLookup = {
-	PairKey.ENTRY_QUESTION  : QuestionType.ENTRY_QUESTION,
-	PairKey.SESSION_TAGS    : QuestionType.SESSION_TAGS,
-	PairKey.NAME_QUESTION   : QuestionType.NAME_QUESTION,
-	PairKey.SOURCE_QUESTION : QuestionType.SOURCE_QUESTION,
-	PairKey.SAFETY_QUESTION : QuestionType.SAFETY_QUESTION,
-	PairKey.IMAGE_TAGS_ENTRY : QuestionType.IMAGE_TAGS_ENTRY,
+	PairKey.ENTRY_QUESTION        : QuestionType.ENTRY_QUESTION,
+	PairKey.SESSION_TAGS          : QuestionType.SESSION_TAGS,
+	PairKey.NAME_QUESTION         : QuestionType.NAME_QUESTION,
+	PairKey.SOURCE_QUESTION       : QuestionType.SOURCE_QUESTION,
+	PairKey.SAFETY_QUESTION       : QuestionType.SAFETY_QUESTION,
+	PairKey.IMAGE_TAGS_ENTRY      : QuestionType.IMAGE_TAGS_ENTRY,
+	PairKey.SESSION_TAGS_IMPORTER : QuestionType.SESSION_TAGS_IMPORTER
 }
 
 class OptionQuestionType(Enum):
@@ -457,12 +461,13 @@ class parser:
 		if token.key == PairKey.RADIO_QUESTION or\
 		   token.key == PairKey.CHECK_QUESTION:
 			self._AddOptionQuestion(token)
-		elif token.key == PairKey.ENTRY_QUESTION  or\
-			 token.key == PairKey.NAME_QUESTION   or\
-			 token.key == PairKey.SOURCE_QUESTION or\
-			 token.key == PairKey.SAFETY_QUESTION or\
-			 token.key == PairKey.SESSION_TAGS    or\
-			 token.key == PairKey.IMAGE_TAGS_ENTRY:
+		elif token.key == PairKey.ENTRY_QUESTION   or\
+			 token.key == PairKey.NAME_QUESTION    or\
+			 token.key == PairKey.SOURCE_QUESTION  or\
+			 token.key == PairKey.SAFETY_QUESTION  or\
+			 token.key == PairKey.SESSION_TAGS     or\
+			 token.key == PairKey.IMAGE_TAGS_ENTRY or\
+			 token.key == PairKey.SESSION_TAGS_IMPORTER:
 			self._AddQuestion(token)
 		elif token.key == PairKey.OPTION_NAME:
 			self._AddOptionName(token)
