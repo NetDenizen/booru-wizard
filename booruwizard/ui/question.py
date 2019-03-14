@@ -9,6 +9,26 @@ from booruwizard.lib.tag import TagsContainer
 from booruwizard.lib.template import QuestionType, OptionQuestionType
 
 class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
+	def _UpdateChoice(self, choice):
+		"Bound to EVT_CHECKLISTBOX; set selected tags and remove the previously selected ones."
+		if choice in self.CurrentChoices:
+			self.OutputFile.PrepareChange()
+			self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
+			self.OutputFile.tags.clear(self.TagNames[choice], 2)
+			self.OutputFile.ClearConditionalTags(self.TagNames[choice])
+			self.OutputFile.SetTaglessTags( (self.TagNames[choice],) )
+			self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
+			self.OutputFile.FinishChange()
+			self.CurrentChoices.remove(choice)
+		else:
+			self.OutputFile.PrepareChange()
+			self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
+			self.OutputFile.tags.set(self.TagNames[choice], 2)
+			self.OutputFile.SetConditionalTags(self.TagNames[choice])
+			self.OutputFile.SetTaglessTags()
+			self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
+			self.OutputFile.FinishChange()
+			self.CurrentChoices.append(choice)
 	def _UpdateName(self, idx):
 		"Update the name of a choice at the specified index, with the current number of occurrences for the related tag from the tag tracker."
 		TagName = self.TagNames[idx]
@@ -138,34 +158,9 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		self.SetupScrolling()
 
 class CheckQuestion(TagChoiceQuestion):
-	def _UpdateChecks(self):
-		"Update the name and check status of every choice."
-		for i, n in enumerate(self.TagNames):
-			self._UpdateName(i)
-			if n and self.OutputFile.tags.ReturnStringOccurrences(n) > 0:
-				self.choices.Check(i)
-			else:
-				self.choices.Check(i, False)
 	def _OnSelect(self, e):
 		"Bound to EVT_CHECKLISTBOX; set selected tags and remove the previously selected ones."
-		if e.GetInt() in self.CurrentChoices:
-			self.OutputFile.PrepareChange()
-			self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
-			self.OutputFile.tags.clear(self.TagNames[e.GetInt()], 2)
-			self.OutputFile.ClearConditionalTags(self.TagNames[e.GetInt()])
-			self.OutputFile.SetTaglessTags( (self.TagNames[e.GetInt()],) )
-			self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
-			self.OutputFile.FinishChange()
-			self.CurrentChoices.remove( e.GetInt() )
-		else:
-			self.OutputFile.PrepareChange()
-			self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
-			self.OutputFile.tags.set(self.TagNames[e.GetInt()], 2)
-			self.OutputFile.SetConditionalTags(self.TagNames[e.GetInt()])
-			self.OutputFile.SetTaglessTags()
-			self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
-			self.OutputFile.FinishChange()
-			self.CurrentChoices.append( e.GetInt() )
+		self._UpdateChoice( e.GetInt() )
 		self.OutputFile.lock()
 		self._UpdateChecks()
 		self.OutputFile.unlock()
@@ -385,24 +380,7 @@ class SessionTags(TagChoiceQuestion):
 		e.StopPropagation()
 	def _OnSelect(self, e):
 		"Bound to EVT_CHECKLISTBOX; set selected tags and remove the previously selected ones."
-		if e.GetInt() in self.CurrentChoices:
-			self.OutputFile.PrepareChange()
-			self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
-			self.OutputFile.tags.clear(self.TagNames[e.GetInt()], 2)
-			self.OutputFile.ClearConditionalTags(self.TagNames[e.GetInt()])
-			self.OutputFile.SetTaglessTags(self.TagNames[e.GetInt()])
-			self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
-			self.OutputFile.FinishChange()
-			self.CurrentChoices.remove( e.GetInt() )
-		else:
-			self.OutputFile.PrepareChange()
-			self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
-			self.OutputFile.tags.set(self.TagNames[e.GetInt()], 2)
-			self.OutputFile.SetConditionalTags(self.TagNames[e.GetInt()])
-			self.OutputFile.SetTaglessTags()
-			self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
-			self.OutputFile.FinishChange()
-			self.CurrentChoices.append( e.GetInt() )
+		self._UpdateChoice( e.GetInt() )
 		ChoiceNames = self._MakeNames()
 		added = False
 		for c in ChoiceNames:
