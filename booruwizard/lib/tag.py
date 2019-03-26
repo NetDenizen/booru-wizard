@@ -174,7 +174,7 @@ class ConditionalTagger:
 		if found is not None:
 			target.SetStringList(found, 1)
 	def ClearTags(self, name, target):
-		"Search for the name in lookup, and if it (or any other name controlling the associated tags) is found, then clear the target container with the found one."
+		"Search for the name in lookup, and if it (or any other name controlling the associated tags) is found, then clear them."
 		if not name:
 			return
 		found = self.lookup.get(name.lower(), None)
@@ -183,6 +183,8 @@ class ConditionalTagger:
 		for t in found:
 			DoClear = True
 			for k in self.ReverseLookup[t]:
+				if name not in self.lookup[k]:
+					break
 				if target.ReturnStringOccurrences(k) > 0 and k != name:
 					DoClear = False
 					break
