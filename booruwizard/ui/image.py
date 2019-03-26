@@ -1,5 +1,3 @@
-from math import floor, modf
-
 import wx
 from pubsub import pub
 
