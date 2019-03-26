@@ -53,9 +53,13 @@ class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 			self._UpdateName(i)
 	def _UpdateChecks(self):
 		"Update the name and check status of every choice."
+		self.CurrentChoices = []
 		for i, n in enumerate(self.TagNames):
 			self._UpdateName(i)
-			if n and self.OutputFile.tags.ReturnStringOccurrences(n) > 0:
+			occurrences = self.OutputFile.tags.ReturnStringOccurrences(n)
+			if n and occurrences > 0:
+				if occurrences == 2:
+					self.CurrentChoices.append(i)
 				self.choices.Check(i)
 			else:
 				self.choices.Check(i, False)
@@ -170,7 +174,6 @@ class CheckQuestion(TagChoiceQuestion):
 		self.OutputFile.lock()
 		self._UpdateChecks()
 		self.OutputFile.unlock()
-		self.CurrentChoices = list( self.choices.GetCheckedItems() ) # Currently selected checkboxes
 	def __init__(self, parent, TagsTracker, PanelQuestion):
 		TagChoiceQuestion.__init__(self, parent)
 
@@ -402,7 +405,6 @@ class SessionTags(TagChoiceQuestion):
 		self.OutputFile.lock()
 		self._UpdateChecks()
 		self.OutputFile.unlock()
-		self.CurrentChoices = list( self.choices.GetCheckedItems() )
 		e.Skip()
 	def disp(self):
 		"Display the updated check question for the given case."
@@ -421,7 +423,6 @@ class SessionTags(TagChoiceQuestion):
 		self.OutputFile.lock()
 		self._UpdateChecks()
 		self.OutputFile.unlock()
-		self.CurrentChoices = list( self.choices.GetCheckedItems() ) # Currently selected checkboxes
 	def __init__(self, parent, TagsTracker):
 		TagChoiceQuestion.__init__(self, parent)
 
