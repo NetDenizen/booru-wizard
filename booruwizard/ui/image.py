@@ -2,7 +2,6 @@ import wx
 from pubsub import pub
 
 from booruwizard.lib.imagereader import ImageReader
-from booruwizard.lib.viewport import ViewPort
 
 #TODO: Should we have a control to affect the scaling (maybe an alternate scrollbar setting), or to change the background color?
 class ImageDisplay(wx.Panel):
@@ -471,10 +470,10 @@ class ImageLabel(wx.Panel):
 		pub.subscribe(self._OnFocusPathLabel, "FocusPathLabel")
 
 class ImageContainer(wx.Panel):
-	def __init__(self, parent, MaxBufSize, ImageQuality, paths, ViewPort):
+	def __init__(self, parent, MaxBufSize, ImageQuality, paths, viewport):
 		wx.Panel.__init__(self, parent=parent)
 
-		self.image = ImagePanel(self, MaxBufSize, ImageQuality, paths, ViewPort)
+		self.image = ImagePanel(self, MaxBufSize, ImageQuality, paths, viewport)
 		self.label = ImageLabel(self, paths)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 

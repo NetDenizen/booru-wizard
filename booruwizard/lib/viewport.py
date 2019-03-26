@@ -1,7 +1,6 @@
 from math import fabs, ceil, floor, sqrt
 
 import wx
-from pubsub import pub
 
 from booruwizard.lib.alphabackground import TransparencyBackground
 
