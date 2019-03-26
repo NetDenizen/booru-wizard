@@ -467,7 +467,7 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 	def _OnIndexEntry(self, e):
 		"Switch the OutputFile selected by the value of the index entry, or reset to the last valid one."
 		value = int( self.IndexEntry.GetValue() ) - 1
-		if 0 =< value < len(self.OutputFiles):
+		if 0 <= value < len(self.OutputFiles):
 			self.CurrentSource = value
 			self.OutputFile = self.OutputFiles[value]
 			self.disp()
