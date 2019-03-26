@@ -1,3 +1,5 @@
+from math import floor, modf
+
 import wx
 from pubsub import pub
 
@@ -216,9 +218,11 @@ class ImagePanel(wx.Panel):
 		wx.CallAfter(self.OutputUpdateButton.Disable)
 	def _OnFileUpdateTick(self, message, arg2=None):
 		MessageSeconds = message / 1000000.0
-		minutes = int(MessageSeconds // 60.0)
-		seconds = MessageSeconds % 60.0
-		output = ''.join( ( 'Until Next Flush: ', str(minutes).zfill(2), ':', str(seconds).zfill(4) ) )
+		minutes = str( int(MessageSeconds // 60.0) )
+		FullSeconds = str(MessageSeconds % 60.0)
+		SplitSeconds = FullSeconds.split('.', 2)
+		output = ''.join( ( 'Until Next Flush: ',
+							minutes.zfill(2), ':', SplitSeconds[0].zfill(2), '.', SplitSeconds[1].zfill(4) ) )
 		wx.CallAfter(self.OutputUpdateTimer.SetLabel, output)
 	def _OnImageQualityHigh21(self, message, arg2=None):
 		"Set image quality to high 2+1 (box average on downscale, bicubic on upscale), update the radio button, and repaint the image."
