@@ -53,6 +53,7 @@ class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 			self._UpdateName(i)
 	def _UpdateChecks(self):
 		"Update the name and check status of every choice."
+		# TODO: Should the choices be chosen in a different procedure?
 		self.CurrentChoices = []
 		for i, n in enumerate(self.TagNames):
 			self._UpdateName(i)
