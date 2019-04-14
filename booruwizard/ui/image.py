@@ -259,6 +259,8 @@ class ImagePanel(wx.Panel):
 		"Update the current bitmap, and the information display."
 		image = self.bitmaps.get(self.pos)
 		self.image.SetImage(image.image)
+		self.image.CalculateSize(False)
+		self.ZoomControls.update()
 		if self.image.image is not None:
 			size = self.image.image.GetSize()
 			ResolutionString = ''.join( (
@@ -401,8 +403,6 @@ class ImagePanel(wx.Panel):
 		e.Skip()
 	def _OnSize(self, e):
 		"Update the dimensions of this panel and its children."
-		self.image.CalculateSize(False)
-		self.ZoomControls.update()
 		self._update()
 		e.Skip()
 	def _OnOutputUpdateButton(self, e):
