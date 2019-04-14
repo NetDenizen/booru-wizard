@@ -32,16 +32,8 @@ class ViewPort:
 			AccelChange = ceil(AccelChange)
 		elif AccelChange > 0.0:
 			AccelChange = floor(AccelChange)
-		OldZoomInterval = self.ZoomInterval
-		if times == 1:
-			NewZoomIntervalTimes = 0.0
-			OldZoomIntervalTimes = 1.0
-		else:
-			NewZoomIntervalTimes = 1.0
-			OldZoomIntervalTimes = float(times - 1)
-		ZoomIntervalIncrease = self.ZoomAccel * AccelChange
-		self.ZoomInterval += ZoomIntervalIncrease
-		self.ZoomLevel = self.ZoomLevel + OldZoomInterval * OldZoomIntervalTimes * direction + self.ZoomInterval * NewZoomIntervalTimes * direction + ZoomIntervalIncrease
+		self.ZoomInterval += (self.ZoomAccel * AccelChange)
+		self.ZoomLevel = self.ZoomLevel + self.ZoomInterval * direction
 		self.AccelSteps += int(times * direction)
 		if self.ZoomInterval <= 0.0:
 			self.ZoomInterval = self.ZoomAccel
@@ -160,8 +152,9 @@ class ViewPort:
 		ImageHeight = ImageSize.GetHeight()
 		SampleWidth = self.SampleWidth * ImageWidth
 		SampleHeight = self.SampleHeight * ImageHeight
-		return ( sqrt( (ImageWidth * ImageHeight) / (SampleWidth * SampleHeight) ) /\
-				 sqrt( (ImageWidth * ImageHeight) / (self.DisplayWidth * self.DisplayHeight) ),
+		ImageSquare = ImageWidth * ImageHeight
+		return ( sqrt( ImageSquare / (SampleWidth * SampleHeight) ) /\
+				 sqrt( ImageSquare / (self._ActualDisplayWidth * self._ActualDisplayHeight) ),
 				 SampleWidth, SampleHeight )
 	def GetActualFitRatio(self, image):
 		"Return the zoom level necessary to fit the display, relative to the size of the image, rather than the display (1.0)."
