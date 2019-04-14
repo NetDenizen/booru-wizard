@@ -161,13 +161,13 @@ class PositionButtons(wx.Panel):
 		self.RightImage.SetToolTip(self.RightImageTip)
 		self.RightQuestion.SetToolTip(self.RightQuestionTip)
 
-		self.sizer.Add(self.LeftImage, 10, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.RIGHT)
+		self.sizer.Add(self.LeftImage, 10, wx.ALIGN_CENTER_VERTICAL)
 		self.sizer.AddStretchSpacer(1)
-		self.sizer.Add(self.LeftQuestion, 10, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.RIGHT)
+		self.sizer.Add(self.LeftQuestion, 10, wx.ALIGN_CENTER_VERTICAL)
 		self.sizer.AddStretchSpacer(1)
-		self.sizer.Add(self.RightQuestion, 10, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.RIGHT)
+		self.sizer.Add(self.RightQuestion, 10, wx.ALIGN_CENTER_VERTICAL)
 		self.sizer.AddStretchSpacer(1)
-		self.sizer.Add(self.RightImage, 10, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.RIGHT)
+		self.sizer.Add(self.RightImage, 10, wx.ALIGN_CENTER_VERTICAL)
 		self.SetSizer(self.sizer)
 
 		self.Bind( wx.EVT_BUTTON, self._OnLeftImage, id=self.LeftImage.GetId() )
