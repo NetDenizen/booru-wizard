@@ -164,9 +164,6 @@ class ImageZoomControls(wx.Panel):
 		self.ZoomInButton.SetLabel( ''.join( ( '+', ZoomInterval ) ) )
 		self.ZoomOutButton.SetLabel( ''.join( ( '-', ZoomInterval ) ) )
 		self.ZoomFitButton.SetLabel( str( round(self.parent.image.viewport.GetActualFitRatio(self.parent.image.image), 3) ) )
-		self.Update()
-		self.Layout()
-		self.Refresh()
 	def _OnZoomIn(self, e):
 		pub.sendMessage("ZoomIn", message=None)
 		e.Skip()
