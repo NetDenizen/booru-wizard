@@ -1,3 +1,5 @@
+from math import floor
+
 import wx
 from pubsub import pub
 
@@ -5,7 +7,7 @@ from booruwizard.lib.imagereader import ImageReader
 
 #TODO: Should we have a control to affect the scaling (maybe an alternate scrollbar setting), or to change the background color?
 class ImageDisplay(wx.Panel):
-	def _CalculateSize(self, NewImage):
+	def CalculateSize(self, NewImage):
 		if self.image is None:
 			if NewImage:
 				self.ClearOnPaint = True
@@ -52,10 +54,6 @@ class ImageDisplay(wx.Panel):
 			UpdateImage = True
 		if UpdateImage:
 			self.viewport.UpdateImage(self.image, self.quality)
-	def _OnSize(self, e):
-		"Bound to EVT_SIZE to adjust the display to a change in size."
-		self._CalculateSize(False)
-		e.Skip()
 	def _UpdateMove(self):
 		self.viewport.UpdateBackground(self.viewport.DisplayWidth, self.viewport.DisplayHeight)
 		self.viewport.UpdateImage(self.image, self.quality)
@@ -119,7 +117,7 @@ class ImageDisplay(wx.Panel):
 		dc.DrawBitmap( self.viewport.ImageBitmap, self.DiffWidth, self.DiffHeight, True )
 	def SetImage(self, image):
 		self.image = image
-		self._CalculateSize(True)
+		self.CalculateSize(True)
 	def __init__(self, parent, quality, viewport):
 		wx.Panel.__init__(self, parent=parent)
 		self.image = None
@@ -138,7 +136,6 @@ class ImageDisplay(wx.Panel):
 
 		self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
 
-		self.Bind(wx.EVT_SIZE, self._OnSize)
 		self.Bind( wx.EVT_LEFT_DOWN, self._OnMouseDown, id=self.GetId() )
 		self.Bind( wx.EVT_LEFT_UP, self._OnMouseUp, id=self.GetId() )
 		self.Bind( wx.EVT_MOTION, self._OnMouseMotion, id=self.GetId() )
@@ -152,6 +149,90 @@ class ImageDisplay(wx.Panel):
 		pub.subscribe(self._OnZoomOut, "ZoomOut")
 		pub.subscribe(self._OnZoomFit, "ZoomFit")
 		pub.subscribe(self._OnZoomActualSize, "ZoomActualSize")
+
+class ImageZoomControls(wx.Panel):
+	def update(self):
+		"Update the tooltips and labels depending on zoom position."
+		dimensions = self.parent.image.viewport.GetActualSizeRatio(self.parent.image.image)
+		self.ZoomDisplay.SetLabel( ''.join( (
+											  str( round(dimensions[0], 3) ), ' ',
+											  '(', str( floor(dimensions[1]) ), 'x', str( floor(dimensions[2]) ), ')',
+											)
+										  )
+								 )
+		ZoomInterval = str( round(self.parent.image.viewport.ZoomInterval, 3) )
+		self.ZoomInButton.SetLabel( ''.join( ( '+', ZoomInterval ) ) )
+		self.ZoomOutButton.SetLabel( ''.join( ( '-', ZoomInterval ) ) )
+		self.ZoomFitButton.SetLabel( str( round(self.parent.image.viewport.GetActualFitRatio(self.parent.image.image), 3) ) )
+		self.Update()
+		self.Layout()
+		self.Refresh()
+	def _OnZoomIn(self, e):
+		pub.sendMessage("ZoomIn", message=None)
+		e.Skip()
+	def _OnZoomOut(self, e):
+		pub.sendMessage("ZoomOut", message=None)
+		e.Skip()
+	def _OnZoomFit(self, e):
+		pub.sendMessage("ZoomFit", message=None)
+		e.Skip()
+	def _OnZoomActual(self, e):
+		pub.sendMessage("ZoomActualSize", message=None)
+		e.Skip()
+	def _OnZoomInReceived(self, message, arg2=None):
+		self.ZoomInButton.SetFocus()
+		self.update()
+	def _OnZoomOutReceived(self, message, arg2=None):
+		self.ZoomOutButton.SetFocus()
+		self.update()
+	def _OnZoomFitReceived(self, message, arg2=None):
+		self.ZoomFitButton.SetFocus()
+		self.update()
+	def _OnZoomActualReceived(self, message, arg2=None):
+		self.ZoomActualButton.SetFocus()
+		self.update()
+	def __init__(self, parent):
+		wx.Panel.__init__(self, parent=parent)
+		self.parent = parent
+
+		self.ZoomDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT)
+		self.ZoomDisplayTip = wx.ToolTip('Zoom Ratio (Sample WidthxSample Height)')
+		self.ZoomInButton = wx.Button(self, style=wx.BU_EXACTFIT)
+		self.ZoomInButtonTip = wx.ToolTip('Zoom in by amount in button label.')
+		self.ZoomOutButton = wx.Button(self, style=wx.BU_EXACTFIT)
+		self.ZoomOutButtonTip = wx.ToolTip('Zoom out by amount in button label.')
+		self.ZoomFitButton = wx.Button(self, style=wx.BU_EXACTFIT)
+		self.ZoomFitButtonTip = wx.ToolTip('Zoom to fit window (Zoom ratio in button label).')
+		self.ZoomActualButton = wx.Button(self, label="1.0", style=wx.BU_EXACTFIT)
+		self.ZoomActualButtonTip = wx.ToolTip('Zoom to actual size (1.0 Zoom Ratio).')
+
+		self.ZoomDisplay.SetToolTip(self.ZoomDisplayTip)
+		self.ZoomInButton.SetToolTip(self.ZoomInButtonTip)
+		self.ZoomOutButton.SetToolTip(self.ZoomOutButtonTip)
+		self.ZoomFitButton.SetToolTip(self.ZoomFitButtonTip)
+		self.ZoomActualButton.SetToolTip(self.ZoomActualButtonTip)
+
+		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.sizer.Add(self.ZoomDisplay, 0, wx.ALIGN_CENTER_VERTICAL)
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.ZoomInButton, 10, wx.ALIGN_CENTER_VERTICAL)
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.ZoomOutButton, 10, wx.ALIGN_CENTER_VERTICAL)
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.ZoomFitButton, 10, wx.ALIGN_CENTER_VERTICAL)
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.ZoomActualButton, 10, wx.ALIGN_CENTER_VERTICAL)
+		self.SetSizer(self.sizer)
+
+		self.Bind( wx.EVT_BUTTON, self._OnZoomIn, id=self.ZoomInButton.GetId() )
+		self.Bind( wx.EVT_BUTTON, self._OnZoomOut, id=self.ZoomOutButton.GetId() )
+		self.Bind( wx.EVT_BUTTON, self._OnZoomFit, id=self.ZoomFitButton.GetId() )
+		self.Bind( wx.EVT_BUTTON, self._OnZoomActual, id=self.ZoomActualButton.GetId() )
+
+		pub.subscribe(self._OnZoomInReceived, "ZoomIn")
+		pub.subscribe(self._OnZoomOutReceived, "ZoomOut")
+		pub.subscribe(self._OnZoomFitReceived, "ZoomFit")
+		pub.subscribe(self._OnZoomActualReceived, "ZoomActualSize")
 
 class ImagePanel(wx.Panel):
 	def _HumanSize(self, val):
@@ -199,8 +280,8 @@ class ImagePanel(wx.Panel):
 			FileSizeString = ''
 			DataSizeString = ''
 		MaxExtent = self._MaxExtent(
-									(self.ResolutionDisplay, self.FileSizeDisplay, self.DataSizeDisplay, self.ImageQualityControl, self.OutputUpdateTimer, self.OutputUpdateButton),
-									(ResolutionString, FileSizeString, DataSizeString, None, None, None)
+									(self.ResolutionDisplay, self.FileSizeDisplay, self.DataSizeDisplay, self.ImageQualityControl, self.OutputUpdateTimer, self.OutputUpdateButton, self.ZoomControls),
+									(ResolutionString, FileSizeString, DataSizeString, None, None, None, None)
 								   )
 		self.ResolutionDisplay.SetLabel(ResolutionString)
 		self.FileSizeDisplay.SetLabel(FileSizeString)
@@ -318,6 +399,12 @@ class ImagePanel(wx.Panel):
 			self.image.Update()
 			self.image.Refresh()
 		e.Skip()
+	def _OnSize(self, e):
+		"Update the dimensions of this panel and its children."
+		self.image.CalculateSize(False)
+		self.ZoomControls.update()
+		self._update()
+		e.Skip()
 	def _OnOutputUpdateButton(self, e):
 		pub.sendMessage("FileUpdateForce", message=None)
 		e.Skip()
@@ -334,11 +421,12 @@ class ImagePanel(wx.Panel):
 											   choices= ('H2+1', 'H2', 'H1', 'M', 'L'),
 											   style= wx.RA_SPECIFY_COLS | wx.ALIGN_LEFT
 											  )
-		self.image = ImageDisplay(self, ImageQuality, ViewPort)
 		self.OutputUpdateTimer = wx.StaticText(self, label='Automatic Flushing Disabled', style= wx.ALIGN_LEFT)
 		self.OutputUpdateTimerTip = wx.ToolTip('Time until next automatic flush')
 		self.OutputUpdateButton = wx.Button(self, label='Flush Changes', style=wx.BU_EXACTFIT)
 		self.OutputUpdateButtonTip = wx.ToolTip('Immediately flush output files to hard drive, if changed.')
+		self.image = ImageDisplay(self, ImageQuality, ViewPort)
+		self.ZoomControls = ImageZoomControls(self)
 		self.RightPanelDummy = wx.Window(self)
 		self.LeftPaneSizer = wx.BoxSizer(wx.VERTICAL)
 		self.RightPaneSizer = wx.BoxSizer(wx.VERTICAL)
@@ -354,6 +442,8 @@ class ImagePanel(wx.Panel):
 		self.LeftPaneSizer.AddStretchSpacer(1)
 		self.LeftPaneSizer.Add(self.OutputUpdateButton, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.TOP | wx.LEFT)
 		self.LeftPaneSizer.AddStretchSpacer(50)
+		self.LeftPaneSizer.Add(self.ZoomControls, 0, wx.ALIGN_BOTTOM | wx.ALIGN_LEFT | wx.BOTTOM | wx.LEFT)
+		self.LeftPaneSizer.AddStretchSpacer(3)
 
 		self.RightPaneSizer.Add(self.RightPanelDummy, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT | wx.TOP | wx.RIGHT)
 
@@ -385,6 +475,7 @@ class ImagePanel(wx.Panel):
 
 		self.Bind( wx.EVT_BUTTON, self._OnOutputUpdateButton, id=self.OutputUpdateButton.GetId() )
 		self.Bind( wx.EVT_RADIOBOX, self._OnImageQualitySelect, id=self.ImageQualityControl.GetId() )
+		self.Bind(wx.EVT_SIZE, self._OnSize)
 
 		pub.subscribe(self._OnFileUpdatePending, "FileUpdatePending")
 		pub.subscribe(self._OnFileUpdateClear, "FileUpdateClear")

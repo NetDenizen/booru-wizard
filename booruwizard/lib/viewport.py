@@ -155,8 +155,19 @@ class ViewPort:
 
 		self.ImageBitmap = wx.Bitmap(NewImage)
 	def GetActualSizeRatio(self, image):
-		"Return the zoom level relative to the actual size of the image, rather than the display."
-		return (width * height) /  (self.SampleWidth * width * self.SampleHeight * height)
+		"Return the zoom level relative to the actual size of the image, rather than the display, along with the sample and display sizes, in a tuple formatted: (ratio, SampleWidth, SampleHeight)."
+		ImageSize = image.GetSize()
+		ImageWidth = ImageSize.GetWidth()
+		ImageHeight = ImageSize.GetHeight()
+		SampleWidth = self.SampleWidth * ImageWidth
+		SampleHeight = self.SampleHeight * ImageHeight
+		return ( sqrt( (ImageWidth * ImageHeight) / (SampleWidth * SampleHeight) ) /\
+				 sqrt( (ImageWidth * ImageHeight) / (self.DisplayWidth * self.DisplayHeight) ),
+				 SampleWidth, SampleHeight )
+	def GetActualFitRatio(self, image):
+		"Return the zoom level necessary to fit the display, relative to the size of the image, rather than the display (1.0)."
+		ImageSize = image.GetSize()
+		return sqrt( (self.DisplayWidth * self.DisplayHeight) / ( ImageSize.GetWidth() * ImageSize.GetHeight() ) )
 	def __init__(self, BackgroundColor1, BackgroundColor2, BackgroundSquareWidth, ZoomStartInterval, ZoomAccel, ZoomAccelSteps, PanInterval):
 		self.BackgroundManager = TransparencyBackground(BackgroundColor1, BackgroundColor2, BackgroundSquareWidth)
 		self.ZoomStartInterval = ZoomStartInterval # Start amount ZoomLevel is increased or decreased by each zoom step.
