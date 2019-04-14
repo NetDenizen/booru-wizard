@@ -95,10 +95,9 @@ class ViewPort:
 	def ApplyActualSize(self, image):
 		#TODO: Regulate values.
 		ImageSize = image.GetSize()
-		OldZoomLevel = self.ZoomLevel
 
 		self.ZoomLevel = sqrt( ( ImageSize.GetWidth() * ImageSize.GetHeight() ) / (self.DisplayWidth * self.DisplayHeight) )
-		self.ZoomInterval = sqrt( 2 * (self.ZoomAccel / self.ZoomAccelSteps) * fabs(OldZoomLevel - self.ZoomLevel) + self.ZoomStartInterval * self.ZoomStartInterval ) #FIXME
+		self.ZoomInterval = sqrt( 2 * (self.ZoomAccel / self.ZoomAccelSteps) * fabs(1.0 - self.ZoomLevel) + self.ZoomStartInterval * self.ZoomStartInterval ) #FIXME
 		self.AccelSteps = int(ceil( (fabs(self.ZoomInterval - self.ZoomStartInterval) / self.ZoomAccel) * self.ZoomAccelSteps ) % self.ZoomAccelSteps)
 
 		self._CalcSample()
