@@ -196,11 +196,11 @@ class ImageZoomControls(wx.Panel):
 		self.parent = parent
 
 		self.ZoomDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT)
-		self.ZoomDisplayTip = wx.ToolTip('Zoom Ratio (Sample WidthxSample Height)')
+		self.ZoomDisplayTip = wx.ToolTip('Zoom ratio to actual size of image (Sample WidthxSample Height)')
 		self.ZoomInButton = wx.Button(self, style=wx.BU_EXACTFIT)
-		self.ZoomInButtonTip = wx.ToolTip('Zoom in by amount in button label.')
+		self.ZoomInButtonTip = wx.ToolTip('Zoom in by percent  in button label.')
 		self.ZoomOutButton = wx.Button(self, style=wx.BU_EXACTFIT)
-		self.ZoomOutButtonTip = wx.ToolTip('Zoom out by amount in button label.')
+		self.ZoomOutButtonTip = wx.ToolTip('Zoom out by percent in button label.')
 		self.ZoomFitButton = wx.Button(self, style=wx.BU_EXACTFIT)
 		self.ZoomFitButtonTip = wx.ToolTip('Zoom to fit window (Zoom ratio in button label).')
 		self.ZoomActualButton = wx.Button(self, label="1.0", style=wx.BU_EXACTFIT)
