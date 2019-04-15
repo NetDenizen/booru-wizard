@@ -86,6 +86,8 @@ class ViewPort:
 		self._ConstrainSample()
 	def ApplyActualSize(self, image):
 		#TODO: Regulate values.
+		if image is None:
+			return
 		ImageSize = image.GetSize()
 
 		self.ZoomLevel = sqrt( ( ImageSize.GetWidth() * ImageSize.GetHeight() ) / (self.DisplayWidth * self.DisplayHeight) )

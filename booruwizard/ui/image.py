@@ -153,17 +153,28 @@ class ImageDisplay(wx.Panel):
 class ImageZoomControls(wx.Panel):
 	def update(self):
 		"Update the tooltips and labels depending on zoom position."
-		dimensions = self.parent.image.viewport.GetActualSizeRatio(self.parent.image.image)
-		self.ZoomDisplay.SetLabel( ''.join( (
-											  str( round(dimensions[0], 3) ), ' ',
-											  '(', str( floor(dimensions[1]) ), 'x', str( floor(dimensions[2]) ), ')',
-											)
-										  )
-								 )
-		ZoomInterval = str( round(self.parent.image.viewport.ZoomInterval, 3) )
-		self.ZoomInButton.SetLabel( ''.join( ( '+', ZoomInterval ) ) )
-		self.ZoomOutButton.SetLabel( ''.join( ( '-', ZoomInterval ) ) )
-		self.ZoomFitButton.SetLabel( str( round(self.parent.image.viewport.GetActualFitRatio(self.parent.image.image), 3) ) )
+		if self.parent.image.image is None:
+			self.ZoomDisplay.SetLabel('')
+			self.ZoomInButton.Disable()
+			self.ZoomOutButton.Disable()
+			self.ZoomFitButton.Disable()
+			self.ZoomActualButton.Disable()
+		else:
+			dimensions = self.parent.image.viewport.GetActualSizeRatio(self.parent.image.image)
+			self.ZoomDisplay.SetLabel( ''.join( (
+												  str( round(dimensions[0], 3) ), ' ',
+												  '(', str( floor(dimensions[1]) ), 'x', str( floor(dimensions[2]) ), ')',
+												)
+											  )
+									 )
+			ZoomInterval = str( round(self.parent.image.viewport.ZoomInterval, 3) )
+			self.ZoomInButton.SetLabel( ''.join( ( '+', ZoomInterval ) ) )
+			self.ZoomOutButton.SetLabel( ''.join( ( '-', ZoomInterval ) ) )
+			self.ZoomFitButton.SetLabel( str( round(self.parent.image.viewport.GetActualFitRatio(self.parent.image.image), 3) ) )
+			self.ZoomInButton.Enable()
+			self.ZoomOutButton.Enable()
+			self.ZoomFitButton.Enable()
+			self.ZoomActualButton.Enable()
 	def _OnZoomIn(self, e):
 		pub.sendMessage("ZoomIn", message=None)
 		e.Skip()
