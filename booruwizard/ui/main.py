@@ -148,7 +148,7 @@ class MainFrame(wx.Frame):
 		self.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK) )
 		size = self.GetEffectiveMinSize()
 		size.SetHeight( int( float( size.GetHeight() ) * 1.25 ) )
-		size.SetWidth( int( float( size.GetWidth() ) * 1.0 ) )
+		size.SetWidth( int( float( size.GetWidth() ) * 1.25 ) )
 		self.SetMinSize(size)
 		self.SetSize( self.GetSize() ) # XXX: Windows does not automatically update the size when the minimum is set.
 		self._SetTitle()
