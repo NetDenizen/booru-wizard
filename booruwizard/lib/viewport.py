@@ -23,6 +23,17 @@ class ViewPort:
 		self.SampleYPos = self.SampleYPos - ( (1.0 - self.SampleHeight) / 2.0 ) + MoveShift
 		self.SampleWidth = SizeShift
 		self.SampleHeight = SizeShift
+	def GetActualSizeRatio(self):
+		"Return the zoom level relative to the actual size of the image, rather than the display, along with the sample and display sizes, in a tuple formatted: (ratio, SampleWidth, SampleHeight)."
+		ImageSize = self.image.GetSize()
+		ImageWidth = ImageSize.GetWidth()
+		ImageHeight = ImageSize.GetHeight()
+		SampleWidth = self.SampleWidth * ImageWidth
+		SampleHeight = self.SampleHeight * ImageHeight
+		ImageSquare = ImageWidth * ImageHeight
+		return ( sqrt( ImageSquare / (SampleWidth * SampleHeight) ) /\
+				 sqrt( ImageSquare / (self._ActualDisplayWidth * self._ActualDisplayHeight) ),
+				 SampleWidth, SampleHeight )
 	def _CalcZoomTimes(self, direction, times):
 		"Calculate zooming in or out a number of times."
 		if direction == -1.0 and self.ZoomLevel <= self.ZoomInterval:
@@ -33,14 +44,15 @@ class ViewPort:
 		elif AccelChange > 0.0:
 			AccelChange = floor(AccelChange)
 		self.ZoomInterval += (self.ZoomAccel * AccelChange)
-		self.ZoomLevel = self.ZoomLevel + self.ZoomInterval * direction
-		self.AccelSteps += int(times * direction)
 		if self.ZoomInterval <= 0.0:
 			self.ZoomInterval = self.ZoomAccel
-		if self.ZoomLevel <= 0.0:
-			self.ZoomLevel = self.ZoomInterval
+		self.AccelSteps += int(times * direction)
 		if fabs(self.AccelSteps) >= self.ZoomAccelSteps:
 			self.AccelSteps = int(self.AccelSteps % self.ZoomAccelSteps)
+		ActualZoomInterval = ( (self.ZoomLevel / self.GetActualSizeRatio()[0]) * self.ZoomInterval )
+		self.ZoomLevel += (ActualZoomInterval * direction)
+		if self.ZoomLevel <= 0.0:
+			self.ZoomLevel = ActualZoomInterval
 	def _ConstrainSample(self):
 		"Ensure that the sample area remains within 0.0-1.0 bounds."
 		if self.SampleXPos < 0.0:
@@ -84,11 +96,11 @@ class ViewPort:
 		self.SampleYPos += y
 		self._CalcSample()
 		self._ConstrainSample()
-	def ApplyActualSize(self, image):
+	def ApplyActualSize(self):
 		#TODO: Regulate values.
-		if image is None:
+		if self.image is None:
 			return
-		ImageSize = image.GetSize()
+		ImageSize = self.image.GetSize()
 
 		self.ZoomLevel = sqrt( ( ImageSize.GetWidth() * ImageSize.GetHeight() ) / (self.DisplayWidth * self.DisplayHeight) )
 		self.ZoomInterval = sqrt( 2 * (self.ZoomAccel / self.ZoomAccelSteps) * fabs(1.0 - self.ZoomLevel) + self.ZoomStartInterval * self.ZoomStartInterval ) #FIXME
@@ -121,6 +133,7 @@ class ViewPort:
 			   self.BackgroundBitmap = wx.Bitmap.FromBuffer( self._ActualDisplayWidth, self._ActualDisplayHeight, self.BackgroundManager.get(self._ActualDisplayWidth, self._ActualDisplayHeight) )
 	def UpdateImage(self, image, quality):
 		"Return wx.Image, through the viewport."
+		self.image = image
 		if image is None:
 			self.ImageBitmap = None
 			return
@@ -147,20 +160,9 @@ class ViewPort:
 			NewImage = image.Scale(self._ActualDisplayWidth, self._ActualDisplayHeight, quality)
 
 		self.ImageBitmap = wx.Bitmap(NewImage)
-	def GetActualSizeRatio(self, image):
-		"Return the zoom level relative to the actual size of the image, rather than the display, along with the sample and display sizes, in a tuple formatted: (ratio, SampleWidth, SampleHeight)."
-		ImageSize = image.GetSize()
-		ImageWidth = ImageSize.GetWidth()
-		ImageHeight = ImageSize.GetHeight()
-		SampleWidth = self.SampleWidth * ImageWidth
-		SampleHeight = self.SampleHeight * ImageHeight
-		ImageSquare = ImageWidth * ImageHeight
-		return ( sqrt( ImageSquare / (SampleWidth * SampleHeight) ) /\
-				 sqrt( ImageSquare / (self._ActualDisplayWidth * self._ActualDisplayHeight) ),
-				 SampleWidth, SampleHeight )
-	def GetActualFitRatio(self, image):
+	def GetActualFitRatio(self):
 		"Return the zoom level necessary to fit the display, relative to the size of the image, rather than the display (1.0)."
-		ImageSize = image.GetSize()
+		ImageSize = self.image.GetSize()
 		return sqrt( (self.DisplayWidth * self.DisplayHeight) / ( ImageSize.GetWidth() * ImageSize.GetHeight() ) )
 	def __init__(self, BackgroundColor1, BackgroundColor2, BackgroundSquareWidth, ZoomStartInterval, ZoomAccel, ZoomAccelSteps, PanInterval):
 		self.BackgroundManager = TransparencyBackground(BackgroundColor1, BackgroundColor2, BackgroundSquareWidth)
@@ -183,6 +185,7 @@ class ViewPort:
 		self._ActualDisplayWidth = 0.0
 		self._ActualDisplayHeight = 0.0
 		self.BackgroundBitmap = None
+		self.image = None
 		self.ImageBitmap = None
 
 		self.ApplyFit()

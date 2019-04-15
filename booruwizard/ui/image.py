@@ -81,7 +81,7 @@ class ImageDisplay(wx.Panel):
 		self.viewport.ApplyFit()
 		self._UpdateMove()
 	def _OnZoomActualSize(self, message, arg2=None):
-		self.viewport.ApplyActualSize(self.image)
+		self.viewport.ApplyActualSize()
 		self._UpdateMove()
 	def _OnMouseDown(self, e):
 		self.MouseStartX = e.GetX()
@@ -153,14 +153,14 @@ class ImageDisplay(wx.Panel):
 class ImageZoomControls(wx.Panel):
 	def update(self):
 		"Update the tooltips and labels depending on zoom position."
-		if self.parent.image.image is None:
+		if self.parent.image.viewport.image is None:
 			self.ZoomDisplay.SetLabel('')
 			self.ZoomInButton.Disable()
 			self.ZoomOutButton.Disable()
 			self.ZoomFitButton.Disable()
 			self.ZoomActualButton.Disable()
 		else:
-			dimensions = self.parent.image.viewport.GetActualSizeRatio(self.parent.image.image)
+			dimensions = self.parent.image.viewport.GetActualSizeRatio()
 			self.ZoomDisplay.SetLabel( ''.join( (
 												  str( round(dimensions[0], 3) ), ' ',
 												  '(', str( floor(dimensions[1]) ), 'x', str( floor(dimensions[2]) ), ')',
@@ -170,7 +170,7 @@ class ImageZoomControls(wx.Panel):
 			ZoomInterval = str( round(self.parent.image.viewport.ZoomInterval, 3) )
 			self.ZoomInButton.SetLabel( ''.join( ( '+', ZoomInterval ) ) )
 			self.ZoomOutButton.SetLabel( ''.join( ( '-', ZoomInterval ) ) )
-			self.ZoomFitButton.SetLabel( str( round(self.parent.image.viewport.GetActualFitRatio(self.parent.image.image), 3) ) )
+			self.ZoomFitButton.SetLabel( str( round(self.parent.image.viewport.GetActualFitRatio(), 3) ) )
 			self.ZoomInButton.Enable()
 			self.ZoomOutButton.Enable()
 			self.ZoomFitButton.Enable()
