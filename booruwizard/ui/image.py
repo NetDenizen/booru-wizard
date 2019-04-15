@@ -7,7 +7,7 @@ from booruwizard.lib.imagereader import ImageReader
 
 #TODO: Should we have a control to affect the scaling (maybe an alternate scrollbar setting), or to change the background color?
 class ImageDisplay(wx.Panel):
-	def CalculateSize(self, NewImage):
+	def _CalculateSize(self, NewImage):
 		if self.image is None:
 			if NewImage:
 				self.ClearOnPaint = True
@@ -24,9 +24,6 @@ class ImageDisplay(wx.Panel):
 		else:
 			NewWidth = PanelWidth * (ImageWidth / ImageHeight)
 			NewHeight = PanelHeight
-		DiffWidth = (PanelWidth - NewWidth) / 2
-		if DiffWidth < 0:
-			DiffWidth = 0
 		DiffHeight = (PanelHeight - NewHeight) / 2
 		if DiffHeight < 0:
 			DiffHeight = 0
@@ -38,9 +35,6 @@ class ImageDisplay(wx.Panel):
 		if NewHeight != self.height:
 			self.height = NewHeight
 			self.ClearOnPaint = True
-			UpdateBackground = True
-		if DiffWidth != self.DiffWidth:
-			self.DiffWidth = DiffWidth
 			UpdateBackground = True
 		if DiffHeight != self.DiffHeight:
 			self.DiffHeight = DiffHeight
@@ -103,6 +97,10 @@ class ImageDisplay(wx.Panel):
 		self.viewport.ApplyMove(XDiff, YDiff)
 		self._UpdateMove()
 		e.Skip()
+	def _OnSize(self, e):
+		"Bound to EVT_SIZE to adjust the display to a change in size."
+		self._CalculateSize(False)
+		e.Skip()
 	def _OnPaint(self, e):
 		"Load the image at pos in the bitmap at array and scale it to fit the panel. If the image has alpha, overlay it with an image from the background manager."
 		dc = wx.AutoBufferedPaintDC(self)
@@ -113,11 +111,12 @@ class ImageDisplay(wx.Panel):
 		if self.quality != self.CurrentQuality:
 			self.CurrentQuality = self.quality
 			self.viewport.UpdateImage(self.image, self.quality)
-		dc.DrawBitmap( self.viewport.BackgroundBitmap, self.DiffWidth, self.DiffHeight, True )
-		dc.DrawBitmap( self.viewport.ImageBitmap, self.DiffWidth, self.DiffHeight, True )
+		dc.DrawBitmap( self.viewport.BackgroundBitmap, 0, self.DiffHeight, True )
+		dc.DrawBitmap( self.viewport.ImageBitmap, 0, self.DiffHeight, True )
+		e.Skip()
 	def SetImage(self, image):
 		self.image = image
-		self.CalculateSize(True)
+		self._CalculateSize(True)
 	def __init__(self, parent, quality, viewport):
 		wx.Panel.__init__(self, parent=parent)
 		self.image = None
@@ -139,6 +138,7 @@ class ImageDisplay(wx.Panel):
 		self.Bind( wx.EVT_LEFT_DOWN, self._OnMouseDown, id=self.GetId() )
 		self.Bind( wx.EVT_LEFT_UP, self._OnMouseUp, id=self.GetId() )
 		self.Bind( wx.EVT_MOTION, self._OnMouseMotion, id=self.GetId() )
+		self.Bind(wx.EVT_SIZE, self._OnSize)
 		self.Bind(wx.EVT_PAINT, self._OnPaint)
 
 		pub.subscribe(self._OnPanLeft, "PanLeft")
@@ -199,6 +199,10 @@ class ImageZoomControls(wx.Panel):
 	def _OnZoomActualReceived(self, message, arg2=None):
 		self.ZoomActualButton.SetFocus()
 		self.update()
+	#def _OnSize(self, e):
+	#	"Bound to EVT_SIZE to adjust the display to a change in size."
+	#	self.update()
+	#	e.Skip()
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent=parent)
 		self.parent = parent
@@ -236,6 +240,7 @@ class ImageZoomControls(wx.Panel):
 		self.Bind( wx.EVT_BUTTON, self._OnZoomOut, id=self.ZoomOutButton.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnZoomFit, id=self.ZoomFitButton.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnZoomActual, id=self.ZoomActualButton.GetId() )
+		#self.Bind(wx.EVT_SIZE, self._OnSize)
 
 		pub.subscribe(self._OnZoomInReceived, "ZoomIn")
 		pub.subscribe(self._OnZoomOutReceived, "ZoomOut")
@@ -251,23 +256,10 @@ class ImagePanel(wx.Panel):
 			return ''.join( ( str( round(val / 1000.0, 3) ), ' kB' ) )
 		else:
 			return ''.join( ( str( round(val / 1000000.0, 6) ), ' MB' ) )
-	def _MaxExtent(self, items, strings):
-		MaxWidth = 0
-		MaxExtent = None
-		for i, s in zip(items, strings):
-			if s is not None:
-				extent = i.GetTextExtent(s)
-			else:
-				extent = i.GetSize()
-			if extent.GetWidth() > MaxWidth:
-				MaxExtent = extent
-				MaxWidth = extent.GetWidth()
-		return MaxExtent
 	def _update(self):
 		"Update the current bitmap, and the information display."
 		image = self.bitmaps.get(self.pos)
 		self.image.SetImage(image.image)
-		self.image.CalculateSize(False)
 		self.ZoomControls.update()
 		if self.image.image is not None:
 			size = self.image.image.GetSize()
@@ -289,14 +281,9 @@ class ImagePanel(wx.Panel):
 			ResolutionString = 'File failed to load'
 			FileSizeString = ''
 			DataSizeString = ''
-		MaxExtent = self._MaxExtent(
-									(self.ResolutionDisplay, self.FileSizeDisplay, self.DataSizeDisplay, self.ImageQualityControl, self.OutputUpdateTimer, self.OutputUpdateButton, self.ZoomControls),
-									(ResolutionString, FileSizeString, DataSizeString, None, None, None, None)
-								   )
 		self.ResolutionDisplay.SetLabel(ResolutionString)
 		self.FileSizeDisplay.SetLabel(FileSizeString)
 		self.DataSizeDisplay.SetLabel(DataSizeString)
-		self.RightPanelDummy.SetMinSize(MaxExtent)
 		self.Update()
 		self.Layout()
 		self.Refresh()
@@ -433,11 +420,9 @@ class ImagePanel(wx.Panel):
 		self.OutputUpdateTimerTip = wx.ToolTip('Time until next automatic flush')
 		self.OutputUpdateButton = wx.Button(self, label='Flush Changes', style=wx.BU_EXACTFIT)
 		self.OutputUpdateButtonTip = wx.ToolTip('Immediately flush output files to hard drive, if changed.')
-		self.image = ImageDisplay(self, ImageQuality, ViewPort)
 		self.ZoomControls = ImageZoomControls(self)
-		self.RightPanelDummy = wx.Window(self)
+		self.image = ImageDisplay(self, ImageQuality, ViewPort)
 		self.LeftPaneSizer = wx.BoxSizer(wx.VERTICAL)
-		self.RightPaneSizer = wx.BoxSizer(wx.VERTICAL)
 		self.MainSizer = wx.BoxSizer(wx.HORIZONTAL)
 
 		self.LeftPaneSizer.Add(self.ResolutionDisplay, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.TOP | wx.LEFT)
@@ -453,11 +438,9 @@ class ImagePanel(wx.Panel):
 		self.LeftPaneSizer.Add(self.ZoomControls, 0, wx.ALIGN_BOTTOM | wx.ALIGN_LEFT | wx.BOTTOM | wx.LEFT)
 		self.LeftPaneSizer.AddStretchSpacer(3)
 
-		self.RightPaneSizer.Add(self.RightPanelDummy, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT | wx.TOP | wx.RIGHT)
-
 		self.MainSizer.Add(self.LeftPaneSizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.EXPAND)
-		self.MainSizer.Add(self.image, 1, wx.ALIGN_CENTER | wx.CENTER | wx.SHAPED)
-		self.MainSizer.Add(self.RightPaneSizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.EXPAND)
+		self.MainSizer.AddStretchSpacer(1)
+		self.MainSizer.Add(self.image, 20, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
 		self.SetSizer(self.MainSizer)
 
 		self.DataSizeDisplay.SetToolTip(self.DataSizeTip)
@@ -469,7 +452,6 @@ class ImagePanel(wx.Panel):
 		self.ImageQualityControl.SetItemToolTip(3, 'Bilinear Algorithm')
 		self.ImageQualityControl.SetItemToolTip(4, 'Nearest Neighbor Algorithm')
 		self.bitmaps.AddPathsList(paths)
-		self._update()
 		if self.image.quality == wx.IMAGE_QUALITY_HIGH:
 			self.ImageQualityControl.SetSelection(0)
 		elif self.image.quality == wx.IMAGE_QUALITY_BICUBIC:
