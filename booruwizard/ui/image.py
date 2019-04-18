@@ -220,8 +220,8 @@ class ImagePanel(wx.Panel):
 		minutes = str( int(MessageSeconds // 60.0) )
 		FullSeconds = str( round(MessageSeconds % 60.0, 3) )
 		SplitSeconds = FullSeconds.split('.', 2)
-		output = ''.join( ('Until Next Flush: ',
-						   minutes.zfill(2), ':', SplitSeconds[0].zfill(2), '.', SplitSeconds[1]) )
+		output = ''.join( ( 'Until Next Flush: ',
+							minutes.zfill(2), ':', SplitSeconds[0].zfill(2), '.', SplitSeconds[1].ljust(3, '0') ) )
 		wx.CallAfter(self.OutputUpdateTimer.SetLabel, output)
 	def _OnImageQualityHigh21(self, message, arg2=None):
 		"Set image quality to high 2+1 (box average on downscale, bicubic on upscale), update the radio button, and repaint the image."
