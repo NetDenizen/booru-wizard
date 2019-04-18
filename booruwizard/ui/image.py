@@ -334,7 +334,7 @@ class ImagePanel(wx.Panel):
 		e.Skip()
 	def _OnZoomInReceived(self, message, arg2=None):
 		self.ZoomInButton.SetFocus()
-		self.u_pdate()
+		self._update()
 	def _OnZoomOutReceived(self, message, arg2=None):
 		self.ZoomOutButton.SetFocus()
 		self._update()
