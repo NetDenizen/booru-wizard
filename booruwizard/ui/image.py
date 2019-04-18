@@ -159,10 +159,12 @@ class ImagePanel(wx.Panel):
 			return ''.join( ( str( round(val / 1000.0, 3) ), ' kB' ) )
 		else:
 			return ''.join( ( str( round(val / 1000000.0, 6) ), ' MB' ) )
-	def _update(self):
-		"Update the current bitmap, the information display, and controls."
+	def _UpdateImage(self):
+		"Update the image panel."
+		self.image.SetImage( self.bitmaps.get(self.pos).image )
+	def _UpdateImageData(self):
+		"Update statistics about the image."
 		image = self.bitmaps.get(self.pos)
-		self.image.SetImage(image.image)
 		if self.image.image is not None:
 			size = self.image.image.GetSize()
 			ResolutionString = ''.join( (
@@ -170,10 +172,10 @@ class ImagePanel(wx.Panel):
 										 ' (', str( size.GetWidth() * size.GetHeight() ), ' pixels)'
 										)
 									  )
-			FileSizeString = ''.join( ( 'File size: ', self._HumanSize( image.FileSize ) ) )
+			FileSizeString = ''.join( ( 'File size: ', self._HumanSize(image.FileSize) ) )
 			DataSizeString = ''.join(
 									  (
-									   'Data size: ', self._HumanSize( image.DataSize ), ' / ',
+									   'Data size: ', self._HumanSize(image.DataSize), ' / ',
 									   self._HumanSize( self.bitmaps.GetCurrentBufSize() ), ' / ',
 									   self._HumanSize( self.bitmaps.GetMaxBufSize() ),
 									   ' (', str( self.bitmaps.GetCacheIndex(image) + 1 ), '/', str( self.bitmaps.GetNumOpenImages() ), ')'
@@ -186,6 +188,8 @@ class ImagePanel(wx.Panel):
 		self.ResolutionDisplay.SetLabel(ResolutionString)
 		self.FileSizeDisplay.SetLabel(FileSizeString)
 		self.DataSizeDisplay.SetLabel(DataSizeString)
+	def _UpdateZoomControls(self):
+		"Update the zoom controls."
 		if self.image.viewport.image is None:
 			self.ZoomDisplay.SetLabel('')
 			self.ZoomInButton.Disable()
@@ -212,9 +216,11 @@ class ImagePanel(wx.Panel):
 			else:
 				self.ZoomActualButton.Enable()
 			self.ZoomInButton.Enable()
-		self.Update()
-		self.Layout()
-		self.Refresh()
+	def _update(self):
+		"Update the current bitmap, the information display, and controls."
+		self._UpdateImage()
+		self._UpdateImageData()
+		self._UpdateZoomControls()
 	def _OnFileUpdatePending(self, message, arg2=None):
 		wx.CallAfter(self.OutputUpdateButton.Enable)
 	def _OnFileUpdateClear(self, message, arg2=None):
@@ -286,6 +292,9 @@ class ImagePanel(wx.Panel):
 		if 0 <= message < len(self.bitmaps.images):
 			self.pos = message
 		self._update()
+		self.Update()
+		self.Layout()
+		self.Refresh()
 	def _OnLeft(self, message, arg2=None):
 		"Shift to the left (-1) image to the current position in the bitmap array if the position is greater than 0. Otherwise, loop around to the last item."
 		if self.pos == 0:
@@ -293,6 +302,9 @@ class ImagePanel(wx.Panel):
 		else:
 			self.pos -= 1
 		self._update()
+		self.Update()
+		self.Layout()
+		self.Refresh()
 	def _OnRight(self, message, arg2=None):
 		"Shift to the right (+1) image to the current position in the bitmap array if the position is less than the length of the bitmap array. Otherwise, loop around to the last item."
 		if self.pos >= len(self.bitmaps.images) - 1:
@@ -300,6 +312,9 @@ class ImagePanel(wx.Panel):
 		else:
 			self.pos += 1
 		self._update()
+		self.Update()
+		self.Layout()
+		self.Refresh()
 	def _OnImageQualitySelect(self, e):
 		"Bound to EVT_RADIOBOX; update image quality from the relevant radio box."
 		selection = self.ImageQualityControl.GetSelection()
@@ -337,20 +352,35 @@ class ImagePanel(wx.Panel):
 		pub.sendMessage("ZoomActualSize", message=None)
 		e.Skip()
 	def _OnZoomInReceived(self, message, arg2=None):
+		self._UpdateZoomControls()
 		self.ZoomInButton.SetFocus()
-		self._update()
+		self.Update()
+		self.Layout()
+		self.Refresh()
 	def _OnZoomOutReceived(self, message, arg2=None):
+		self._UpdateZoomControls()
 		self.ZoomOutButton.SetFocus()
-		self._update()
+		self.Update()
+		self.Layout()
+		self.Refresh()
 	def _OnZoomFitReceived(self, message, arg2=None):
+		self._UpdateZoomControls()
 		self.ZoomFitButton.SetFocus()
-		self._update()
+		self.Update()
+		self.Layout()
+		self.Refresh()
 	def _OnZoomActualReceived(self, message, arg2=None):
+		self._UpdateZoomControls()
 		self.ZoomActualButton.SetFocus()
-		self._update()
+		self.Update()
+		self.Layout()
+		self.Refresh()
 	def _OnSize(self, e):
 		"Update the dimensions of this panel and its children."
-		self._update()
+		self._UpdateZoomControls()
+		self.Update()
+		self.Layout()
+		self.Refresh()
 		e.Skip()
 	def _OnOutputUpdateButton(self, e):
 		pub.sendMessage("FileUpdateForce", message=None)
@@ -466,6 +496,11 @@ class ImagePanel(wx.Panel):
 		pub.subscribe(self._OnIndex, "IndexImage")
 		pub.subscribe(self._OnLeft, "LeftImage")
 		pub.subscribe(self._OnRight, "RightImage")
+
+		self._update()
+		self.Update()
+		self.Layout()
+		self.Refresh()
 
 class ImageLabel(wx.Panel):
 	def _SetLabels(self):
