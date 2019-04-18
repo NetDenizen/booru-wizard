@@ -7,7 +7,7 @@ from booruwizard.lib.imagereader import ImageReader
 
 #TODO: Should we have a control to affect the scaling (maybe an alternate scrollbar setting), or to change the background color?
 class ImageDisplay(wx.Panel):
-	def _CalculateSize(self, NewImage):
+	def CalculateSize(self, NewImage):
 		if self.image is None:
 			if NewImage:
 				self.ClearOnPaint = True
