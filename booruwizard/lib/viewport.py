@@ -32,7 +32,7 @@ class ViewPort:
 		SampleHeight = self.SampleHeight * ImageHeight
 		ImageSquare = ImageWidth * ImageHeight
 		return ( sqrt( ImageSquare / (SampleWidth * SampleHeight) ) /\
-				 sqrt( ImageSquare / (self._ActualDisplayWidth * self._ActualDisplayHeight) ),
+				 sqrt( ImageSquare / (self.DisplayWidth * self.DisplayHeight) ),
 				 SampleWidth, SampleHeight )
 	def _CalcZoomTimes(self, direction, times):
 		"Calculate zooming in or out a number of times."
@@ -121,20 +121,10 @@ class ViewPort:
 	def UpdateBackground(self, DisplayWidth, DisplayHeight):
 		self.DisplayWidth = DisplayWidth
 		self.DisplayHeight = DisplayHeight
-		if self.ZoomLevel < 1.0:
-			self._ActualDisplayWidth = self.DisplayWidth * self.ZoomLevel
-			self._ActualDisplayHeight = self.DisplayHeight * self.ZoomLevel
-		else:
-			self._ActualDisplayWidth = self.DisplayWidth
-			self._ActualDisplayHeight = self.DisplayHeight
-		if self._ActualDisplayWidth < 1.0:
-			self._ActualDisplayWidth = 1.0
-		if self._ActualDisplayHeight < 1.0:
-			self._ActualDisplayHeight = 1.0
 		if self.BackgroundBitmap is None or\
-		   self._ActualDisplayWidth != self.BackgroundBitmap.GetWidth() or\
-		   self._ActualDisplayHeight != self.BackgroundBitmap.GetHeight():
-			   self.BackgroundBitmap = wx.Bitmap.FromBuffer( int( floor(self._ActualDisplayWidth) ), int( floor(self._ActualDisplayHeight) ), self.BackgroundManager.get(self._ActualDisplayWidth, self._ActualDisplayHeight) )
+		   self.DisplayWidth != self.BackgroundBitmap.GetWidth() or\
+		   self.DisplayHeight != self.BackgroundBitmap.GetHeight():
+			   self.BackgroundBitmap = wx.Bitmap.FromBuffer(self.DisplayWidth, self.DisplayHeight, self.BackgroundManager.get(self.DisplayWidth, self.DisplayHeight) )
 	def UpdateImage(self, image, quality):
 		"Return wx.Image, through the viewport."
 		self.image = image
@@ -154,14 +144,11 @@ class ViewPort:
 			SampleRect = wx.Rect(SampleXPos, SampleYPos, ZoomWidth, ZoomHeight)
 
 			NewImage = image.GetSubImage(SampleRect)
-			NewImage.Rescale(self._ActualDisplayWidth, self._ActualDisplayHeight, quality)
-		elif self.ZoomLevel == 1.0:
-			if ImageWidth == self._ActualDisplayWidth and ImageHeight == self._ActualDisplayHeight:
-				NewImage = image
-			else:
-				NewImage = image.Scale(self._ActualDisplayWidth, self._ActualDisplayHeight, quality)
+			NewImage.Rescale(self.DisplayWidth, self.DisplayHeight, quality)
+		elif ImageWidth == self.DisplayWidth and ImageHeight == self.DisplayHeight:
+			NewImage = image
 		else:
-			NewImage = image.Scale(self._ActualDisplayWidth, self._ActualDisplayHeight, quality)
+			NewImage = image.Scale(self.DisplayWidth, self.DisplayHeight, quality)
 
 		self.ImageBitmap = wx.Bitmap(NewImage)
 	def GetActualFitRatio(self):
@@ -173,7 +160,7 @@ class ViewPort:
 		self.ZoomStartInterval = ZoomStartInterval # Start amount ZoomLevel is increased or decreased by each zoom step.
 		self.ZoomAccel = ZoomAccel # Amount ZoomInterval increases by every ZoomAccelSteps.
 		self.ZoomAccelSteps = ZoomAccelSteps
-		self.PanInterval = PanInterval
+		self.PanInterval = PanInterval # Amount by which the image is panned by a single step.
 
 		if self.ZoomStartInterval <= 0.0:
 			raise ViewPortError( ''.join( ('Start zoom interval "', str(self.ZoomStartInterval), '" must be greater than 0.0') ) )
@@ -184,10 +171,8 @@ class ViewPort:
 		if self.PanInterval <= 0.0:
 			raise ViewPortError( ''.join( ('Pan interval "', str(self.ZoomAccelSteps), '" must be greater than 0.0') ) )
 
-		self.DisplayWidth = 0.0
-		self.DisplayHeight = 0.0
-		self._ActualDisplayWidth = 0.0
-		self._ActualDisplayHeight = 0.0
+		self.DisplayWidth = 0
+		self.DisplayHeight = 0
 		self.BackgroundBitmap = None
 		self.image = None
 		self.ImageBitmap = None
