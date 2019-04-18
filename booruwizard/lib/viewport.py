@@ -44,14 +44,14 @@ class ViewPort:
 		elif AccelChange > 0.0:
 			AccelChange = floor(AccelChange)
 		self.ZoomInterval += (self.ZoomAccel * AccelChange)
-		if self.ZoomInterval <= 0.0:
+		if self.ZoomInterval < self.ZoomAccel:
 			self.ZoomInterval = self.ZoomAccel
 		self.AccelSteps += int(times * direction)
 		if fabs(self.AccelSteps) >= self.ZoomAccelSteps:
 			self.AccelSteps = int(self.AccelSteps % self.ZoomAccelSteps)
 		ActualZoomInterval = ( (self.ZoomLevel / self.GetActualSizeRatio()[0]) * self.ZoomInterval )
 		self.ZoomLevel += (ActualZoomInterval * direction)
-		if self.ZoomLevel <= 0.0:
+		if self.ZoomLevel < ActualZoomInterval:
 			self.ZoomLevel = ActualZoomInterval
 	def _ConstrainSample(self):
 		"Ensure that the sample area remains within 0.0-1.0 bounds."
@@ -127,10 +127,14 @@ class ViewPort:
 		else:
 			self._ActualDisplayWidth = self.DisplayWidth
 			self._ActualDisplayHeight = self.DisplayHeight
+		if self._ActualDisplayWidth < 1.0:
+			self._ActualDisplayWidth = 1.0
+		if self._ActualDisplayHeight < 1.0:
+			self._ActualDisplayHeight = 1.0
 		if self.BackgroundBitmap is None or\
 		   self._ActualDisplayWidth != self.BackgroundBitmap.GetWidth() or\
 		   self._ActualDisplayHeight != self.BackgroundBitmap.GetHeight():
-			   self.BackgroundBitmap = wx.Bitmap.FromBuffer( self._ActualDisplayWidth, self._ActualDisplayHeight, self.BackgroundManager.get(self._ActualDisplayWidth, self._ActualDisplayHeight) )
+			   self.BackgroundBitmap = wx.Bitmap.FromBuffer( int( floor(self._ActualDisplayWidth) ), int( floor(self._ActualDisplayHeight) ), self.BackgroundManager.get(self._ActualDisplayWidth, self._ActualDisplayHeight) )
 	def UpdateImage(self, image, quality):
 		"Return wx.Image, through the viewport."
 		self.image = image
