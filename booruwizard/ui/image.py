@@ -372,6 +372,7 @@ class ImagePanel(wx.Panel):
 		self.Refresh()
 	def _OnSize(self, e):
 		"Update the dimensions of this panel and its children."
+		self.Layout() # XXX: Windows doesn't update the layout before this function is called, leading to the image appearing tiny, when the software first starts.
 		self.image.CalculateSize(False)
 		self._UpdateZoomControls()
 		self.Update()
