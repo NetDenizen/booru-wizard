@@ -160,7 +160,7 @@ class ImagePanel(wx.Panel):
 		else:
 			return ''.join( ( str( round(val / 1000000.0, 6) ), ' MB' ) )
 	def _update(self):
-		"Update the current bitmap, and the information display."
+		"Update the current bitmap, the information display, and controls."
 		image = self.bitmaps.get(self.pos)
 		self.image.SetImage(image.image)
 		if self.image.image is not None:
@@ -195,19 +195,23 @@ class ImagePanel(wx.Panel):
 		else:
 			dimensions = self.image.viewport.GetActualSizeRatio()
 			self.ZoomDisplay.SetLabel( ''.join( (
-												  str( round(dimensions[0], 3) ), ' ',
+												  'Zoom Level: ', str( round(dimensions[0], 3) ), ' ',
 												  '(', str( floor(dimensions[1]) ), 'x', str( floor(dimensions[2]) ), ')',
 												)
 											  )
 									 )
-			ZoomInterval = str( round(self.image.viewport.ZoomInterval, 3) )
-			self.ZoomInButton.SetLabel( ''.join( ( '+', ZoomInterval ) ) )
-			self.ZoomOutButton.SetLabel( ''.join( ( '-', ZoomInterval ) ) )
-			self.ZoomFitButton.SetLabel( str( round(self.image.viewport.GetActualFitRatio(), 3) ) )
+			ImageSize = self.image.image.GetSize()
+			if ImageSize.GetWidth() == dimensions[1] and ImageSize.GetHeight() == dimensions[2]:
+				self.ZoomFitButton.Disable()
+				self.ZoomOutButton.Disable()
+			else:
+				self.ZoomFitButton.Enable()
+				self.ZoomOutButton.Enable()
+			if dimensions[0] == 1.0:
+				self.ZoomActualButton.Disable()
+			else:
+				self.ZoomActualButton.Enable()
 			self.ZoomInButton.Enable()
-			self.ZoomOutButton.Enable()
-			self.ZoomFitButton.Enable()
-			self.ZoomActualButton.Enable()
 		self.Update()
 		self.Layout()
 		self.Refresh()
@@ -370,12 +374,12 @@ class ImagePanel(wx.Panel):
 		self.OutputUpdateButtonTip = wx.ToolTip('Immediately flush output files to hard drive, if changed.')
 		self.ZoomDisplay = wx.StaticText(self)
 		self.ZoomDisplayTip = wx.ToolTip('Zoom ratio to actual size of image (Sample WidthxSample Height)')
-		self.ZoomInButton = wx.Button(self, style=wx.BU_EXACTFIT)
-		self.ZoomInButtonTip = wx.ToolTip('Zoom in by percent  in button label.')
-		self.ZoomOutButton = wx.Button(self, style=wx.BU_EXACTFIT)
-		self.ZoomOutButtonTip = wx.ToolTip('Zoom out by percent in button label.')
-		self.ZoomFitButton = wx.Button(self, style=wx.BU_EXACTFIT)
-		self.ZoomFitButtonTip = wx.ToolTip('Zoom to fit window (Zoom ratio in button label).')
+		self.ZoomInButton = wx.Button(self, label="+", style=wx.BU_EXACTFIT)
+		self.ZoomInButtonTip = wx.ToolTip('Zoom in to displayed image.')
+		self.ZoomOutButton = wx.Button(self, label="-", style=wx.BU_EXACTFIT)
+		self.ZoomOutButtonTip = wx.ToolTip('Zoom out from displayed image.')
+		self.ZoomFitButton = wx.Button(self, label="FIT", style=wx.BU_EXACTFIT)
+		self.ZoomFitButtonTip = wx.ToolTip('Zoom to fit window.')
 		self.ZoomActualButton = wx.Button(self, label="1.0", style=wx.BU_EXACTFIT)
 		self.ZoomActualButtonTip = wx.ToolTip('Zoom to actual size (1.0 Zoom Ratio).')
 		self.image = ImageDisplay(self, ImageQuality, ViewPort)
@@ -383,8 +387,6 @@ class ImagePanel(wx.Panel):
 		self.LeftPaneSizer = wx.BoxSizer(wx.VERTICAL)
 		self.MainSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-		self.ZoomControlSizer.Add(self.ZoomDisplay, 0, wx.ALIGN_CENTER_VERTICAL)
-		self.ZoomControlSizer.AddStretchSpacer(1)
 		self.ZoomControlSizer.Add(self.ZoomInButton, 10, wx.ALIGN_CENTER_VERTICAL)
 		self.ZoomControlSizer.AddStretchSpacer(1)
 		self.ZoomControlSizer.Add(self.ZoomOutButton, 10, wx.ALIGN_CENTER_VERTICAL)
@@ -403,6 +405,8 @@ class ImagePanel(wx.Panel):
 		self.LeftPaneSizer.AddStretchSpacer(1)
 		self.LeftPaneSizer.Add(self.OutputUpdateButton, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT | wx.TOP | wx.LEFT)
 		self.LeftPaneSizer.AddStretchSpacer(50)
+		self.LeftPaneSizer.Add(self.ZoomDisplay, 0, wx.ALIGN_CENTER_VERTICAL)
+		self.LeftPaneSizer.AddStretchSpacer(1)
 		self.LeftPaneSizer.Add(self.ZoomControlSizer, 0, wx.ALIGN_BOTTOM | wx.ALIGN_LEFT | wx.BOTTOM | wx.LEFT)
 		self.LeftPaneSizer.AddStretchSpacer(3)
 
