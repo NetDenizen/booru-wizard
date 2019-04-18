@@ -97,10 +97,6 @@ class ImageDisplay(wx.Panel):
 		self.viewport.ApplyMove(XDiff, YDiff)
 		self._UpdateMove()
 		e.Skip()
-	def _OnSize(self, e):
-		"Bound to EVT_SIZE to adjust the display to a change in size."
-		self._CalculateSize(False)
-		e.Skip()
 	def _OnPaint(self, e):
 		"Load the image at pos in the bitmap at array and scale it to fit the panel. If the image has alpha, overlay it with an image from the background manager."
 		dc = wx.AutoBufferedPaintDC(self)
@@ -116,7 +112,7 @@ class ImageDisplay(wx.Panel):
 		e.Skip()
 	def SetImage(self, image):
 		self.image = image
-		self._CalculateSize(True)
+		self.CalculateSize(True)
 	def __init__(self, parent, quality, viewport):
 		wx.Panel.__init__(self, parent=parent)
 		self.image = None
@@ -138,7 +134,6 @@ class ImageDisplay(wx.Panel):
 		self.Bind( wx.EVT_LEFT_DOWN, self._OnMouseDown, id=self.GetId() )
 		self.Bind( wx.EVT_LEFT_UP, self._OnMouseUp, id=self.GetId() )
 		self.Bind( wx.EVT_MOTION, self._OnMouseMotion, id=self.GetId() )
-		self.Bind(wx.EVT_SIZE, self._OnSize)
 		self.Bind(wx.EVT_PAINT, self._OnPaint)
 
 		pub.subscribe(self._OnPanLeft, "PanLeft")
@@ -377,6 +372,7 @@ class ImagePanel(wx.Panel):
 		self.Refresh()
 	def _OnSize(self, e):
 		"Update the dimensions of this panel and its children."
+		self.image.CalculateSize(False)
 		self._UpdateZoomControls()
 		self.Update()
 		self.Layout()
