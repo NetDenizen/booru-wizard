@@ -98,6 +98,15 @@ class ImageDisplay(wx.Panel):
 		self.viewport.ApplyMove(XDiff, YDiff)
 		self._UpdateMove()
 		e.Skip()
+	def _OnSize(self, e):
+		OldSteps = self.viewport.TotalSteps
+		self.CalculateSize(False)
+		self.viewport.ApplyZoomSteps(OldSteps)
+		self.parent.UpdateZoomControls()
+		self.viewport.UpdateImage(self.image, self.quality)
+		self.Update()
+		self.Refresh()
+		e.Skip()
 	def _OnPaint(self, e):
 		"Load the image at pos in the bitmap at array and scale it to fit the panel. If the image has alpha, overlay it with an image from the background manager."
 		dc = wx.AutoBufferedPaintDC(self)
@@ -116,6 +125,7 @@ class ImageDisplay(wx.Panel):
 		self.CalculateSize(True)
 	def __init__(self, parent, quality, viewport):
 		wx.Panel.__init__(self, parent=parent)
+		self.parent = parent
 		self.image = None
 		self.height = None
 		self.width = None
@@ -135,6 +145,7 @@ class ImageDisplay(wx.Panel):
 		self.Bind( wx.EVT_LEFT_DOWN, self._OnMouseDown, id=self.GetId() )
 		self.Bind( wx.EVT_LEFT_UP, self._OnMouseUp, id=self.GetId() )
 		self.Bind( wx.EVT_MOTION, self._OnMouseMotion, id=self.GetId() )
+		self.Bind(wx.EVT_SIZE, self._OnSize)
 		self.Bind(wx.EVT_PAINT, self._OnPaint)
 
 		pub.subscribe(self._OnPanLeft, "PanLeft")
@@ -187,7 +198,7 @@ class ImagePanel(wx.Panel):
 		self.ResolutionDisplay.SetLabel(ResolutionString)
 		self.FileSizeDisplay.SetLabel(FileSizeString)
 		self.DataSizeDisplay.SetLabel(DataSizeString)
-	def _UpdateZoomControls(self):
+	def UpdateZoomControls(self):
 		"Update the zoom controls."
 		if self.image.viewport.image is None:
 			self.ZoomDisplay.SetLabel('')
@@ -219,7 +230,7 @@ class ImagePanel(wx.Panel):
 		"Update the current bitmap, the information display, and controls."
 		self._UpdateImage()
 		self._UpdateImageData()
-		self._UpdateZoomControls()
+		self.UpdateZoomControls()
 	def _OnFileUpdatePending(self, message, arg2=None):
 		wx.CallAfter(self.OutputUpdateButton.Enable)
 	def _OnFileUpdateClear(self, message, arg2=None):
@@ -351,38 +362,29 @@ class ImagePanel(wx.Panel):
 		pub.sendMessage("ZoomActualSize", message=None)
 		e.Skip()
 	def _OnZoomInReceived(self, message, arg2=None):
-		self._UpdateZoomControls()
+		self.UpdateZoomControls()
 		self.ZoomInButton.SetFocus()
 		self.Update()
 		self.Layout()
 		self.Refresh()
 	def _OnZoomOutReceived(self, message, arg2=None):
-		self._UpdateZoomControls()
+		self.UpdateZoomControls()
 		self.ZoomOutButton.SetFocus()
 		self.Update()
 		self.Layout()
 		self.Refresh()
 	def _OnZoomFitReceived(self, message, arg2=None):
-		self._UpdateZoomControls()
+		self.UpdateZoomControls()
 		self.ZoomFitButton.SetFocus()
 		self.Update()
 		self.Layout()
 		self.Refresh()
 	def _OnZoomActualReceived(self, message, arg2=None):
-		self._UpdateZoomControls()
+		self.UpdateZoomControls()
 		self.ZoomActualButton.SetFocus()
 		self.Update()
 		self.Layout()
 		self.Refresh()
-	def _OnSize(self, e):
-		"Update the dimensions of this panel and its children."
-		self.Layout() # XXX: Windows doesn't update the layout before this function is called, leading to the image appearing tiny, when the software first starts.
-		self.image.CalculateSize(False)
-		self._UpdateZoomControls()
-		self.Update()
-		self.Layout()
-		self.Refresh()
-		e.Skip()
 	def _OnOutputUpdateButton(self, e):
 		pub.sendMessage("FileUpdateForce", message=None)
 		e.Skip()
@@ -478,7 +480,6 @@ class ImagePanel(wx.Panel):
 		self.Bind( wx.EVT_BUTTON, self._OnZoomOut, id=self.ZoomOutButton.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnZoomFit, id=self.ZoomFitButton.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnZoomActual, id=self.ZoomActualButton.GetId() )
-		self.Bind(wx.EVT_SIZE, self._OnSize)
 
 		pub.subscribe(self._OnFileUpdatePending, "FileUpdatePending")
 		pub.subscribe(self._OnFileUpdateClear, "FileUpdateClear")
