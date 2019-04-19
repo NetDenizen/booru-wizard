@@ -215,7 +215,7 @@ class ImagePanel(wx.Panel):
 											  )
 									 )
 			ImageSize = self.image.image.GetSize()
-			if self.image.viewport.state == ViewPortState.FIT and self.image.viewport.TotalSteps == 0:
+			if (self.image.viewport.state == ViewPortState.FIT and self.image.viewport.TotalSteps == 0):
 				self.ZoomFitButton.Disable()
 				self.ZoomOutButton.Disable()
 			else:
@@ -225,6 +225,10 @@ class ImagePanel(wx.Panel):
 				self.ZoomActualButton.Disable()
 			else:
 				self.ZoomActualButton.Enable()
+			if self.image.viewport.GetActualSizeRatio()[0] == 1.0:
+				self.ZoomActualButton.Disable()
+				self.ZoomFitButton.Disable()
+				self.ZoomOutButton.Disable()
 			self.ZoomInButton.Enable()
 	def _update(self):
 		"Update the current bitmap, the information display, and controls."

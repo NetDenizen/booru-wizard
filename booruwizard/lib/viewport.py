@@ -28,17 +28,6 @@ class ViewPort:
 		self.SampleYPos = self.SampleYPos - ( (1.0 - self.SampleHeight) / 2.0 ) + MoveShift
 		self.SampleWidth = SizeShift
 		self.SampleHeight = SizeShift
-	def GetActualSizeRatio(self):
-		"Return the zoom level relative to the actual size of the image, rather than the display, along with the sample and display sizes, in a tuple formatted: (ratio, SampleWidth, SampleHeight)."
-		ImageSize = self.image.GetSize()
-		ImageWidth = ImageSize.GetWidth()
-		ImageHeight = ImageSize.GetHeight()
-		SampleWidth = self.SampleWidth * ImageWidth
-		SampleHeight = self.SampleHeight * ImageHeight
-		ImageSquare = ImageWidth * ImageHeight
-		return ( sqrt( ImageSquare / (SampleWidth * SampleHeight) ) /\
-				 sqrt( ImageSquare / (self.DisplayWidth * self.DisplayHeight) ),
-				 SampleWidth, SampleHeight )
 	def _CalcZoomTimes(self, direction, times):
 		"Calculate zooming in or out a number of times."
 		if direction == -1.0 and self.ZoomLevel <= self.ZoomInterval:
@@ -164,6 +153,8 @@ class ViewPort:
 		self.ImageBitmap = wx.Bitmap(NewImage)
 	def ApplyZoomSteps(self, OldSteps):
 		"Zoom in or out by OldSteps, according to the state of the viewport."
+		if self.TotalSteps != 0:
+			return
 		if self.state == ViewPortState.ACTUAL:
 			self.ApplyActualSize()
 			if OldSteps > 0:
@@ -174,6 +165,17 @@ class ViewPort:
 			self.ApplyFit()
 			if OldSteps > 0:
 				self.ApplyZoomTimes(True, OldSteps)
+	def GetActualSizeRatio(self):
+		"Return the zoom level relative to the actual size of the image, rather than the display, along with the sample and display sizes, in a tuple formatted: (ratio, SampleWidth, SampleHeight)."
+		ImageSize = self.image.GetSize()
+		ImageWidth = ImageSize.GetWidth()
+		ImageHeight = ImageSize.GetHeight()
+		SampleWidth = self.SampleWidth * ImageWidth
+		SampleHeight = self.SampleHeight * ImageHeight
+		ImageSquare = ImageWidth * ImageHeight
+		return ( sqrt( ImageSquare / (SampleWidth * SampleHeight) ) /\
+				 sqrt( ImageSquare / (self.DisplayWidth * self.DisplayHeight) ),
+				 SampleWidth, SampleHeight )
 	def GetActualFitRatio(self):
 		"Return the zoom level necessary to fit the display, relative to the size of the image, rather than the display (1.0)."
 		ImageSize = self.image.GetSize()
