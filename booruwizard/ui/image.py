@@ -4,6 +4,7 @@ import wx
 from pubsub import pub
 
 from booruwizard.lib.imagereader import ImageReader
+from booruwizard.lib.viewport import ViewPortState
 
 #TODO: Should we have a control to affect the scaling (maybe an alternate scrollbar setting), or to change the background color?
 class ImageDisplay(wx.Panel):
@@ -156,7 +157,10 @@ class ImagePanel(wx.Panel):
 			return ''.join( ( str( round(val / 1000000.0, 6) ), ' MB' ) )
 	def _UpdateImage(self):
 		"Update the image panel."
+		OldSteps = self.image.viewport.TotalSteps
 		self.image.SetImage( self.bitmaps.get(self.pos).image )
+		if self.image.viewport.image is not None:
+			self.image.viewport.ApplyZoomSteps(OldSteps)
 	def _UpdateImageData(self):
 		"Update statistics about the image."
 		image = self.bitmaps.get(self.pos)
@@ -200,13 +204,13 @@ class ImagePanel(wx.Panel):
 											  )
 									 )
 			ImageSize = self.image.image.GetSize()
-			if ImageSize.GetWidth() == dimensions[1] and ImageSize.GetHeight() == dimensions[2]:
+			if self.image.viewport.state == ViewPortState.FIT and self.image.viewport.TotalSteps == 0:
 				self.ZoomFitButton.Disable()
 				self.ZoomOutButton.Disable()
 			else:
 				self.ZoomFitButton.Enable()
 				self.ZoomOutButton.Enable()
-			if dimensions[0] == 1.0:
+			if self.image.viewport.state == ViewPortState.ACTUAL and self.image.viewport.TotalSteps == 0:
 				self.ZoomActualButton.Disable()
 			else:
 				self.ZoomActualButton.Enable()

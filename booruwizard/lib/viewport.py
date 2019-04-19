@@ -1,4 +1,5 @@
 from math import fabs, ceil, floor, sqrt
+from enum import Enum
 
 import wx
 
@@ -11,6 +12,10 @@ DEFAULT_PAN_INTERVAL = 0.05
 
 class ViewPortError(Exception):
 	pass
+
+class ViewPortState(Enum):
+	FIT = 0
+	ACTUAL = 1
 
 # TODO Should actual size zooming be rounded to the nearest _CalcZoomTimes value?
 class ViewPort:
@@ -84,8 +89,10 @@ class ViewPort:
 	def ApplyZoomTimes(self, ZoomIn, times):
 		"Apply zooming in or out a number of times."
 		if ZoomIn:
+			self.TotalSteps += times
 			direction = 1.0
 		else:
+			self.TotalSteps -= times
 			direction = -1.0
 		self._CalcZoomTimes(direction, times)
 		self._CalcSample()
@@ -100,6 +107,8 @@ class ViewPort:
 		#TODO: Regulate values.
 		if self.image is None:
 			return
+		self.state = ViewPortState.ACTUAL
+		self.TotalSteps = 0
 		ImageSize = self.image.GetSize()
 
 		self.ZoomLevel = sqrt( ( ImageSize.GetWidth() * ImageSize.GetHeight() ) / (self.DisplayWidth * self.DisplayHeight) )
@@ -110,6 +119,8 @@ class ViewPort:
 		self._ConstrainSample()
 	def ApplyFit(self):
 		"Zoom so the entire area is sampled."
+		self.state = ViewPortState.FIT
+		self.TotalSteps = 0
 		self.ZoomInterval = self.ZoomStartInterval
 		self.ZoomLevel = 1.0 # Current size of the sample area, relative to the actual image; always starts at 1.0
 		self.AccelSteps = 0
@@ -151,6 +162,18 @@ class ViewPort:
 			NewImage = image.Scale(self.DisplayWidth, self.DisplayHeight, quality)
 
 		self.ImageBitmap = wx.Bitmap(NewImage)
+	def ApplyZoomSteps(self, OldSteps):
+		"Zoom in or out by OldSteps, according to the state of the viewport."
+		if self.state == ViewPortState.ACTUAL:
+			self.ApplyActualSize()
+			if OldSteps > 0:
+				self.ApplyZoomTimes(True, OldSteps)
+			elif OldSteps < 0:
+				self.ApplyZoomTimes( False, abs(OldSteps) )
+		else:
+			self.ApplyFit()
+			if OldSteps > 0:
+				self.ApplyZoomTimes(True, OldSteps)
 	def GetActualFitRatio(self):
 		"Return the zoom level necessary to fit the display, relative to the size of the image, rather than the display (1.0)."
 		ImageSize = self.image.GetSize()
