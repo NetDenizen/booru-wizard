@@ -46,7 +46,6 @@ class ImageDisplay(wx.Panel):
 			UpdateImage = False
 		if UpdateBackground:
 			self.viewport.UpdateBackground(NewWidth, NewHeight)
-			UpdateImage = True
 		if UpdateImage:
 			self.viewport.UpdateImage(self.image, self.quality)
 	def _UpdateMove(self):
