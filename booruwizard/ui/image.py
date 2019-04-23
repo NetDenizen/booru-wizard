@@ -551,7 +551,6 @@ class ImageLabel(wx.Panel):
 		self.PathLabel.SetFocus()
 	def __init__(self, parent, paths):
 		wx.Panel.__init__(self, parent=parent)
-		self.parent = parent
 
 		self.pos = 0 # Position in paths
 		self.paths = paths
