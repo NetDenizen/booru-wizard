@@ -45,8 +45,8 @@ class ViewPort:
 			self.AccelSteps = int(self.AccelSteps % self.ZoomAccelSteps)
 		ActualZoomInterval = ( (self.ZoomLevel / self.GetActualSizeRatio()[0]) * self.ZoomInterval )
 		self.ZoomLevel += (ActualZoomInterval * direction)
-		if self.ZoomLevel < ActualZoomInterval:
-			self.ZoomLevel = ActualZoomInterval
+		if self.ZoomLevel < 1.0:
+			self.ZoomLevel = 1.0
 	def _ConstrainSample(self):
 		"Ensure that the sample area remains within 0.0-1.0 bounds."
 		if self.SampleXPos < 0.0:
@@ -78,14 +78,17 @@ class ViewPort:
 	def ApplyZoomTimes(self, ZoomIn, times):
 		"Apply zooming in or out a number of times."
 		if ZoomIn:
-			self.TotalSteps += times
 			direction = 1.0
 		else:
-			self.TotalSteps -= times
 			direction = -1.0
+		OldRatio = self.GetActualSizeRatio()[0]
 		self._CalcZoomTimes(direction, times)
 		self._CalcSample()
 		self._ConstrainSample()
+		NewRatio = self.GetActualSizeRatio()[0]
+		if OldRatio != NewRatio:
+			self.TotalSteps += int(times * direction)
+		print(self.TotalSteps)
 	def ApplyMove(self, x, y):
 		"Apply horizontal and vertical movement."
 		self.SampleXPos += x
