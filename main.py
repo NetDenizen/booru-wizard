@@ -35,8 +35,9 @@ class ExceptDialog(wx.Dialog):
 
 def ExceptHook(etype, value, trace):
 	tmp = traceback.format_exception(etype, value, trace)
-	exception = "".join(tmp)
+	exception = ''.join(tmp)
 
+	sys.stderr.write(exception)
 	dialog = ExceptDialog(exception)
 	dialog.ShowModal()
 	dialog.Destroy()
