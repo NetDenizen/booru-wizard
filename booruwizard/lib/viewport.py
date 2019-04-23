@@ -88,7 +88,6 @@ class ViewPort:
 		NewRatio = self.GetActualSizeRatio()[0]
 		if OldRatio != NewRatio:
 			self.TotalSteps += int(times * direction)
-		print(self.TotalSteps)
 	def ApplyMove(self, x, y):
 		"Apply horizontal and vertical movement."
 		self.SampleXPos += x
