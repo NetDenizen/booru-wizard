@@ -372,19 +372,25 @@ class ImagePanel(wx.Panel):
 		self.Refresh()
 	def _OnZoomOutReceived(self, message, arg2=None):
 		self.UpdateZoomControls()
-		self.ZoomOutButton.SetFocus()
+		if self.ZoomOutButton.IsEnabled():
+			self.ZoomOutButton.SetFocus()
+		else:
+			self.ZoomInButton.SetFocus()
 		self.Update()
 		self.Layout()
 		self.Refresh()
 	def _OnZoomFitReceived(self, message, arg2=None):
 		self.UpdateZoomControls()
-		self.ZoomFitButton.SetFocus()
+		self.ZoomInButton.SetFocus()
 		self.Update()
 		self.Layout()
 		self.Refresh()
 	def _OnZoomActualReceived(self, message, arg2=None):
 		self.UpdateZoomControls()
-		self.ZoomActualButton.SetFocus()
+		if self.ZoomOutButton.IsEnabled():
+			self.ZoomOutButton.SetFocus()
+		else:
+			self.ZoomInButton.SetFocus()
 		self.Update()
 		self.Layout()
 		self.Refresh()
@@ -545,6 +551,7 @@ class ImageLabel(wx.Panel):
 		self.PathLabel.SetFocus()
 	def __init__(self, parent, paths):
 		wx.Panel.__init__(self, parent=parent)
+		self.parent = parent
 
 		self.pos = 0 # Position in paths
 		self.paths = paths
