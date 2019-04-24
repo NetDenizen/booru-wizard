@@ -105,6 +105,7 @@ class ManagedFile:
 		"Update changes to the file."
 		self.lock.acquire()
 		if self._IsChangedCallback():
+			wx.LogVerbose( ''.join( ("Flushing found changes to file at: '", self.path, "'") ) )
 			if self._handle is None:
 				self._ReserveCallback(self)
 				try:
@@ -115,13 +116,13 @@ class ManagedFile:
 			self._handle.truncate()
 			self._handle.write( self._DataCallback().encode('utf-8') )
 			self._handle.flush()
+			wx.LogVerbose( ''.join( ("Finished flushing changes to file at: '", self.path, "'") ) )
 		self.lock.release()
 	def PushUpdate(self):
 		"Callback to use update as an alternative to it being called periodically by the file manager. If push updates are not enabled, then do nothing."
 		if self.PushUpdatesEnabled:
-			wx.LogMessage( ''.join( ("Push updating file at path: '", self.path, "'") ) )
+			wx.LogVerbose( ''.join( ("Push updating file at path: '", self.path, "'") ) )
 			self.update()
-			wx.LogMessage( ''.join( ("Finished push updating file at path: '", self.path, "'") ) )
 
 # FileData object and exception definition
 class ControlFileError(Exception):
@@ -268,10 +269,22 @@ class FileManagerError(Exception):
 
 #TODO: Use semaphore for MaxOpenFiles itself?
 class FileManager:
+	def CheckAny(self):
+		"Return if True on the first file in need of updating. Otherwise, return False."
+		result = False
+		for f in self._files:
+			result = f.check()
+			if result:
+				break
+		return result
 	def UpdateAll(self):
 		wx.LogMessage('Flushing changes to hard disk.')
+		if not self.CheckAny():
+			wx.LogMessage('No changes found.')
+			return
 		for f in self._files:
 			f.update()
+		wx.LogMessage('Completed hard disk flush.')
 	def _OnStartUpdateTimer(self, message, arg2=None):
 		if self._UpdateInterval == -1.0:
 			return
@@ -309,14 +322,6 @@ class FileManager:
 
 		pub.subscribe(self._OnStartUpdateTimer, "StartUpdateTimer")
 		pub.subscribe(self._OnFileUpdateForce, "FileUpdateForce")
-	def CheckAny(self):
-		"Return if True on the first file in need of updating. Otherwise, return False."
-		result = False
-		for f in self._files:
-			result = f.check()
-			if result:
-				break
-		return result
 	def _UpdateThread(self):
 		"The worker thread to loop through files and flush any changes to the disk."
 		sw = wx.StopWatch()
@@ -366,7 +371,6 @@ class FileManager:
 				delta = swTimeInMicro()
 			acquire()
 			UpdateAll()
-			wx.LogMessage('Completed hard disk flush.')
 			release()
 			clear()
 			sendMessage("FileUpdateClear", message=None)
