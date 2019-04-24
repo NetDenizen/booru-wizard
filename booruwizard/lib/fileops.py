@@ -295,6 +295,7 @@ class FileManager:
 		self._UpdateTimer = threading.Thread( name='Update Timer', target=self._UpdateThread, daemon=True )
 		self._UpdateTimerRunning.set()
 		self._UpdateTimer.start()
+		wx.LogMessage('Update thread started.')
 	def _OnFileUpdateForce(self, message, arg2=None):
 		wx.LogMessage('Hard disk flush forced.')
 		if self._UpdateInterval == -1.0:
@@ -383,6 +384,7 @@ class FileManager:
 		self._UpdateTimerRunning.clear()
 		self._UpdateTimerDelay.set()
 		self._UpdateTimer.join()
+		wx.LogMessage('Update thread stopped.')
 	def ReserveOpenFileSlot(self, item):
 		"Reserve a slot for a file to be held open. The max number is controlled by MAX_OPEN_FILES If there are no open slots, then"
 		if item in self._OpenFiles:
