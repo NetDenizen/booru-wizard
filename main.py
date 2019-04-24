@@ -37,7 +37,6 @@ def ExceptHook(etype, value, trace):
 	tmp = traceback.format_exception(etype, value, trace)
 	exception = ''.join(tmp)
 
-	sys.stderr.write(exception)
 	dialog = ExceptDialog(exception)
 	dialog.ShowModal()
 	dialog.Destroy()
@@ -79,6 +78,7 @@ class DialogSettings:
 def ParseCommandLine():
 	"Function to create a command line argument parser, and return the args object from it."
 	ArgParser = argparse.ArgumentParser(description='Get command line arguments.')
+	ArgParser.add_argument( '--verbose', '-v', action='store_true', help='If this is set, then the program will produce verbose logging output.' )
 	ArgParser.add_argument( '--no-dialog', '-d', action='store_true', help='If this is set, then the file chooser dialog will not be displayed before the regular UI. Thus, the command line settings are relied upon.' )
 	ArgParser.add_argument( '--schema', '-s', action='store', default='', help='Path to read schema file from.' )
 	ArgParser.add_argument( '--config', '-c', action='store', default='', help='Path to read config file from.' )
@@ -143,6 +143,8 @@ def main():
 	app = wx.App()
 	wx.Log.SetActiveTarget( wx.LogStderr() )
 	args = ParseCommandLine()
+	if args.verbose:
+		wx.Log.SetVerbose()
 
 	settings = DialogSettings(args.schema, args.config, args.image_input, args.json_input, args.json_output)
 	if not args.no_dialog:
