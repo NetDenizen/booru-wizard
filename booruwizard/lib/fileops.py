@@ -213,6 +213,7 @@ class FileData:
 			self._IsChanged = True
 			self._DataState = DataState
 		self.unlock()
+		self._PushUpdate()
 	def LoadJSON(self, obj):
 		"Load the settings from a string containing JSON data to this object."
 		name = obj.get('name', None)
@@ -377,7 +378,7 @@ class FileManager:
 			UpdateState = False
 	def _StopUpdateTimer(self):
 		if self._UpdateInterval == -1.0 or self._UpdateInterval == 0.0:
-			UpdateAll()
+			self.UpdateAll()
 			return
 		self._UpdateTimerRunning.clear()
 		self._UpdateTimerDelay.set()
