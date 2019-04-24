@@ -15,6 +15,7 @@ class ManagedImage:
 	def open(self):
 		"Open the image path and set the WX image object."
 		try:
+			wx.LogMessage( ''.join( ("Loading image at path '", self.path, "'") ) )
 			stream = open(self.path, mode='rb')
 			self.image = wx.Image(stream)
 			self.FileSize = os.fstat( stream.fileno() ).st_size
@@ -46,6 +47,11 @@ class ImageReader:
 		"Add the image object's WX Image object to the open images array if it is not None."
 		if image.image is None:
 			return
+		wx.LogVerbose( ''.join( ('Adding image of ', str(image.DataSize), " bytes at path '", image.path,
+								 "' to image data cache index ", str( len(self._OpenImages) )
+								)
+							  )
+					 )
 		self._OpenImages.append(image)
 		self._CurrentBufSize += image.DataSize
 	def _add(self, path):
@@ -65,14 +71,22 @@ class ImageReader:
 		while len(self._OpenImages) > 0 and self._CurrentBufSize + size > self._MaxBufSize:
 			self._CurrentBufSize -= self._OpenImages[0].DataSize
 			self._OpenImages[0].close()
+			wx.LogVerbose( ''.join( ('Removing image of ', str(self._OpenImages[0].DataSize), " bytes at path '",
+									 self._OpenImages[0].path, "' from image data cache index ", str( len(self._OpenImages) )
+									)
+								  )
+						 )
 			self._OpenImages.pop(0)
 	def get(self, idx):
 		"Return WX image object for the image managed at the index."
+		return self.images[idx]
+	def load(self, idx):
+		"Return WX image object for the image managed at the index, after loading its associated image data."
 		if self.images[idx].image is None:
 			self.images[idx].open()
 			self._CullSpace(self.images[idx].DataSize)
 			self._activate(self.images[idx])
-		return self.images[idx]
+		return self.get(idx)
 	def GetMaxBufSize(self):
 		return self._MaxBufSize
 	def GetCurrentBufSize(self):

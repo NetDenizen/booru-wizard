@@ -83,7 +83,7 @@ class ManagedFile:
 	def __init__(self, OutputDir, PushUpdatesEnabled, path, IsChangedCallback, DataCallback, ReserveCallback):
 		self.lock = threading.Semaphore(1)
 		self.PushUpdatesEnabled = PushUpdatesEnabled # Determines if the FileData object can push updates to this object.
-		self._path = ''.join( ( os.path.join(OutputDir, path), '.json' ) )
+		self.path = ''.join( ( os.path.join(OutputDir, path), '.json' ) )
 		self._handle = None # Associated file handle, if one is open
 		self._IsChangedCallback = IsChangedCallback # Callback to tell if the associated FileData object is changed.
 		self._DataCallback = DataCallback # Callback to retrieve data from the associated FileData object.
@@ -108,9 +108,9 @@ class ManagedFile:
 			if self._handle is None:
 				self._ReserveCallback(self)
 				try:
-					self._handle = open(self._path, 'wb')
+					self._handle = open(self.path, 'wb')
 				except OSError as err:
-					raise FileOpError( ''.join( ('Failed to open file at "', self._path, '"') ), err.errno, err.strerror )
+					raise FileOpError( ''.join( ('Failed to open file at "', self.path, '"') ), err.errno, err.strerror )
 			self._handle.seek(0)
 			self._handle.truncate()
 			self._handle.write( self._DataCallback().encode('utf-8') )
@@ -119,7 +119,9 @@ class ManagedFile:
 	def PushUpdate(self):
 		"Callback to use update as an alternative to it being called periodically by the file manager. If push updates are not enabled, then do nothing."
 		if self.PushUpdatesEnabled:
+			wx.LogMessage( ''.join( ("Push updating file at path: '", self.path, "'") ) )
 			self.update()
+			wx.LogMessage( ''.join( ("Finished push updating file at path: '", self.path, "'") ) )
 
 # FileData object and exception definition
 class ControlFileError(Exception):
@@ -267,6 +269,7 @@ class FileManagerError(Exception):
 #TODO: Use semaphore for MaxOpenFiles itself?
 class FileManager:
 	def UpdateAll(self):
+		wx.LogMessage('Flushing changes to hard disk.')
 		for f in self._files:
 			f.update()
 	def _OnStartUpdateTimer(self, message, arg2=None):
@@ -279,6 +282,7 @@ class FileManager:
 		self._UpdateTimerRunning.set()
 		self._UpdateTimer.start()
 	def _OnFileUpdateForce(self, message, arg2=None):
+		wx.LogMessage('Hard disk flush forced.')
 		if self._UpdateInterval == -1.0:
 			self.UpdateAll()
 		else:
@@ -362,12 +366,14 @@ class FileManager:
 				delta = swTimeInMicro()
 			acquire()
 			UpdateAll()
+			wx.LogMessage('Completed hard disk flush.')
 			release()
 			clear()
 			sendMessage("FileUpdateClear", message=None)
 			UpdateState = False
 	def _StopUpdateTimer(self):
 		if self._UpdateInterval == -1.0 or self._UpdateInterval == 0.0:
+			UpdateAll()
 			return
 		self._UpdateTimerRunning.clear()
 		self._UpdateTimerDelay.set()
@@ -378,10 +384,17 @@ class FileManager:
 			return
 		if self._MaxOpenFiles != 0 and len(self._OpenFiles) == self._MaxOpenFiles:
 			self._OpenFiles[0].close()
+			wx.LogVerbose( ''.join( ("Removing file at path '",
+									 self._OpenFiles[0].path, "' from output cache index ", str( len(self._OpenFiles) )
+									)
+								  )
+						 )
 			self._OpenFiles.pop(0)
 		self._OpenFiles.append(item)
+		wx.LogVerbose( ''.join( ("Added file at path '", item.path, "' to output cache index ", str( len(self._OpenFiles) ) ) ) )
 	def AddFile(self, InputDir, OutputDir, path, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
 		"Add a FileData object and its associated MangedFile object, with all the proper callbacks set."
+		wx.LogVerbose( ''.join( ("Registering file at path '", path, "'") ) )
 		if path in self.paths:
 			ControlFile = self.ControlFiles[self.paths.index(path)]
 			ControlFile.PrepareChange()

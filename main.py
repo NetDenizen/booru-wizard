@@ -164,6 +164,7 @@ def main():
 	ImagePaths = GetFileTypes(GetDirFiles(settings.ImageInputDir), VALID_IMAGES)
 	JSONPaths = GetFileTypes(GetDirFiles(settings.JSONInputDir), VALID_JSON)
 
+	wx.LogMessage( ''.join( ("Reading config at file at '", settings.ConfigFile, "'") ) )
 	config = parser()
 	config.parse( ReadTextFile(settings.ConfigFile) )
 
@@ -191,6 +192,7 @@ def main():
 		TagsTracker.AddStringList( f.tags.ReturnStringList(), 1 )
 	OutputFiles.FilesLock.release()
 
+	wx.LogMessage('Main window opened.')
 	wizard = MainFrame(None, APPTITLE, config.MaxImageBufSize, config.DefaultImageQuality, config.output, OutputFiles, TagsTracker, viewport)
 	keybinds = KeyHandler()
 	keybinds.AddList(config.keybinds)
@@ -198,8 +200,8 @@ def main():
 
 	wizard.Show()
 	app.MainLoop()
+	wx.LogMessage('Main window closed.')
 
-	OutputFiles.UpdateAll()
 	OutputFiles.destroy()
 	sys.exit(0)
 

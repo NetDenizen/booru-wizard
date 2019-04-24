@@ -168,7 +168,7 @@ class ImagePanel(wx.Panel):
 	def _UpdateImage(self):
 		"Update the image panel."
 		OldSteps = self.image.viewport.TotalSteps
-		self.image.SetImage( self.bitmaps.get(self.pos).image )
+		self.image.SetImage( self.bitmaps.load(self.pos).image )
 		if self.image.viewport.image is not None:
 			self.image.viewport.ApplyZoomSteps(OldSteps)
 	def _UpdateImageData(self):
