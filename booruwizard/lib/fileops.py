@@ -80,14 +80,14 @@ class FileOpError(Exception):
 		super().__init__( ''.join( (message, ' [errno ', errno, ']: ', strerror) ) )
 
 class ManagedFile:
-	def __init__(self, OutputDir, PushUpdatesEnabled, path, IsChangedCallback, DataCallback, ReserveCallback):
+	def __init__(self, OutputDir, path, IsChangedCallback, DataCallback, ReserveCallback, TimerCallback):
 		self.lock = threading.Semaphore(1)
-		self.PushUpdatesEnabled = PushUpdatesEnabled # Determines if the FileData object can push updates to this object.
 		self.path = ''.join( ( os.path.join(OutputDir, path), '.json' ) )
 		self._handle = None # Associated file handle, if one is open
 		self._IsChangedCallback = IsChangedCallback # Callback to tell if the associated FileData object is changed.
 		self._DataCallback = DataCallback # Callback to retrieve data from the associated FileData object.
 		self._ReserveCallback = ReserveCallback # Callback to reserve file handle slot in FileManager
+		self._TimerCallback = TimerCallback # Callback to progress the timer of the file FileManager update thread.
 	def close(self):
 		"Close the handle and set it to none."
 		self.lock.acquire()
@@ -120,9 +120,9 @@ class ManagedFile:
 		self.lock.release()
 	def PushUpdate(self):
 		"Callback to use update as an alternative to it being called periodically by the file manager. If push updates are not enabled, then do nothing."
-		if self.PushUpdatesEnabled:
+		if self._TimerCallback is not None:
 			wx.LogVerbose( ''.join( ("Push updating file at path: '", self.path, "'") ) )
-			self.update()
+			self._TimerCallback()
 
 # FileData object and exception definition
 class ControlFileError(Exception):
@@ -212,8 +212,8 @@ class FileData:
 		if self._DataState != DataState:
 			self._IsChanged = True
 			self._DataState = DataState
-		self.unlock()
 		self._PushUpdate()
+		self.unlock()
 	def LoadJSON(self, obj):
 		"Load the settings from a string containing JSON data to this object."
 		name = obj.get('name', None)
@@ -254,9 +254,9 @@ class FileData:
 	def DataCallback(self):
 		self._IsChanged = False
 		return self._DataState
-	def GetManagedFile(self, OutputDir, PushUpdatesEnabled, ReserveCallback):
+	def GetManagedFile(self, OutputDir, ReserveCallback, TimerCallback):
 		"Create and return associated ManagedFile object."
-		manager = ManagedFile(OutputDir, PushUpdatesEnabled, self.path, self.IsChangedCallback, self.DataCallback, ReserveCallback)
+		manager = ManagedFile(OutputDir, self.path, self.IsChangedCallback, self.DataCallback, ReserveCallback, TimerCallback)
 		self._PushUpdate = manager.PushUpdate
 		self._lock = manager.lock
 		return manager
@@ -291,7 +291,6 @@ class FileManager:
 			return
 		if self._UpdateInterval == 0.0:
 			pub.sendMessage("FileUpdateClear", message=None)
-			return
 		self._UpdateTimer = threading.Thread( name='Update Timer', target=self._UpdateThread, daemon=True )
 		self._UpdateTimerRunning.set()
 		self._UpdateTimer.start()
@@ -345,6 +344,9 @@ class FileManager:
 			CurrentTime = 0.0
 			delta = 1000000.0
 			while True:
+				if UpdateInterval == 0:
+					wait(None)
+					break
 				swStart()
 				delta = float(delta) - 1000000.0
 				interval = UpdateInterval - CurrentTime
@@ -378,7 +380,7 @@ class FileManager:
 			sendMessage("FileUpdateClear", message=None)
 			UpdateState = False
 	def _StopUpdateTimer(self):
-		if self._UpdateInterval == -1.0 or self._UpdateInterval == 0.0:
+		if self._UpdateInterval == -1.0:
 			self.UpdateAll()
 			return
 		self._UpdateTimerRunning.clear()
@@ -412,13 +414,13 @@ class FileManager:
 			ControlFile.SourcelessTags = SourcelessTags
 			ControlFile.FinishChange()
 		else:
-			PushUpdatesEnabled = False
+			PushUpdate = None
 			if self._UpdateInterval == 0.0:
-				PushUpdatesEnabled = True
+				PushUpdate = self._UpdateTimerDelay.set
 			self.ControlFiles.append( FileData(path, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags) )
 			self.paths.append(path)
 			self.InputPaths.append( os.path.join(InputDir, path) )
-			self._files.append( self.ControlFiles[-1].GetManagedFile(OutputDir, PushUpdatesEnabled, self.ReserveOpenFileSlot) )
+			self._files.append( self.ControlFiles[-1].GetManagedFile(OutputDir, self.ReserveOpenFileSlot, PushUpdate) )
 	def AddJSON(self, InputDir, OutputDir, obj, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
 		"Loop through a .json object and load the settings to the FileData object associated with the respective path. If it does not exist, then create it first."
 		for k, v in obj.items():
