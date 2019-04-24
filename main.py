@@ -37,7 +37,7 @@ def ExceptHook(etype, value, trace):
 	tmp = traceback.format_exception(etype, value, trace)
 	exception = ''.join(tmp)
 
-	wx.LogFatalError(exception)
+	wx.LogError(exception)
 	dialog = ExceptDialog(exception)
 	dialog.ShowModal()
 	dialog.Destroy()
