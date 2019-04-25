@@ -548,7 +548,6 @@ class ImageLabel(wx.Panel):
 		try:
 			pub.sendMessage( "IndexImage", message=self.paths.index( self.PathEntry.GetValue() ) )
 		except ValueError: # TODO: Should this work with any exception?
-			self._UpdatePathMenu()
 			val = self.PathEntry.GetValue()
 			orig = val
 			ContainsOrig = []
