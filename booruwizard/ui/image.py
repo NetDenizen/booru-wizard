@@ -1,4 +1,5 @@
 from math import floor
+from os.path import commonprefix
 
 import wx
 from pubsub import pub
@@ -516,15 +517,59 @@ class ImagePanel(wx.Panel):
 class ImageLabel(wx.Panel):
 	def _SetLabels(self):
 		"Set the path label to show the path at pos in the paths array, and the index label to show pos + 1 out of length of paths array."
-		self.PathLabel.SetValue(self.paths[self.pos])
+		self.PathEntry.SetValue(self.paths[self.pos])
 		self.IndexEntry.SetValue( str(self.pos + 1) )
 		self.IndexLabel.SetLabel( ''.join( ( ' /', str( len(self.paths) ) ) ) )
+	def _UpdatePathMenu(self):
+		"Set the contents of PathMenu based on the contents of PathEntry."
+		PathMenu = self.PathMenu
+		PathMenuItems = self.PathMenuItems
+		Remove = PathMenu.Remove
+		Append = PathMenu.Append
+		for i in PathMenu.GetMenuItems():
+			Remove(i)
+		PathEntryValue = self.PathEntry.GetValue()
+		for i, s in enumerate(self.paths):
+			if PathEntryValue in s:
+				Append(PathMenuItems[i])
 	def _OnIndexEntry(self, e):
 		"Send an IndexImage message, if the index value can be converted to an Int; otherwise, reset labels."
 		try:
 			pub.sendMessage("IndexImage", message=int( self.IndexEntry.GetValue() ) - 1)
 		except ValueError: # TODO: Should this work with any exception?
 			self._SetLabels()
+		e.Skip()
+	def _OnPathSearch(self, e):
+		"Update the search menu, based on matches found in self.paths"
+		self._UpdatePathMenu()
+		e.Skip()
+	def _OnPathEntry(self, e):
+		"Send an IndexImage message, if the index of PathEntry contents can be found in paths; otherwise, try to autocomplete the contents."
+		try:
+			pub.sendMessage( "IndexImage", message=self.paths.index( self.PathEntry.GetValue() ) )
+		except ValueError: # TODO: Should this work with any exception?
+			self._UpdatePathMenu()
+			val = self.PathEntry.GetValue()
+			orig = val
+			ContainsOrig = []
+			prefixes = []
+			for s in self.paths:
+				if orig in s:
+					ContainsOrig.append(s)
+				if val in s:
+					if len(s) > len(val):
+						val = s
+				else:
+					prefixes.append( commonprefix([s, val]) )
+			if len(ContainsOrig) == 1:
+				val = ContainsOrig[0]
+			else:
+				val = max(prefixes, key=len)
+			self.PathEntry.SetValue(val)
+		e.Skip()
+	def _OnMenuPathChosen(self, e):
+		"Set the path entry to the chosen menu value."
+		self.PathEntry.SetValue(self.PathMenuLookup[e.GetId()])
 		e.Skip()
 	def _OnIndex(self, message, arg2=None):
 		"Change the index to the one specified in the event, if possible."
@@ -547,40 +592,52 @@ class ImageLabel(wx.Panel):
 		self._SetLabels()
 	def _OnFocusImageIndex(self, message, arg2=None):
 		self.IndexEntry.SetFocus()
-	def _OnFocusPathLabel(self, message, arg2=None):
-		self.PathLabel.SetFocus()
+	def _OnFocusPathName(self, message, arg2=None):
+		self.PathEntry.SetFocus()
 	def __init__(self, parent, paths):
 		wx.Panel.__init__(self, parent=parent)
 
 		self.pos = 0 # Position in paths
 		self.paths = paths
-		self.PathLabel = wx.TextCtrl(self, style= wx.TE_READONLY | wx.TE_NOHIDESEL) # Path of current image
+		self.PathMenuItems = []
+		self.PathMenuLookup = {}
+		self.PathMenu = wx.Menu()
+		self.PathEntry = wx.SearchCtrl(self, style= wx.TE_LEFT | wx.TE_PROCESS_ENTER | wx.TE_PROCESS_TAB | wx.TE_NOHIDESEL) # Search box containing path of current image
 		self.IndexEntry = wx.TextCtrl(self, style= wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Editable display for current image index
 		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER) # Static part of image index display
-		self.PathLabelTip = wx.ToolTip('Image path')
+		self.PathEntryTip = wx.ToolTip("Image path entry; if the path doesn't exist, then autocomplete.")
 		self.IndexEntryTip = wx.ToolTip('Image index entry')
 		self.IndexLabelTip = wx.ToolTip('Total number of images')
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-		self.PathLabel.SetToolTip(self.PathLabelTip)
+		self.PathEntry.SetToolTip(self.PathEntryTip)
 		self.IndexEntry.SetToolTip(self.IndexEntryTip)
 		self.IndexLabel.SetToolTip(self.IndexLabelTip)
 
 		self.sizer.Add(self.IndexEntry, 0, wx.ALIGN_CENTER)
 		self.sizer.Add(self.IndexLabel, 0, wx.ALIGN_CENTER)
 		self.sizer.AddStretchSpacer(1)
-		self.sizer.Add(self.PathLabel, 100, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.Add(self.PathEntry, 100, wx.ALIGN_CENTER | wx.EXPAND)
 		self.SetSizer(self.sizer)
 
-		self.PathLabel.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK) )
+		for p in self.paths:
+			ItemId = wx.NewId()
+			item = wx.MenuItem(self.PathMenu, ItemId, p, p)
+			self.PathMenuItems.append(item)
+			self.PathMenuLookup[ItemId] = p
+			self.Bind( wx.EVT_MENU, self._OnMenuPathChosen, id=ItemId )
+		self.PathEntry.SetMenu(self.PathMenu)
+		self.PathEntry.ShowSearchButton(False)
 		self._SetLabels()
 
 		self.Bind( wx.EVT_TEXT_ENTER, self._OnIndexEntry, id=self.IndexEntry.GetId() )
+		self.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self._OnPathSearch, id=self.PathEntry.GetId() )
+		self.Bind( wx.EVT_TEXT_ENTER, self._OnPathEntry, id=self.PathEntry.GetId() )
 		pub.subscribe(self._OnIndex, "IndexImage")
 		pub.subscribe(self._OnLeft, "LeftImage")
 		pub.subscribe(self._OnRight, "RightImage")
 		pub.subscribe(self._OnFocusImageIndex, "FocusImageIndex")
-		pub.subscribe(self._OnFocusPathLabel, "FocusPathLabel")
+		pub.subscribe(self._OnFocusPathName, "FocusPathName")
 
 class ImageContainer(wx.Panel):
 	def __init__(self, parent, MaxBufSize, ImageQuality, paths, viewport):
