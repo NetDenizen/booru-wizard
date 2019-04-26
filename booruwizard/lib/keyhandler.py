@@ -9,6 +9,7 @@ ID_LEFT_QUESTION = wx.NewId()
 ID_RIGHT_QUESTION = wx.NewId()
 ID_FOCUS_IMAGE_INDEX = wx.NewId()
 ID_FOCUS_PATH_NAME = wx.NewId()
+ID_FOCUS_PATH_NAME_MENU = wx.NewId()
 ID_FOCUS_QUESTION_INDEX = wx.NewId()
 ID_FOCUS_PROMPT_BODY = wx.NewId()
 ID_FOCUS_QUESTION_BODY = wx.NewId()
@@ -36,6 +37,7 @@ KEYBIND_IDS = {
 	'right_question'         : ID_RIGHT_QUESTION        ,
 	'select_image_index'     : ID_FOCUS_IMAGE_INDEX     ,
 	'select_image_path'      : ID_FOCUS_PATH_NAME       ,
+	'select_image_path_menu' : ID_FOCUS_PATH_NAME_MENU  ,
 	'select_question_index'  : ID_FOCUS_QUESTION_INDEX  ,
 	'select_instructions'    : ID_FOCUS_PROMPT_BODY     ,
 	'select_question'        : ID_FOCUS_QUESTION_BODY   ,
@@ -64,6 +66,7 @@ KEYBIND_MESSAGES = {
 	ID_RIGHT_QUESTION         : 'RightQuestion'      ,
 	ID_FOCUS_IMAGE_INDEX      : 'FocusImageIndex'    ,
 	ID_FOCUS_PATH_NAME        : 'FocusPathName'      ,
+	ID_FOCUS_PATH_NAME_MENU   : 'FocusPathNameMenu'  ,
 	ID_FOCUS_QUESTION_INDEX   : 'FocusQuestionIndex' ,
 	ID_FOCUS_PROMPT_BODY      : 'FocusPromptBody'    ,
 	ID_FOCUS_QUESTION_BODY    : 'FocusQuestionBody'  ,
@@ -97,6 +100,7 @@ class KeyHandler(wx.Object):
 		self.RightQuestionItem = wx.MenuItem(id=wx.NewId(), text="RightQuestion", helpString="Switch to the 'right' or next image.")
 		self.FocusImageIndexItem = wx.MenuItem(id=wx.NewId(), text="FocusImageIndex", helpString="Focus on the image index entry.")
 		self.FocusImagePathItem = wx.MenuItem(id=wx.NewId(), text="FocusPathName", helpString="Focus on the image path name.")
+		self.FocusImagePathMenuItem = wx.MenuItem(id=wx.NewId(), text="FocusPathNameMenu", helpString="Focus on the image path name menu.")
 		self.FocusQuestionIndexItem = wx.MenuItem(id=wx.NewId(), text="FocusQuestionIndex", helpString="Focus on the question index entry.")
 		self.FocusInstructionsItem = wx.MenuItem(id=wx.NewId(), text="FocusPromptBody", helpString="Focus on the prompt text.")
 		self.FocusQuestionsItem = wx.MenuItem(id=wx.NewId(), text="FocusQuestionBody", helpString="Focus on the question field.")
@@ -123,6 +127,7 @@ class KeyHandler(wx.Object):
 						  'right_question'         : self.RightQuestionItem      ,
 						  'select_image_index'     : self.FocusImageIndexItem    ,
 						  'select_image_path'      : self.FocusImagePathItem     ,
+						  'select_image_path_menu' : self.FocusImagePathMenuItem ,
 						  'select_question_index'  : self.FocusQuestionIndexItem ,
 						  'select_instructions'    : self.FocusInstructionsItem  ,
 						  'select_question'        : self.FocusQuestionsItem     ,
@@ -156,6 +161,7 @@ class KeyHandler(wx.Object):
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_RIGHT_QUESTION)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_FOCUS_IMAGE_INDEX)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_FOCUS_PATH_NAME)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_FOCUS_PATH_NAME_MENU)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_FOCUS_QUESTION_INDEX)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_FOCUS_PROMPT_BODY)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_FOCUS_QUESTION_BODY)

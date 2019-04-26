@@ -593,6 +593,9 @@ class ImageLabel(wx.Panel):
 		self.IndexEntry.SetFocus()
 	def _OnFocusPathName(self, message, arg2=None):
 		self.PathEntry.SetFocus()
+	def _OnFocusPathNameMenu(self, message, arg2=None):
+		self._UpdatePathMenu()
+		self.PathEntry.PopupMenu(self.PathMenu)
 	def __init__(self, parent, paths):
 		wx.Panel.__init__(self, parent=parent)
 
@@ -637,6 +640,7 @@ class ImageLabel(wx.Panel):
 		pub.subscribe(self._OnRight, "RightImage")
 		pub.subscribe(self._OnFocusImageIndex, "FocusImageIndex")
 		pub.subscribe(self._OnFocusPathName, "FocusPathName")
+		pub.subscribe(self._OnFocusPathNameMenu, "FocusPathNameMenu")
 
 class ImageContainer(wx.Panel):
 	def __init__(self, parent, MaxBufSize, ImageQuality, paths, viewport):
