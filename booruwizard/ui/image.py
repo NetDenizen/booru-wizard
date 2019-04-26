@@ -553,9 +553,10 @@ class ImageLabel(wx.Panel):
 			ContainsOrig = []
 			prefixes = []
 			for s in self.paths:
-				if orig in s:
+				sLower = s.lower()
+				if orig.lower() in sLower:
 					ContainsOrig.append(s)
-				if val in s:
+				if val.lower() in sLower:
 					if len(s) > len(val):
 						val = s
 				else:
