@@ -43,6 +43,67 @@ class QuestionDisplayComponent(wx.Panel):  # This class should never be used on 
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent=parent)
 
+class QuestionSearch(wx.Panel):
+	def _UpdateQuestionsMenu(self):
+		"Update the questions menu, based on which question descriptions match the search terms."
+		for i in self.FieldMenu.GetMenuItems():
+			self.FieldMenu.Remove(i)
+		if not self.field.GetValue():
+			return
+		terms = tuple( t.lower().strip() for t in self.field.GetValue().split(',') )
+		for i, q in enumerate(self.questions):
+			text = q.text.lower()
+			for t in terms:
+				if t in text:
+					self.FieldMenu.Append(self.FieldMenuItems[i])
+					break
+	def _OnQuestionSearch(self, e):
+		self._UpdateQuestionsMenu()
+		e.Skip()
+	def _OnFieldEntry(self, e):
+		"If there's only one matching question, change to it, otherwise, update the questions menu."
+		self._UpdateQuestionsMenu()
+		if len( self.FieldMenu.GetMenuItems() ) == 1:
+			pub.sendMessage("IndexQuestion", message=self.FieldMenuLookup[self.FieldMenu.GetMenuItems()[0].GetId()])
+		e.Skip()
+	def _OnMenuItemChosen(self, e):
+		"Set the question to the one chosen by the menu."
+		pub.sendMessage("IndexQuestion", message=self.FieldMenuLookup[e.GetId()])
+		e.Skip()
+	def _OnFocusQuestionSearch(self, message, arg2=None):
+		self.field.SetFocus()
+	def _OnFocusQuestionSearchMenu(self, message, arg2=None):
+		self.FieldMenu.SetFocus()
+	def __init__(self, parent, questions):
+		wx.Panel.__init__(self, parent=parent)
+
+		self.questions = questions
+		self.FieldMenuItems = []
+		self.FieldMenuLookup = {}
+		self.field = wx.SearchCtrl(self, style= wx.TE_LEFT | wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL)
+		self.FieldMenu = wx.Menu()
+		self.FieldTip = wx.ToolTip("Search question descriptions by comma separated keywords; if only one match is found, then pressing enter loads it.")
+		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+		self.field.SetToolTip(self.FieldTip)
+
+		self.sizer.Add(self.field, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.SetSizer(self.sizer)
+
+		for i, q in enumerate(questions):
+			ItemId = wx.NewId()
+			item = wx.MenuItem( self.FieldMenu, ItemId, str(i + 1), str(i + 1) )
+			self.FieldMenuItems.append(item)
+			self.FieldMenuLookup[ItemId] = i
+			self.Bind( wx.EVT_MENU, self._OnMenuItemChosen, id=ItemId )
+		self.field.SetMenu(self.FieldMenu)
+		self.field.ShowSearchButton(False)
+
+		self.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self._OnQuestionSearch, id=self.field.GetId() )
+		self.Bind( wx.EVT_TEXT_ENTER, self._OnFieldEntry, id=self.field.GetId() )
+		pub.subscribe(self._OnFocusQuestionSearch, "FocusQuestionSearch")
+		pub.subscribe(self._OnFocusQuestionSearchMenu, "FocusQuestionSearchMenu")
+
 class QuestionLabel(QuestionDisplayComponent):
 	def _set(self):
 		"Set the index label to show pos + 1 out of length of questions array."
@@ -86,39 +147,6 @@ class QuestionLabel(QuestionDisplayComponent):
 		pub.subscribe(self._OnLeftQuestion, "LeftQuestion")
 		pub.subscribe(self._OnRightQuestion, "RightQuestion")
 		pub.subscribe(self._OnFocusQuestionIndex, "FocusQuestionIndex")
-
-class QuestionPanel(QuestionDisplayComponent):
-	def _set(self):
-		"Set body for the question at pos."
-		self.body.SetValue(self.questions[ self.positions[self.pos] ].text)
-	def _OnFocusPromptBody(self, message, arg2=None):
-		self.body.SetFocus()
-	#TODO: Roll these into a function or otherwise cleanup
-	def __init__(self, parent, NumImages, questions):
-		QuestionDisplayComponent.__init__(self, parent)
-
-		self.pos = 0 # The position in positions
-		self.positions = [0] * NumImages # The position in questions corresponding to each image
-		self.questions = questions # Question objects
-		self.body = wx.TextCtrl(self, style= wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH | wx.TE_NOHIDESEL | wx.TE_AUTO_URL) # The body of the question #TODO: Will poor, poor Mac users get URL highlighting? Set background color?
-		self.BodyTip = wx.ToolTip('Question prompt')
-		self.sizer = wx.BoxSizer(wx.VERTICAL)
-
-		self.body.SetToolTip(self.BodyTip)
-
-		self.sizer.Add(self.body, 1, wx.ALIGN_CENTER | wx.EXPAND)
-		self.SetSizer(self.sizer)
-
-		self.body.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK) )
-		self._set()
-
-		pub.subscribe(self._OnIndexImage, "IndexImage")
-		pub.subscribe(self._OnIndexQuestion, "IndexQuestion")
-		pub.subscribe(self._OnLeftImage, "LeftImage")
-		pub.subscribe(self._OnRightImage, "RightImage")
-		pub.subscribe(self._OnLeftQuestion, "LeftQuestion")
-		pub.subscribe(self._OnRightQuestion, "RightQuestion")
-		pub.subscribe(self._OnFocusPromptBody, "FocusPromptBody")
 
 class PositionButtons(wx.Panel):
 	def _OnLeftImage(self, e):
@@ -184,14 +212,50 @@ class PromptControls(wx.Panel):
 	def __init__(self, parent, NumImages, questions):
 		wx.Panel.__init__(self, parent=parent)
 
+		self.search = QuestionSearch(self, questions)
 		self.label = QuestionLabel(self, NumImages, questions)
 		self.buttons = PositionButtons(self)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
+		self.sizer.Add(self.search, 3, wx.ALIGN_CENTER)
+		self.sizer.AddStretchSpacer(1)
 		self.sizer.Add(self.label, 3, wx.ALIGN_CENTER)
 		self.sizer.AddStretchSpacer(1)
 		self.sizer.Add(self.buttons, 3, wx.ALIGN_CENTER)
 		self.SetSizer(self.sizer)
+
+class QuestionPanel(QuestionDisplayComponent):
+	def _set(self):
+		"Set body for the question at pos."
+		self.body.SetValue(self.questions[ self.positions[self.pos] ].text)
+	def _OnFocusPromptBody(self, message, arg2=None):
+		self.body.SetFocus()
+	#TODO: Roll these into a function or otherwise cleanup
+	def __init__(self, parent, NumImages, questions):
+		QuestionDisplayComponent.__init__(self, parent)
+
+		self.pos = 0 # The position in positions
+		self.positions = [0] * NumImages # The position in questions corresponding to each image
+		self.questions = questions # Question objects
+		self.body = wx.TextCtrl(self, style= wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH | wx.TE_NOHIDESEL | wx.TE_AUTO_URL) # The body of the question #TODO: Will poor, poor Mac users get URL highlighting? Set background color?
+		self.BodyTip = wx.ToolTip('Question prompt')
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.body.SetToolTip(self.BodyTip)
+
+		self.sizer.Add(self.body, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.SetSizer(self.sizer)
+
+		self.body.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK) )
+		self._set()
+
+		pub.subscribe(self._OnIndexImage, "IndexImage")
+		pub.subscribe(self._OnIndexQuestion, "IndexQuestion")
+		pub.subscribe(self._OnLeftImage, "LeftImage")
+		pub.subscribe(self._OnRightImage, "RightImage")
+		pub.subscribe(self._OnLeftQuestion, "LeftQuestion")
+		pub.subscribe(self._OnRightQuestion, "RightQuestion")
+		pub.subscribe(self._OnFocusPromptBody, "FocusPromptBody")
 
 class PromptContainer(wx.Panel):
 	def __init__(self, parent, NumImages, questions):
