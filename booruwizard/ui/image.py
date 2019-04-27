@@ -605,7 +605,7 @@ class ImageLabel(wx.Panel):
 		self.PathMenuItems = []
 		self.PathMenuLookup = {}
 		self.PathMenu = wx.Menu()
-		self.PathEntry = wx.SearchCtrl(self, style= wx.TE_LEFT | wx.TE_PROCESS_ENTER | wx.TE_PROCESS_TAB | wx.TE_NOHIDESEL) # Search box containing path of current image
+		self.PathEntry = wx.SearchCtrl(self, style= wx.TE_LEFT | wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Search box containing path of current image
 		self.IndexEntry = wx.TextCtrl(self, style= wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Editable display for current image index
 		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER) # Static part of image index display
 		self.PathEntryTip = wx.ToolTip("Image path entry; if the path doesn't exist, then autocomplete.")

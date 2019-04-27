@@ -73,7 +73,7 @@ class QuestionSearch(wx.Panel):
 	def _OnFocusQuestionSearch(self, message, arg2=None):
 		self.field.SetFocus()
 	def _OnFocusQuestionSearchMenu(self, message, arg2=None):
-		self.FieldMenu.SetFocus()
+		self.field.PopupMenu(self.FieldMenu)
 	def __init__(self, parent, questions):
 		wx.Panel.__init__(self, parent=parent)
 
