@@ -1,3 +1,5 @@
+"Components related to parsing config files."
+
 import re
 from enum import Enum
 import colorsys

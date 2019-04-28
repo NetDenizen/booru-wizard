@@ -1,3 +1,5 @@
+"The components associated with the prompt (second from the top or middle) GUI frame."
+
 import wx
 from pubsub import pub
 

@@ -1,3 +1,5 @@
+"Components associated with reading image files."
+
 import os
 
 import wx

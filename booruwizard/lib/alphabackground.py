@@ -1,3 +1,5 @@
+"Component to draw alternating-color boxes which represent the background of transparent images. Optimization remains a major consideration here."
+
 from math import floor
 from ctypes import c_ubyte, memmove, sizeof, byref
 

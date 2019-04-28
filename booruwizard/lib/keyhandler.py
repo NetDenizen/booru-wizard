@@ -1,3 +1,5 @@
+"Component associated with registering keybinds/accelerator entries."
+
 import wx
 from pubsub import pub
 

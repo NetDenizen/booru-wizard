@@ -1,3 +1,5 @@
+"The components associated with the image (topmost) GUI frame."
+
 from math import floor
 from os.path import commonprefix
 

@@ -1,3 +1,5 @@
+"The main windows of the software, including the entirety of the file chooser."
+
 import os.path
 
 import wx

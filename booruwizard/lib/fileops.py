@@ -1,3 +1,5 @@
+"Components associated with reading and writing the JSON-based metadata files handled by this software."
+
 import threading
 import os.path
 from enum import Enum

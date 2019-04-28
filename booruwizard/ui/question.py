@@ -1,3 +1,5 @@
+"The components associated with the question (third from the top) GUI frame."
+
 import wx
 import wx.lib.scrolledpanel
 from pubsub import pub

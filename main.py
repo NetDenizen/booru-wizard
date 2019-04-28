@@ -1,3 +1,5 @@
+"Main procedure of software."
+
 import sys
 import traceback
 import os

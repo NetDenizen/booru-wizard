@@ -1,3 +1,5 @@
+"Representations of individual image tags and containers for them."
+
 from collections import OrderedDict
 from bisect import bisect_right
 
