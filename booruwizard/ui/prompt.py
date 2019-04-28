@@ -48,16 +48,20 @@ class QuestionDisplayComponent(wx.Panel):  # This class should never be used on 
 class QuestionSearch(wx.Panel):
 	def _UpdateQuestionsMenu(self):
 		"Update the questions menu, based on which question descriptions match the search terms."
+		Remove = self.FieldMenu.Remove
 		for i in self.FieldMenu.GetMenuItems():
-			self.FieldMenu.Remove(i)
-		if not self.field.GetValue():
+			Remove(i)
+		FieldValue = self.field.GetValue()
+		if not FieldValue:
 			return
-		terms = tuple( t.lower().strip() for t in self.field.GetValue().split(',') )
+		terms = tuple( t.lower().strip() for t in FieldValue.split(',') )
+		Append = self.FieldMenu.Append
+		FieldMenuItems = self.FieldMenuItems
 		for i, q in enumerate(self.questions):
 			text = q.text.lower()
 			for t in terms:
 				if t in text:
-					self.FieldMenu.Append(self.FieldMenuItems[i])
+					Append(FieldMenuItems[i])
 					break
 	def _OnQuestionSearch(self, e):
 		self._UpdateQuestionsMenu()
