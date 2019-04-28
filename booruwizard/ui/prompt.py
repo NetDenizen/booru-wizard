@@ -223,7 +223,7 @@ class PromptControls(wx.Panel):
 		self.buttons = PositionButtons(self)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
-		self.sizer.Add(self.search, 3, wx.ALIGN_CENTER)
+		self.sizer.Add(self.search, 3, wx.ALIGN_CENTER | wx.EXPAND)
 		self.sizer.AddStretchSpacer(1)
 		self.sizer.Add(self.label, 3, wx.ALIGN_CENTER)
 		self.sizer.AddStretchSpacer(1)
