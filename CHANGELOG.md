@@ -3,20 +3,34 @@
 ## 2019-04-29 1.0
 
 * Countless fixes, refinements, and optimizations.
+
 * Revised keybinds, and tags in default config.
+
 * Display image cache statistics, and file size.
+
 * Sort filenames opened by software.
+
 * Kana Romanization for text entry based wizard questions.
+
 * Add image quality control settings.
+
 * Add timer display and button for flushing changes to hard drive.
+
 * Add the means to read data from imgbrd-grabber (https://github.com/Bionus/imgbrd-grabber) logs.
+
 * Align all controls to the left side of the screen.
+
 * List tags by their state (not set, automatically set, and manually set).
+
 * Implement zoomable image display.
+
 * Add the SESSION_TAGS_IMPORTER wizard type.
+
 * Implement logging of messages to stderr.
+
 * Allow entering images by path, and autocomplete to assist with this.
-* Implment searching for questions by keywords in their prompt text.
+
+* Implement searching for questions by keywords in their prompt text.
 
 ## 2018-10-27 0.3
 
