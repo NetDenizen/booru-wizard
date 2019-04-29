@@ -303,6 +303,9 @@ class FileManager:
 			self.UpdateAll()
 		else:
 			self._UpdateTimerDelay.set()
+	def _OnExit(self, e):
+		self.destroy()
+		e.Skip()
 	def __init__(self, MaxOpenFiles, UpdateInterval):
 		if MaxOpenFiles < 0:
 			raise FileManagerError( ''.join( ('MAX_OPEN_FILES of "', str(MaxOpenFiles), '" specified. This value must be greater than or equal to 0.') ) )

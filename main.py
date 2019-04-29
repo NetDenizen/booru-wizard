@@ -196,6 +196,7 @@ def main():
 
 	wx.LogMessage('Main window opened.')
 	wizard = MainFrame(None, APPTITLE, config.MaxImageBufSize, config.DefaultImageQuality, config.output, OutputFiles, TagsTracker, viewport)
+	wizard.Bind(wx.EVT_CLOSE, OutputFiles._OnExit)
 	keybinds = KeyHandler()
 	keybinds.AddList(config.keybinds)
 	keybinds.RegisterObj(wizard)
@@ -204,7 +205,6 @@ def main():
 	app.MainLoop()
 	wx.LogMessage('Main window closed.')
 
-	OutputFiles.destroy()
 	sys.exit(0)
 
 if __name__ == '__main__':
