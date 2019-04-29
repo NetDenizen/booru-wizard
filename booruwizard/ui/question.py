@@ -871,32 +871,33 @@ class QuestionsContainer(wx.Panel):
 			proportion = 0
 			if q.type == OptionQuestionType.RADIO_QUESTION:
 				self.QuestionWidgets.append( RadioQuestion(self, TagsTracker, q) )
-				proportion = 1
+				proportion = 100
 			elif q.type == OptionQuestionType.CHECK_QUESTION:
 				self.QuestionWidgets.append( CheckQuestion(self, TagsTracker, q) )
-				proportion = 1
+				proportion = 100
 			elif q.type == QuestionType.ENTRY_QUESTION:
 				self.QuestionWidgets.append( EntryQuestion(self, len(OutputFiles.InputPaths), TagsTracker) )
-				proportion = 1
+				proportion = 100
 			elif q.type == QuestionType.SESSION_TAGS:
 				self.QuestionWidgets.append( SessionTags(self, TagsTracker) )
-				proportion = 1
+				proportion = 100
 			elif q.type == QuestionType.NAME_QUESTION:
 				self.QuestionWidgets.append( NameQuestion(self) )
 			elif q.type == QuestionType.SOURCE_QUESTION:
 				self.QuestionWidgets.append( SourceQuestion(self) )
 			elif q.type == QuestionType.SAFETY_QUESTION:
 				self.QuestionWidgets.append( SafetyQuestion(self) )
-				proportion = 1
+				proportion = 100
 			elif q.type == QuestionType.IMAGE_TAGS_ENTRY:
 				self.QuestionWidgets.append( ImageTagsEntry(self, TagsTracker) )
-				proportion = 1
+				proportion = 100
 			else: # q.type == QuestionType.SESSION_TAGS_IMPORTER
 				self.QuestionWidgets.append( SessionTagsImporter(self, OutputFiles.ControlFiles, TagsTracker) )
-				proportion = 1
+				proportion = 100
 			self.sizer.Add(self.QuestionWidgets[-1], proportion, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 			self.QuestionWidgets[-1].Hide()
 
+		self.sizer.AddStretchSpacer(1)
 		self.SetSizer(self.sizer)
 		self._LoadAll()
 		self._disp()
