@@ -291,15 +291,15 @@ class EntryQuestion(EntryBase):
 		self.CurrentTags = None # Keep track of the tags controlled by the entry box
 		self.pos = 0 # Position in entry strings
 		self.EntryStrings = [""] * NumImages # The contents of the entry boxes must be saved between images.
-		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
+		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL | wx.TE_MULTILINE)
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
 		self.RomanizeButtonTip = wx.ToolTip('Convert Kana characters of all tags to their Romaji equivalents.')
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
 
-		self.sizer.Add(self.entry, 40, wx.ALIGN_CENTER | wx.EXPAND)
-		self.sizer.AddStretchSpacer(15)
+		self.sizer.Add(self.entry, 55, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(2)
 		self.sizer.Add(self.RomanizeButton, 0, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
 		self.SetSizer(self.sizer)
 
@@ -341,7 +341,7 @@ class ImageTagsEntry(EntryBase):
 
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
 		self.OutputFile = None # File data object
-		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
+		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL | wx.TE_MULTILINE)
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
 		self.RomanizeButtonTip = wx.ToolTip('Convert Kana characters of all tags to their Romaji equivalents.')
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -349,8 +349,8 @@ class ImageTagsEntry(EntryBase):
 
 		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
 
-		self.sizer.Add(self.entry, 40, wx.ALIGN_CENTER | wx.EXPAND)
-		self.sizer.AddStretchSpacer(15)
+		self.sizer.Add(self.entry, 55, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(2)
 		self.sizer.Add(self.RomanizeButton, 0, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
 		self.SetSizer(self.sizer)
 
@@ -877,6 +877,7 @@ class QuestionsContainer(wx.Panel):
 				proportion = 1
 			elif q.type == QuestionType.ENTRY_QUESTION:
 				self.QuestionWidgets.append( EntryQuestion(self, len(OutputFiles.InputPaths), TagsTracker) )
+				proportion = 1
 			elif q.type == QuestionType.SESSION_TAGS:
 				self.QuestionWidgets.append( SessionTags(self, TagsTracker) )
 				proportion = 1
@@ -889,6 +890,7 @@ class QuestionsContainer(wx.Panel):
 				proportion = 1
 			elif q.type == QuestionType.IMAGE_TAGS_ENTRY:
 				self.QuestionWidgets.append( ImageTagsEntry(self, TagsTracker) )
+				proportion = 1
 			else: # q.type == QuestionType.SESSION_TAGS_IMPORTER
 				self.QuestionWidgets.append( SessionTagsImporter(self, OutputFiles.ControlFiles, TagsTracker) )
 				proportion = 1
