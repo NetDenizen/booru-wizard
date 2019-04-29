@@ -303,7 +303,7 @@ class FileManager:
 			self.UpdateAll()
 		else:
 			self._UpdateTimerDelay.set()
-	def _OnExit(self, e):
+	def OnExit(self, e):
 		self.destroy()
 		e.Skip()
 	def __init__(self, MaxOpenFiles, UpdateInterval):
