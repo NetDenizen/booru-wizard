@@ -196,7 +196,8 @@ def main():
 
 	wx.LogMessage('Main window opened.')
 	wizard = MainFrame(None, APPTITLE, config.MaxImageBufSize, config.DefaultImageQuality, config.output, OutputFiles, TagsTracker, viewport)
-	wizard.Bind(wx.EVT_CLOSE, OutputFiles._OnExit)
+	wizard.Bind(wx.EVT_CLOSE, OutputFiles.OnExit) #XXX: Windows for some reason prints log messages to popup windows, instead of stderr, after the main loop ends. We destroy OutputFiles 
+
 	keybinds = KeyHandler()
 	keybinds.AddList(config.keybinds)
 	keybinds.RegisterObj(wizard)
