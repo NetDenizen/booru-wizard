@@ -30,11 +30,11 @@ These basic steps may be followed to get both the wizard software, and the uploa
 
 ### booru-wizard
 
-1. Download the packaged version for your respective operating system. These links will be updated on each release:
+1. Download the packaged version for your respective operating system. If in doubt, you should probably choose Windows 32-bit. These links will be updated on each release:
 
-   * [Windows 64-bit]()
-   * [Windows 32-bit]()
-   * [Linux 64-bit]()
+   * [Windows 64-bit](https://github.com/NetDenizen/booru-wizard/releases/download/1.0/booru-wizard-1.0-x86_64-windows.zip)
+   * [Windows 32-bit](https://github.com/NetDenizen/booru-wizard/releases/download/1.0/booru-wizard-1.0-x86-windows.zip)
+   * [Linux 64-bit](https://github.com/NetDenizen/booru-wizard/releases/download/1.0/booru-wizard-1.0-x86_64-linux.tar.gz)
 
 2. Extract the archive to the directory of your choice.
 
