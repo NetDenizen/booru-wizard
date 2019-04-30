@@ -215,7 +215,7 @@ class EntryBase(wx.Panel):  # This class should never be used on its own
 		NewText = ' '.join(
 						   (
 							kanji_to_romaji(f).replace(' ', '_')
-							for f in text[ indices[0]:indices[1] ].split('\t\n\x0b\x0c\r\x1c\x1d\x1e\x1f \x85\xa0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000')
+							for f in text[ indices[0]:indices[1] ].split(' ')
 						   )
 						  )
 		self.entry.ChangeValue( ''.join( ( text[ 0:indices[0] ], NewText, text[indices[1]:] ) ) )
