@@ -1,5 +1,7 @@
 "The components associated with the question (third from the top) GUI frame."
 
+import re
+
 import wx
 import wx.lib.scrolledpanel
 from pubsub import pub
@@ -9,6 +11,8 @@ from kanji_to_romaji import kanji_to_romaji
 from booruwizard.lib.fileops import safety
 from booruwizard.lib.tag import TagsContainer
 from booruwizard.lib.template import QuestionType, OptionQuestionType
+
+RE_NOT_WHITESPACE = re.compile(r'\S')
 
 class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 	def _UpdateChoice(self, choice):
@@ -227,13 +231,22 @@ class EntryQuestion(EntryBase):
 	def _UpdateEntryText(self):
 		"Update the current entry text according to which tags can actually be found in the output file."
 		self.CurrentTags = TagsContainer()
-		OldStrings = self.EntryStrings[self.pos].split()
+		OldStrings = []
+		start = 0
+		found = RE_NOT_WHITESPACE.search(self.EntryStrings[self.pos][start:])
+		while found is not None:
+			end = start + found.start(0) + len( found.group(0) )
+			OldStrings.append(self.EntryStrings[self.pos][start:end])
+			start = end
+			found = RE_NOT_WHITESPACE.search(self.EntryStrings[self.pos][start:])
+		FinalSpace = self.EntryStrings[self.pos][start:]
 		NewStrings = []
 		self.OutputFile.lock()
 		for s in OldStrings:
-			if self.OutputFile.tags.ReturnStringOccurrences(s) > 0:
+			if self.OutputFile.tags.ReturnStringOccurrences( s.strip() ) > 0:
 				NewStrings.append(s)
-		self.EntryStrings[self.pos] = ' '.join(NewStrings)
+		NewStrings.append(FinalSpace)
+		self.EntryStrings[self.pos] = ''.join(NewStrings)
 		self.entry.ChangeValue(self.EntryStrings[self.pos])
 		self.CurrentTags.SetStringList(NewStrings, 2)
 		self.OutputFile.unlock()
