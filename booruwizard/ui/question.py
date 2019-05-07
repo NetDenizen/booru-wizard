@@ -220,8 +220,8 @@ class EntryBase(wx.Panel):  # This class should never be used on its own
 		StartText = text[ :indices[0] ]
 		EndText = text[ indices[1]: ]
 		#XXX: Platform specific code. There appears to be a discrepancy between how the string is stored in memory (with Unix-style line endings), and how it is represented by the TextCtrl buffer in Windows (Windows line endings). The latter is used by GetSelection, so we alter the string to accurately reflect it in Windows.
-		if platform.startswith('windows'):
-			text = text.replace('\n', '\r\n')
+		if platform == 'win32':
+			text = text.replace('\r\n', '\n').replace('\n', '\r\n')
 		text = text[ indices[0]:indices[1] ]
 		TagStrings = []
 		start = 0
