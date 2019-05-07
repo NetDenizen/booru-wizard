@@ -1,6 +1,7 @@
 "The components associated with the question (third from the top) GUI frame."
 
 import re
+from sys import platform
 
 import wx
 import wx.lib.scrolledpanel
@@ -13,6 +14,7 @@ from booruwizard.lib.tag import TagsContainer
 from booruwizard.lib.template import QuestionType, OptionQuestionType
 
 RE_NOT_WHITESPACE = re.compile(r'\S')
+RE_WHITESPACE = re.compile(r'\s')
 
 class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 	def _UpdateChoice(self, choice):
@@ -210,19 +212,39 @@ class EntryBase(wx.Panel):  # This class should never be used on its own
 		e.Skip()
 	def _OnRomanize(self, e):
 		"Replace Kana characters of selected parts of the string with their Romaji equivalents, using kanji_to_romaj, and update the tags accordingly."
-		# XXX: Use this pattern in multiline controls, with great caution.
-		indices = list( self.entry.GetSelection() )
 		text = self.entry.GetValue()
+		indices = list( self.entry.GetSelection() )
 		if indices[0] == indices[1]:
 			indices[0] = 0
 			indices[1] = len(text)
-		NewText = ' '.join(
-						   (
-							kanji_to_romaji(f).replace(' ', '_')
-							for f in text[ indices[0]:indices[1] ].split(' ')
-						   )
-						  )
-		self.entry.ChangeValue( ''.join( ( text[ 0:indices[0] ], NewText, text[indices[1]:] ) ) )
+		#XXX: Platform specific code. There appears to be a discrepancy between how the string is stored in memory (with Unix-style line endings), and how it is represented by the TextCtrl buffer in Windows (Windows line endings). The latter is used by GetSelection, so we alter the string to accurately reflect it in Windows.
+		if platform.startswith('windows'):
+			text = text.replace('\n', '\r\n')
+		text = text[ indices[0]:indices[1] ]
+		TagStrings = []
+		start = 0
+		found = RE_WHITESPACE.search(text[start:])
+		while found is not None:
+			end = start + found.start(0) + len( found.group(0) )
+			TagStrings.append(text[start:end])
+			start = end
+			found = RE_WHITESPACE.search(text[start:])
+		TagStrings.append(text[start:])
+		OutputStrings = []
+		for s in TagStrings:
+			left = ''
+			middle = ''
+			right = ''
+			if len(s) != len( s.lstrip() ):
+				left = s[:len(s) - len( s.lstrip() )]
+			if s.strip() != '':
+				middle = kanji_to_romaji( s.strip() ).replace(' ', '_')
+			if len(s) != len( s.rstrip() ) and s.lstrip() != s.rstrip():
+				right = s[len( s.rstrip() ):]
+			OutputStrings.append(left)
+			OutputStrings.append(middle)
+			OutputStrings.append(right)
+		self.entry.ChangeValue( ''.join(OutputStrings) )
 		self._UpdateTags()
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent=parent)
