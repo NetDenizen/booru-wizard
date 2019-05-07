@@ -331,7 +331,7 @@ class EntryQuestion(EntryBase):
 		self.EntryStrings = [""] * NumImages # The contents of the entry boxes must be saved between images.
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL | wx.TE_MULTILINE)
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
-		self.RomanizeButtonTip = wx.ToolTip('Convert Kana characters of all tags to their Romaji equivalents.')
+		self.RomanizeButtonTip = wx.ToolTip('Convert selected (or all) Kana characters to their Romaji equivalents.')
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
@@ -381,7 +381,7 @@ class ImageTagsEntry(EntryBase):
 		self.OutputFile = None # File data object
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL | wx.TE_MULTILINE)
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
-		self.RomanizeButtonTip = wx.ToolTip('Convert Kana characters of all tags to their Romaji equivalents.')
+		self.RomanizeButtonTip = wx.ToolTip('Convert selected (or all) Kana characters to their Romaji equivalents.')
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 		self.CurrentString = []
 
@@ -710,7 +710,7 @@ class NameQuestion(SingleStringEntry):
 		self.OrigValue = None # The original value of source
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
-		self.RomanizeButtonTip = wx.ToolTip('Convert Kana characters of all tags to their Romaji equivalents.')
+		self.RomanizeButtonTip = wx.ToolTip('Convert selected (or all) Kana characters to their Romaji equivalents.')
 		self.checkbox = wx.CheckBox(self, label= 'Use this name')
 		self.EntrySizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
@@ -763,7 +763,7 @@ class SourceQuestion(SingleStringEntry):
 		self.OrigValue = None # The original value of source
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
-		self.RomanizeButtonTip = wx.ToolTip('Convert Kana characters of all tags to their Romaji equivalents.')
+		self.RomanizeButtonTip = wx.ToolTip('Convert selected (or all) Kana characters to their Romaji equivalents.')
 		self.checkbox = wx.CheckBox(self, label= 'Use this source')
 		self.EntrySizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
