@@ -217,6 +217,8 @@ class EntryBase(wx.Panel):  # This class should never be used on its own
 		if indices[0] == indices[1]:
 			indices[0] = 0
 			indices[1] = len(text)
+		StartText = text[ :indices[0] ]
+		EndText = text[ indices[1]: ]
 		#XXX: Platform specific code. There appears to be a discrepancy between how the string is stored in memory (with Unix-style line endings), and how it is represented by the TextCtrl buffer in Windows (Windows line endings). The latter is used by GetSelection, so we alter the string to accurately reflect it in Windows.
 		if platform.startswith('windows'):
 			text = text.replace('\n', '\r\n')
@@ -230,7 +232,7 @@ class EntryBase(wx.Panel):  # This class should never be used on its own
 			start = end
 			found = RE_WHITESPACE.search(text[start:])
 		TagStrings.append(text[start:])
-		OutputStrings = []
+		OutputStrings = [StartText]
 		for s in TagStrings:
 			left = ''
 			middle = ''
@@ -244,6 +246,7 @@ class EntryBase(wx.Panel):  # This class should never be used on its own
 			OutputStrings.append(left)
 			OutputStrings.append(middle)
 			OutputStrings.append(right)
+		OutputStrings.append(EndText)
 		self.entry.ChangeValue( ''.join(OutputStrings) )
 		self._UpdateTags()
 	def __init__(self, parent):
