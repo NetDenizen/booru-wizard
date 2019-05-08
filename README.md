@@ -22,7 +22,7 @@ This software was originally designed to be used in conjunction with the uploade
 
 Other uploading options might be implemented later, largely depending on how well that option meets the needs of its users.
 
-Finally, included with each release should be a file called `imgbrd-grabber_log_template.json`, which may be used as a template for the logging feature for imgbrd-grabber utility at https://github.com/Bionus/imgbrd-grabber to allow the software to import data from existing \*booru sites.
+Finally, included with each release should be a file called `imgbrd-grabber_log_template.json`, which may be used as a template for the logging feature for imgbrd-grabber utility at https://github.com/Bionus/imgbrd-grabber to allow the software to import data from existing \*booru sites. Note that the `source` field will refer back to the original \*booru page, not the source listed in that page.
 
 ## Installation
 
