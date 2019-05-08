@@ -136,9 +136,30 @@ Dependencies should not be an issue to the end-user, since the software will be 
 
 * kanji_to_romaji3 (A Python 3 port I made of the kanji_to_romaji library, which can be found here: https://github.com/NetDenizen/kanji_to_romaji3)
 
+* PyInstaller (For the officially supported build method.)
+
+To satisfy all the dependencies, run:
+
+```
+python3 -m pip install --upgrade pip
+python3 -m pip install wxPython PyPubSub jsonschema PyInstaller
+git clone https://github.com/NetDenizen/kanji_to_romaji3
+cd kanji_to_romaji3
+python3 -m pip install ./
+```
+
+To upgrade existing dependencies, run:
+
+```
+python3 -m pip install --upgrade pip wxPython PyPubSub jsonschema PyInstaller
+git clone https://github.com/NetDenizen/kanji_to_romaji3
+cd kanji_to_romaji3
+python3 -m pip install --upgrade ./
+```
+
 To build with PyInstaller, use this command from the root directory of the repository:
 
-`pyinstaller --clean --onefile --windowed --strip --name booru-wizard main.py`
+`python3 -m pyinstaller --clean --onefile --windowed --strip --icon NONE --name booru-wizard main.py`
 
 main.py can also be run directly with the booru-wizard files present in the same directory:
 
