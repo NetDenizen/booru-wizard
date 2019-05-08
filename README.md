@@ -159,7 +159,7 @@ python3 -m pip install --upgrade ./
 
 To build with PyInstaller, use this command from the root directory of the repository:
 
-`python3 -m pyinstaller --clean --onefile --windowed --strip --icon NONE --name booru-wizard main.py`
+`python3 -m PyInstaller --clean --onefile --windowed --strip --icon NONE --name booru-wizard main.py`
 
 main.py can also be run directly with the booru-wizard files present in the same directory:
 
