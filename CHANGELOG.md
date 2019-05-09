@@ -32,6 +32,14 @@
 
 * Implement searching for questions by keywords in their prompt text.
 
+* ENTRY_QUESTION and IMAGE_TAGS_ENTRY are now multiline!
+
+* Remove jsonschema related options and dependency. `default_schema.json` is renamed to `output_schema.json` for reference purposes.
+
+* `tags` field of JSON format now performs function of `TagStrings`, which has been removed. Old `tags` is no longer supported!
+
+* The run scripts now accept command line arguments.
+
 ## 2018-10-27 0.3
 
 * Revise run.sh to allow spaces and other special characters in the EXE path.
