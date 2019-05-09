@@ -181,7 +181,7 @@ class FileData:
 		"Return a string containing the equivalent JSON type of the variable."
 		if type(item) is dict:
 			return 'object'
-		elif item is list or item is tuple:
+		elif type(item) is list or type(item) is tuple:
 			return 'array'
 		elif type(item) is str:
 			return 'string'
@@ -245,25 +245,25 @@ class FileData:
 		elif type(name) is unfound or name is None:
 			pass
 		else:
-			raise ControlFileError( ''.join( ( "'name' field is '", self._GetJSONTypeName(name), "' but must be a string or null, or not included." ) ) )
+			raise ControlFileError( ''.join( ("'name' field is '", self._GetJSONTypeName(name), "' but must be a string or null, or not included.") ) )
 		source = obj.get( 'source', unfound() )
 		if type(source) is str:
 			self.SetSource(source)
 		elif type(source) is unfound or source is None:
 			pass
 		else:
-			raise ControlFileError( ''.join( ( "'source' field is '", self._GetJSONTypeName(source), "' but must be a string or null, or not included." ) ) )
+			raise ControlFileError( ''.join( ("'source' field is '", self._GetJSONTypeName(source), "' but must be a string or null, or not included.") ) )
 		ContainerSet = False
 		tags = obj.get( 'tags', unfound() )
-		if tags is list:
+		if type(tags) is list:
 			if len(tags) > 2:
-				raise ControlFileError( ''.join ( ( "'tags' field is an array, of ", str( len(tags) ), ' string elements in length, but must be 0 to 2.')
+				raise ControlFileError( ''.join ( ("'tags' field is an array, of ", str( len(tags) ), ' string elements in length, but must be 0 to 2.') ) )
 			if not ContainerSet:
 				self.tags = TagsContainer()
 				ContainerSet = True
 			for l, s in enumerate(tags, start=1):
 				if type(s) is not str:
-					raise ControlFileError( ''.join( ( "'tags' index ", str(l), " is '", self._GetJSONTypeName(s), "' but must be a string." ) ) )
+					raise ControlFileError( ''.join( ("'tags' index ", str(l), " is '", self._GetJSONTypeName(s), "' but must be a string.") ) )
 				NewTags = TagsContainer()
 				NewTags.SetString(s, l)
 				self.tags.SetContainer(NewTags)
@@ -271,7 +271,7 @@ class FileData:
 		elif type(tags) is unfound:
 			pass
 		else:
-			raise ControlFileError( ''.join ( ( "'tags' field is '", self._GetJSONTypeName(tags), "' but must be an array, or not included. If an array, it must be 0 to 2 string elements in length.")
+			raise ControlFileError( ''.join ( ("'tags' field is '", self._GetJSONTypeName(tags), "' but must be an array, or not included. If an array, it must be 0 to 2 string elements in length.") ) )
 		rating = obj.get( 'rating', unfound() )
 		if type(rating) is str:
 			found = SAFETY_NAMES_LOOKUP.get(rating, None)
@@ -279,7 +279,7 @@ class FileData:
 				raise ControlFileError( ''.join( ("Invalid safety name '", rating, "'. Valid choices are: 's', 'q', 'e', 'safe', 'questionable', 'explicit', 'Safe', 'Questionable', 'Explicit'") ) )
 			self.rating = found
 		else:
-			raise ControlFileError("'rating' field is '", self._GetJSONTypeName(rating), "' but must be included as a string. Valid choices are: 's', 'q', 'e', 'safe', 'questionable', 'explicit', 'Safe', 'Questionable', 'Explicit'")
+			raise ControlFileError( ''.join( ("'rating' field is '", self._GetJSONTypeName(rating), "' but must be included as a string. Valid choices are: 's', 'q', 'e', 'safe', 'questionable', 'explicit', 'Safe', 'Questionable', 'Explicit'") ) )
 		self._DataState = self._BuildData() # The current output of the DataCallback, used to determine if _IsChanged should be set.
 		self._IsChanged = True
 	def IsChangedCallback(self):
