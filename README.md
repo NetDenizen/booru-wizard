@@ -40,7 +40,7 @@ These basic steps may be followed to get both the wizard software, and the uploa
 
 2. Extract the archive to the directory of your choice.
 
-3. `run.bat` (on Windows) or `run.sh` (on Linux) may be used to run the software with the default schema and configuration files set. It is not at all necessary, and the `booru-wizard` executable may be run directly directly.
+3. `run.bat` (on Windows) or `run.sh` (on Linux) may be used to run the software with the default configuration file set, and will accept extra command line parameters. It is not at all necessary, and the `booru-wizard` executable may be run directly directly.
 
    The images directory is where the actual images you wish to manage should be. The software produces its output in a series of .json files which correspond to each image file; these are sent to the output JSON directory. Finally, output files may be reopened, to restore the settings of your previous session; the input JSON directory is searched for these.
 
@@ -126,7 +126,7 @@ The image is divided into 3 panes, which can be resized within the window, by cl
 
 The software is intended to run on Windows and Linux. A Mac port is a possibility, but it is a low priority, unless I find there is a great demand for it. Technically speaking, there is nothing in the code that I believe would make it incompatible, but I won't be actively maintaining and testing a port, for now. The library I used also seems to lack certain features on Mac.
 
-Dependencies should not be an issue to the end-user, since the software will be packaged as a standalone executable along with the configuration file, schema file, and a script to run the executable using those other files. Otherwise, the dependencies are:
+Dependencies should not be an issue to the end-user, since the software will be packaged as a standalone executable along with the default configuration file, and a script to run the executable using that. Otherwise, the dependencies are:
 
 * Python 3.2 or newer
 
