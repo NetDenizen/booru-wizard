@@ -1,15 +1,19 @@
 :: A batch file to run the software with some default settings.
-@ECHO OFF
+@echo off
 
-Set EXE_PATH="%cd%\booru-wizard"
-Set SCHEMA="%cd%\default_schema.json"
-Set CONFIG="%cd%\default_config.cfg"
+set EXE_PATH="%cd%\booru-wizard"
+set CONFIG="%cd%\default_config.cfg"
 set IMAGE_INPUT=
 set JSON_INPUT=
 set JSON_OUTPUT=
 
-start "" "%EXE_PATH%" --schema "%SCHEMA%" ^
-					  --config "%CONFIG%" ^
+:: extra_args can be set to include arguments which override those which came before it.
+:: Should command line arguments be passed to this script, they will take the place of those.
+set extra_args=
+if [%*] != [] set extra_args="%*"
+
+start "" "%EXE_PATH%" --config "%CONFIG%" ^
 					  --image-input "%IMAGE_INPUT%" ^
 					  --json-input "%JSON_INPUT%" ^
-					  --json-output "%JSON_OUTPUT%"
+					  --json-output "%JSON_OUTPUT%" ^
+					  "%extra_args%"
