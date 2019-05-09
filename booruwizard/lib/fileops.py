@@ -84,7 +84,7 @@ class FileOpError(Exception):
 class ManagedFile:
 	def __init__(self, OutputDir, path, IsChangedCallback, DataCallback, ReserveCallback, TimerCallback):
 		self.lock = threading.Semaphore(1)
-		self.path = ''.join( ( os.path.join(OutputDir, path), '.json' ) )
+		self.path = ''.join( (os.path.join(OutputDir, path), '.json') )
 		self._handle = None # Associated file handle, if one is open
 		self._IsChangedCallback = IsChangedCallback # Callback to tell if the associated FileData object is changed.
 		self._DataCallback = DataCallback # Callback to retrieve data from the associated FileData object.
@@ -113,7 +113,7 @@ class ManagedFile:
 				try:
 					self._handle = open(self.path, 'wb')
 				except OSError as err:
-					raise FileOpError( ''.join( ('Failed to open file at "', self.path, '"') ), err.errno, err.strerror )
+					raise FileOpError(''.join( ('Failed to open file at "', self.path, '"') ), err.errno, err.strerror)
 			self._handle.seek(0)
 			self._handle.truncate()
 			self._handle.write( self._DataCallback().encode('utf-8') )
@@ -334,7 +334,7 @@ class FileManager:
 			return
 		if self._UpdateInterval == 0.0:
 			pub.sendMessage("FileUpdateClear", message=None)
-		self._UpdateTimer = threading.Thread( name='Update Timer', target=self._UpdateThread, daemon=True )
+		self._UpdateTimer = threading.Thread(name='Update Timer', target=self._UpdateThread, daemon=True)
 		self._UpdateTimerRunning.set()
 		self._UpdateTimer.start()
 		wx.LogMessage('Update thread started.')

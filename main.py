@@ -20,7 +20,7 @@ from booruwizard.ui.main import FileDialogFrame, MainFrame
 
 APPNAME = 'booru-wizard'
 APPVERSION = '1.0'
-APPTITLE = ''.join( ( APPNAME, ' (', APPVERSION, ')' ) )
+APPTITLE = ''.join( (APPNAME, ' (', APPVERSION, ')') )
 
 #TODO: Better accept dialog?
 class ExceptDialog(wx.Dialog):
@@ -28,8 +28,8 @@ class ExceptDialog(wx.Dialog):
 		pub.sendMessage("EmergencyExit", message = None)
 		e.Skip()
 	def __init__(self, msg):
-		wx.Dialog.__init__( self, None, title=''.join( (APPTITLE, ' - Exception') ),
-							style=wx.CAPTION | wx.SYSTEM_MENU | wx.RESIZE_BORDER | wx.CLOSE_BOX | wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX )
+		wx.Dialog.__init__(self, None, title=''.join( (APPTITLE, ' - Exception') ),
+						   style=wx.CAPTION | wx.SYSTEM_MENU | wx.RESIZE_BORDER | wx.CLOSE_BOX | wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX)
 		text = wx.TextCtrl(self, value= msg, style= wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH | wx.TE_NOHIDESEL | wx.TE_AUTO_URL)
 		text.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK) )
 		self.Bind(wx.EVT_CLOSE, self._OnClose)
@@ -75,19 +75,19 @@ class DialogSettings:
 def ParseCommandLine():
 	"Function to create a command line argument parser, and return the args object from it."
 	ArgParser = argparse.ArgumentParser(description='Get command line arguments.')
-	ArgParser.add_argument( '--verbose', '-v', action='store_true', help='If this is set, then the program will produce verbose logging output.' )
-	ArgParser.add_argument( '--no-dialog', '-d', action='store_true', help='If this is set, then the file chooser dialog will not be displayed before the regular UI. Thus, the command line settings are relied upon.' )
-	ArgParser.add_argument( '--config', '-c', action='store', default='', help='Path to read config file from.' )
-	ArgParser.add_argument( '--image-input', '-i', action='store', default='', help='Path to the image input directory.' )
-	ArgParser.add_argument( '--json-input', '-j', action='store', default='', help='Path to the JSON input directory. If none, then it will be copied from "--image-input".' )
-	ArgParser.add_argument( '--json-output', '-o', action='store', default='', help='Path to the JSON output directory. If none, then copy it will be copied from "--json-input".' )
+	ArgParser.add_argument('--verbose', '-v', action='store_true', help='If this is set, then the program will produce verbose logging output.')
+	ArgParser.add_argument('--no-dialog', '-d', action='store_true', help='If this is set, then the file chooser dialog will not be displayed before the regular UI. Thus, the command line settings are relied upon.')
+	ArgParser.add_argument('--config', '-c', action='store', default='', help='Path to read config file from.')
+	ArgParser.add_argument('--image-input', '-i', action='store', default='', help='Path to the image input directory.')
+	ArgParser.add_argument('--json-input', '-j', action='store', default='', help='Path to the JSON input directory. If none, then it will be copied from "--image-input".')
+	ArgParser.add_argument('--json-output', '-o', action='store', default='', help='Path to the JSON output directory. If none, then copy it will be copied from "--json-input".')
 	return ArgParser.parse_args()
 
 def ReadTextFile(path):
 	"Function to open a text file, and return the string from its contents."
 	contents = None
 	try:
-		File = open( path, 'r' )
+		File = open(path, 'r')
 	except OSError as err:
 		raise MainError( ''.join( ('Failed to open file at path: ', path, ' [errno ', err.errno, ']: ', err.strerror) ) )
 	contents = File.read()
@@ -118,11 +118,11 @@ def GetDirFiles(DirPath):
 
 VALID_IMAGES = ('.bmp', '.dib', '.png', '.jpg', '.jpeg', '.jpe', '.jif', '.jfif', '.jfi', '.gif', '.pcx', '.pbm', '.pgm', '.ppm', '.pnm', '.tiff', '.tif', '.tga', '.icb', '.vda', '.vst', '.iff', '.xpm', '.ico', '.cur', '.ani')
 VALID_JSON = ('.json',)
-def GetFileTypes(paths, images):
-	"Function to get those paths which are for images from a list, and return them."
+def GetFileTypes(paths, extensions):
+	"Function to get those paths which certain extensions specified in a list, and return them."
 	output = []
 	for p in paths:
-		if os.path.splitext(p)[1].lower() in images:
+		if os.path.splitext(p)[1].lower() in extensions:
 			output.append(p)
 	return output
 
@@ -175,7 +175,7 @@ def main():
 
 	TagsTracker = TagsContainer()
 	for f in OutputFiles.ControlFiles:
-		TagsTracker.AddStringList( f.tags.ReturnStringList(), 1 )
+		TagsTracker.AddStringList(f.tags.ReturnStringList(), 1)
 	OutputFiles.FilesLock.release()
 
 	wx.LogMessage('Main window opened.')

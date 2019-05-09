@@ -105,7 +105,7 @@ class ViewPort:
 		ImageSize = self.image.GetSize()
 
 		self.ZoomLevel = sqrt( ( ImageSize.GetWidth() * ImageSize.GetHeight() ) / (self.DisplayWidth * self.DisplayHeight) )
-		self.ZoomInterval = sqrt( 2 * (self.ZoomAccel / self.ZoomAccelSteps) * fabs(1.0 - self.ZoomLevel) + self.ZoomStartInterval * self.ZoomStartInterval ) #FIXME
+		self.ZoomInterval = sqrt(2 * (self.ZoomAccel / self.ZoomAccelSteps) * fabs(1.0 - self.ZoomLevel) + self.ZoomStartInterval * self.ZoomStartInterval)
 		self.AccelSteps = int(ceil( (fabs(self.ZoomInterval - self.ZoomStartInterval) / self.ZoomAccel) * self.ZoomAccelSteps ) % self.ZoomAccelSteps)
 
 		self._CalcSample()
@@ -128,7 +128,7 @@ class ViewPort:
 		if self.BackgroundBitmap is None or\
 		   self.DisplayWidth != self.BackgroundBitmap.GetWidth() or\
 		   self.DisplayHeight != self.BackgroundBitmap.GetHeight():
-			   self.BackgroundBitmap = wx.Bitmap.FromBuffer(self.DisplayWidth, self.DisplayHeight, self.BackgroundManager.get(self.DisplayWidth, self.DisplayHeight) )
+			   self.BackgroundBitmap = wx.Bitmap.FromBuffer( self.DisplayWidth, self.DisplayHeight, self.BackgroundManager.get(self.DisplayWidth, self.DisplayHeight) )
 	def UpdateImage(self, image, quality):
 		"Return wx.Image, through the viewport."
 		self.image = image
@@ -177,9 +177,9 @@ class ViewPort:
 		SampleWidth = self.SampleWidth * ImageWidth
 		SampleHeight = self.SampleHeight * ImageHeight
 		ImageSquare = ImageWidth * ImageHeight
-		return ( sqrt( ImageSquare / (SampleWidth * SampleHeight) ) /\
-				 sqrt( ImageSquare / (self.DisplayWidth * self.DisplayHeight) ),
-				 SampleWidth, SampleHeight )
+		return (sqrt( ImageSquare / (SampleWidth * SampleHeight) ) /\
+				sqrt( ImageSquare / (self.DisplayWidth * self.DisplayHeight) ),
+				SampleWidth, SampleHeight)
 	def GetActualFitRatio(self):
 		"Return the zoom level necessary to fit the display, relative to the size of the image, rather than the display (1.0)."
 		ImageSize = self.image.GetSize()

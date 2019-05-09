@@ -201,7 +201,7 @@ class KeyHandler(wx.Object):
 			raise KeyHandlerError("Empty keybind specified.")
 		if len(values) != 2:
 			raise KeyHandlerError("Keybind must follow format: <name><whitespace><bind>.")
-		KeybindID = KEYBIND_IDS.get( values[0].lower(), None )
+		KeybindID = KEYBIND_IDS.get(values[0].lower(), None)
 		if KeybindID is None:
 			raise KeyHandlerError( ''.join( ('Keybind name "', values[0].lower(), '" is invalid.') ) )
 		# TODO: Can we find a less circuitous way to do this?

@@ -190,7 +190,7 @@ class CheckQuestion(TagChoiceQuestion):
 		self.OutputFile = None # File data object
 		self.TagNames = PanelQuestion.GetChoiceTags() # Names of tags corresponding to each selection name
 		self.ChoiceNames = PanelQuestion.GetChoiceNames() # Names of each selection
-		self.choices = wx.CheckListBox( self, choices= self.ChoiceNames )
+		self.choices = wx.CheckListBox(self, choices= self.ChoiceNames)
 		self.CurrentChoices = [] # Currently selected checkboxes
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -289,7 +289,7 @@ class EntryQuestion(EntryBase):
 		for s in self.EntryStrings[self.pos].split():
 			self.OutputFile.ClearConditionalTags(s)
 		self.CurrentTags.ClearString(self.EntryStrings[self.pos], 2)
-		self.CurrentTags.SetString( self.entry.GetValue(), 2 )
+		self.CurrentTags.SetString(self.entry.GetValue(), 2)
 		for s in self.CurrentTags.ReturnStringList():
 			self.OutputFile.SetConditionalTags(s)
 		self.OutputFile.tags.SetContainer(self.CurrentTags)
@@ -454,7 +454,7 @@ class SessionTags(TagChoiceQuestion):
 			self.choices = None
 		self.ChoiceNames = self._MakeNames()
 		self.TagNames = self.ChoiceNames
-		self.choices = wx.CheckListBox( self, choices= self.ChoiceNames )
+		self.choices = wx.CheckListBox(self, choices= self.ChoiceNames)
 		self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 		self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
 		self.Bind( wx.EVT_SCROLL_TOP, self._OnScrollTop, id=self.choices.GetId() )
@@ -553,7 +553,7 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 			self.choices = None
 		self.ChoiceNames = self._MakeNames()
 		self.TagNames = self.ChoiceNames
-		self.choices = wx.CheckListBox( self, choices= self.ChoiceNames )
+		self.choices = wx.CheckListBox(self, choices= self.ChoiceNames)
 		self.sizer.Add(self.choices, 100, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 		self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
 		self.OutputFile.lock()
@@ -845,7 +845,7 @@ class QuestionsContainer(wx.Panel):
 	def _LoadAll(self):
 		"Load all question widgets with the associated OutputFile"
 		for w in self.QuestionWidgets:
-			w.load( self.OutputFiles.ControlFiles[self.pos] )
+			w.load(self.OutputFiles.ControlFiles[self.pos])
 	def _OnIndexImage(self, message, arg2=None):
 		"Change the index index to the one specified in the message, if possible."
 		if 0 <= message < len(self.positions):

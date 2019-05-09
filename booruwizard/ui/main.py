@@ -62,8 +62,8 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 		self.Bind( wx.EVT_SPLITTER_SASH_POS_CHANGED, self._OnSashChanged, id=self.GetId() )
 
 		size = self.GetEffectiveMinSize()
-		size.SetHeight( int( float( size.GetHeight() ) * 1.9 ) )
-		size.SetWidth( int( float( size.GetWidth() ) * 1.5 ) )
+		size.SetHeight( int(float( size.GetHeight() ) * 1.9) )
+		size.SetWidth( int(float( size.GetWidth() ) * 1.5) )
 		self.SetMinSize(size)
 
 class MainFrame(wx.Frame):
@@ -79,7 +79,7 @@ class MainFrame(wx.Frame):
 								 ' - ',
 								 str(self.positions[self.pos] + 1),
 								 '/',
-								 str( self.NumQuestions )
+								 str(self.NumQuestions)
 							   )
 							 )
 					 )
@@ -149,8 +149,8 @@ class MainFrame(wx.Frame):
 
 		self.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK) )
 		size = self.GetEffectiveMinSize()
-		size.SetHeight( int( float( size.GetHeight() ) * 1.0 ) )
-		size.SetWidth( int( float( size.GetWidth() ) * 1.25 ) )
+		size.SetHeight( int(float( size.GetHeight() ) * 1.0) )
+		size.SetWidth( int(float( size.GetWidth() ) * 1.25) )
 		self.SetMinSize(size)
 		self.SetSize( self.GetSize() ) # XXX: Windows does not automatically update the size when the minimum is set.
 		self._SetTitle()
@@ -244,8 +244,8 @@ class FileDialogFrame(wx.Frame):
 
 		self.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK) )
 		size = self.GetEffectiveMinSize()
-		size.SetHeight( int( float( size.GetHeight() ) * 1.75 ) )
-		size.SetWidth( int( float( size.GetWidth() ) * 1.5 ) )
+		size.SetHeight( int(float( size.GetHeight() ) * 1.75) )
+		size.SetWidth( int(float( size.GetWidth() ) * 1.5) )
 		self.SetMinSize(size)
 		self.SetSize( self.GetSize() ) # XXX: Windows does not automatically update the size when the minimum is set.
 		self.SetTitle( ''.join( (APPTITLE, ' - File Chooser') ) )

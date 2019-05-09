@@ -119,8 +119,8 @@ class ImageDisplay(wx.Panel):
 		if self.quality != self.CurrentQuality:
 			self.CurrentQuality = self.quality
 			self.viewport.UpdateImage(self.image, self.quality)
-		dc.DrawBitmap( self.viewport.BackgroundBitmap, 0, self.DiffHeight, True )
-		dc.DrawBitmap( self.viewport.ImageBitmap, 0, self.DiffHeight, True )
+		dc.DrawBitmap(self.viewport.BackgroundBitmap, 0, self.DiffHeight, True)
+		dc.DrawBitmap(self.viewport.ImageBitmap, 0, self.DiffHeight, True)
 		e.Skip()
 	def SetImage(self, image):
 		self.image = image
@@ -163,15 +163,15 @@ class ImagePanel(wx.Panel):
 	def _HumanSize(self, val):
 		"Return a string containing the human readable representation of size 'val'."
 		if val // 1024 == 0:
-			return ''.join( ( str(val), 'bytes' ) )
+			return ''.join( (str(val), 'bytes') )
 		elif val // 1048576 == 0:
-			return ''.join( ( str( round(val / 1000.0, 3) ), ' kB' ) )
+			return ''.join( (str( round(val / 1000.0, 3) ), ' kB') )
 		else:
-			return ''.join( ( str( round(val / 1000000.0, 6) ), ' MB' ) )
+			return ''.join( (str( round(val / 1000000.0, 6) ), ' MB') )
 	def _UpdateImage(self):
 		"Update the image panel."
 		OldSteps = self.image.viewport.TotalSteps
-		self.image.SetImage( self.bitmaps.load(self.pos).image )
+		self.image.SetImage(self.bitmaps.load(self.pos).image)
 		if self.image.viewport.image is not None:
 			self.image.viewport.ApplyZoomSteps(OldSteps)
 	def _UpdateImageData(self):
@@ -630,7 +630,7 @@ class ImageLabel(wx.Panel):
 			item = wx.MenuItem(self.PathMenu, ItemId, p, p)
 			self.PathMenuItems.append(item)
 			self.PathMenuLookup[ItemId] = p
-			self.Bind( wx.EVT_MENU, self._OnMenuPathChosen, id=ItemId )
+			self.Bind(wx.EVT_MENU, self._OnMenuPathChosen, id=ItemId)
 		self.PathEntry.SetMenu(self.PathMenu)
 		self.PathEntry.ShowSearchButton(False)
 		self._SetLabels()

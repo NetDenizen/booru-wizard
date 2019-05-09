@@ -154,7 +154,7 @@ class lexer:
 		KeyName = self._input[KeyStart:self._pos]
 		KeyEnum = PAIR_KEY_NAMES.get(KeyName, None)
 		if KeyEnum is None:
-			raise LexerError( ''.join( ("Key '", KeyName, "' is invalid") ), KeyStartLine, KeyStartCol )
+			raise LexerError(''.join( ("Key '", KeyName, "' is invalid") ), KeyStartLine, KeyStartCol)
 		self._ParseWhitespace()
 		if self._input[self._pos] != ':':
 			raise LexerError("Key found without terminating ':'", self._line, self._col)
@@ -199,7 +199,7 @@ class lexer:
 	def parse(self, string):
 		"Parse the input string and leave the result in the output array."
 		self._input = string
-		while self._pos < len( self._input ) - 1:
+		while self._pos < len(self._input) - 1:
 			self._GetNextPair()
 
 # Defining parser question information
@@ -291,7 +291,7 @@ class color:
 			names = ['hue', 'lightness', 'saturation']
 			conv = colorsys.hls_to_rgb
 		else:
-			raise ColorError(''.join( ("Color type must be 'rgb', 'hsv', or 'hls'. '", inputs[0], "' is not valid." ) ), line, col)
+			raise ColorError(''.join( ("Color type must be 'rgb', 'hsv', or 'hls'. '", inputs[0], "' is not valid.") ), line, col)
 		i = 0
 		for n, v, d in zip(names, inputs[1:], dividers):
 			try:
@@ -299,9 +299,9 @@ class color:
 			except ValueError as err:
 				raise ColorError(err, line, col)
 			if fv > d:
-				raise ColorError(''.join( ("Value ", str(i), " (", n, ") of '", v, "' must be less than '", str(d), "' and non-negative." ) ), line, col)
+				raise ColorError(''.join( ("Value ", str(i), " (", n, ") of '", v, "' must be less than '", str(d), "' and non-negative.") ), line, col)
 			elif fv < 0.0:
-				raise ColorError(''.join( ("Value ", str(i), " (", n, ") of '", v, "' must be less than '", str(d), "' and non-negative." ) ), line, col)
+				raise ColorError(''.join( ("Value ", str(i), " (", n, ") of '", v, "' must be less than '", str(d), "' and non-negative.") ), line, col)
 			values[i] = float(v) / d
 			i += 1
 		self.red, self.green, self.blue = conv(values[0], values[1], values[2])
@@ -475,7 +475,7 @@ class parser:
 			self._AddOptionName(token)
 		elif token.key == PairKey.OPTION_TAG:
 			if len( token.value.split() ) > 1: # TODO: Does this handle unicode spaces?
-				raise ParserError( ''.join( ( 'Tag "', token.value, '" contains whitespace.' ) ), token.line, token.col )
+				raise ParserError(''.join( ('Tag "', token.value, '" contains whitespace.') ), token.line, token.col)
 			self._AddOptionTag(token)
 		elif token.key == PairKey.DEFAULT_SOURCE:
 			self.DefaultSource = token.value

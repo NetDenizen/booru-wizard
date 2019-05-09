@@ -101,7 +101,7 @@ class QuestionSearch(wx.Panel):
 			item = wx.MenuItem( self.FieldMenu, ItemId, str(i + 1), str(i + 1) )
 			self.FieldMenuItems.append(item)
 			self.FieldMenuLookup[ItemId] = i
-			self.Bind( wx.EVT_MENU, self._OnMenuItemChosen, id=ItemId )
+			self.Bind(wx.EVT_MENU, self._OnMenuItemChosen, id=ItemId)
 		self.field.SetMenu(self.FieldMenu)
 		self.field.ShowSearchButton(False)
 
