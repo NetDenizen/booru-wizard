@@ -130,7 +130,7 @@ Dependencies should not be an issue to the end-user, since the software will be 
 
 * wxPython 4
 
-* PyPubSub (Should be autmatically included with wxPython)
+* PyPubSub (Should be automatically included with wxPython)
 
 * jsonschema
 
@@ -183,7 +183,7 @@ There are a number of features and changes which I consider for this software. T
 
 * Especially in the case of imagesets, I consider that the same sequence of tags might be frequently repeated between multiple images. This raises the question as to if it should be possible to copy tags from one image to another. If not directly implemented, a string containing all tags, in a similar vein to the SESSION_TAGS option can be copy-and-pasted. - Implemented by SESSION_TAGS_IMPORTER; consider other options.
 
-* I've considered adding more features to the image-viewer itself, such as the ability to zoom, and the ability to display animation. - Zooming implmented. Animation would likely involve complicated integration with ffmpeg libraries. wx animation support is too inconsistent between platforms. Specifically, the necessary methods are not supported for GTK.
+* I've considered adding more features to the image-viewer itself, such as the ability to zoom, and the ability to display animation. - Zooming implemented. Animation would likely involve complicated integration with ffmpeg libraries. wx animation support is too inconsistent between platforms. Specifically, the necessary methods are not supported for GTK.
 
 * Currently, the software produces little in the way of command-line output which could be logged. What is logged, is typically from within the wxPython library. Aside from the command-line logging, such information could also be included in a window or other widget, or flushed to a file. - Basic command line logging implemented, especially for file operations.
 
