@@ -237,8 +237,8 @@ class FileData:
 			self._DataState = DataState
 		self._PushUpdate()
 		self.unlock()
-	def LoadJSON(self, obj):
-		"Load the settings from a string containing JSON data to this object."
+	def _LoadJSONName(self, obj):
+		"Load the name field from the JSON object."
 		name = obj.get( 'name', unfound() )
 		if type(name) is str:
 			self.name = name
@@ -246,6 +246,8 @@ class FileData:
 			pass
 		else:
 			raise ControlFileError( ''.join( ("'name' field is '", self._GetJSONTypeName(name), "' but must be a string or null, or not included.") ) )
+	def _LoadJSONSource(self, obj):
+		"Load the source field from the JSON object."
 		source = obj.get( 'source', unfound() )
 		if type(source) is str:
 			self.SetSource(source)
@@ -253,6 +255,18 @@ class FileData:
 			pass
 		else:
 			raise ControlFileError( ''.join( ("'source' field is '", self._GetJSONTypeName(source), "' but must be a string or null, or not included.") ) )
+	def _LoadJSONRating(self, obj):
+		"Load the rating field from a JSON object."
+		rating = obj.get( 'rating', unfound() )
+		if type(rating) is str:
+			found = SAFETY_NAMES_LOOKUP.get(rating, None)
+			if found is None:
+				raise ControlFileError( ''.join( ("Invalid safety name '", rating, "'. Valid choices are: 's', 'q', 'e', 'safe', 'questionable', 'explicit', 'Safe', 'Questionable', 'Explicit'") ) )
+			self.rating = found
+		else:
+			raise ControlFileError( ''.join( ("'rating' field is '", self._GetJSONTypeName(rating), "' but must be included as a string. Valid choices are: 's', 'q', 'e', 'safe', 'questionable', 'explicit', 'Safe', 'Questionable', 'Explicit'") ) )
+	def _LoadJSONTags(self, obj):
+		"Load the tags field from the JSON object."
 		ContainerSet = False
 		tags = obj.get( 'tags', unfound() )
 		if type(tags) is list:
@@ -272,14 +286,12 @@ class FileData:
 			pass
 		else:
 			raise ControlFileError( ''.join ( ("'tags' field is '", self._GetJSONTypeName(tags), "' but must be an array, or not included. If an array, it must be 0 to 2 string elements in length.") ) )
-		rating = obj.get( 'rating', unfound() )
-		if type(rating) is str:
-			found = SAFETY_NAMES_LOOKUP.get(rating, None)
-			if found is None:
-				raise ControlFileError( ''.join( ("Invalid safety name '", rating, "'. Valid choices are: 's', 'q', 'e', 'safe', 'questionable', 'explicit', 'Safe', 'Questionable', 'Explicit'") ) )
-			self.rating = found
-		else:
-			raise ControlFileError( ''.join( ("'rating' field is '", self._GetJSONTypeName(rating), "' but must be included as a string. Valid choices are: 's', 'q', 'e', 'safe', 'questionable', 'explicit', 'Safe', 'Questionable', 'Explicit'") ) )
+	def LoadJSON(self, obj):
+		"Load the settings field from a JSON object."
+		self._LoadJSONName(obj)
+		self._LoadJSONSource(obj)
+		self._LoadJSONRating(obj)
+		self._LoadJSONTags(obj)
 		self._DataState = self._BuildData() # The current output of the DataCallback, used to determine if _IsChanged should be set.
 		self._IsChanged = True
 	def IsChangedCallback(self):
