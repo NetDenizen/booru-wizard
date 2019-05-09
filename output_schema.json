@@ -21,27 +21,14 @@
         "rating": {
           "description": "Rating of work as 's' (safe), 'q' (questionable), or 'e' (explicit).",
           "type": "string",
-          "enum": ["s", "q", "e", "safe", "questionable", "explicit"]
+          "enum": ["s", "q", "e", "safe", "questionable", "explicit", "Safe", "Questionable", "Explicit"]
         },
-        "TagStrings": {
+        "tags": {
           "description": "Array of space-separated strings each representing a tag. The index of each string represents the internal level of those tags. '1' is automatically set, and '2' is manually set. Manual settings cannot be overridden by automatic ones.",
           "type": "array",
           "maxItems": 2,
           "minItems": 1,
           "items": {"type": "string"}
-        },
-        "tags": {
-          "description": "Lookup table of tag names and their internal 'level'. '1' is automatically set, and '2' is manually set. Manual settings cannot be overridden by automatic ones.",
-          "type": "object",
-          "patternProperties": {
-            "^\\S*$": {
-              "description": "Internal 'level'.",
-              "type": "integer",
-              "enum": [1, 2],
-              "additionalProperties": false
-            }
-          },
-          "additionalProperties": false
         }
       },
       "required": ["rating"],
