@@ -55,10 +55,6 @@ class TagsContainer:
 		"Merge the tag objects from another TagsContainer."
 		for t in container.tags:
 			self.SetObj(t)
-	def SetDict(self, obj):
-		"Set a list of tags and their occurrences as a dict."
-		for k, v in obj.items():
-			self.set(k, v)
 	def add(self, name, value):
 		"Register a tag object and increment its occurrences by a value."
 		if not name:
