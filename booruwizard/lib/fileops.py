@@ -267,14 +267,11 @@ class FileData:
 			raise ControlFileError( ''.join( ("'rating' field is '", self._GetJSONTypeName(rating), "' but must be included as a string. Valid choices are: 's', 'q', 'e', 'safe', 'questionable', 'explicit', 'Safe', 'Questionable', 'Explicit'") ) )
 	def _LoadJSONTags(self, obj):
 		"Load the tags field from the JSON object."
-		ContainerSet = False
 		tags = obj.get( 'tags', unfound() )
 		if type(tags) is list:
 			if len(tags) > 2:
 				raise ControlFileError( ''.join ( ("'tags' field is an array, of ", str( len(tags) ), ' string elements in length, but must be 0 to 2.') ) )
-			if not ContainerSet:
-				self.tags = TagsContainer()
-				ContainerSet = True
+			self.tags = TagsContainer()
 			for l, s in enumerate(tags, start=1):
 				if type(s) is not str:
 					raise ControlFileError( ''.join( ("'tags' index ", str(l), " is '", self._GetJSONTypeName(s), "' but must be a string.") ) )
