@@ -10,7 +10,6 @@ from collections import OrderedDict
 
 import wx
 from pubsub import pub
-import jsonschema
 
 from booruwizard.lib.tag import TagsContainer
 from booruwizard.lib.template import parser
@@ -49,18 +48,13 @@ class MainError(Exception):
 	pass
 
 class DialogSettings:
-	def __init__(self, SchemaFile, ConfigFile, ImageInputDir, JSONInputDir, JSONOutputDir):
+	def __init__(self, ConfigFile, ImageInputDir, JSONInputDir, JSONOutputDir):
 		self.EarlyExit = True
-		self.SchemaFile = SchemaFile
 		self.ConfigFile = ConfigFile
 		self.ImageInputDir = ImageInputDir
 		self.JSONInputDir = JSONInputDir
 		self.JSONOutputDir = JSONOutputDir
 	def validate(self):
-		if not os.path.exists(self.SchemaFile):
-			raise MainError( ''.join( ('Schema file path: "', self.SchemaFile, '" does not exist.') ) )
-		if not os.path.isfile(self.SchemaFile):
-			raise MainError( ''.join( ('Schema file path: "', self.SchemaFile, '" is not a file.') ) )
 		if not os.path.exists(self.ConfigFile):
 			raise MainError( ''.join( ('Config file path: "', self.ConfigFile, '" does not exist.') ) )
 		if not os.path.isfile(self.ConfigFile):
@@ -83,7 +77,6 @@ def ParseCommandLine():
 	ArgParser = argparse.ArgumentParser(description='Get command line arguments.')
 	ArgParser.add_argument( '--verbose', '-v', action='store_true', help='If this is set, then the program will produce verbose logging output.' )
 	ArgParser.add_argument( '--no-dialog', '-d', action='store_true', help='If this is set, then the file chooser dialog will not be displayed before the regular UI. Thus, the command line settings are relied upon.' )
-	ArgParser.add_argument( '--schema', '-s', action='store', default='', help='Path to read schema file from.' )
 	ArgParser.add_argument( '--config', '-c', action='store', default='', help='Path to read config file from.' )
 	ArgParser.add_argument( '--image-input', '-i', action='store', default='', help='Path to the image input directory.' )
 	ArgParser.add_argument( '--json-input', '-j', action='store', default='', help='Path to the JSON input directory. If none, then it will be copied from "--image-input".' )
@@ -110,13 +103,6 @@ def ParseJSONFile(path):
 	except json.decoder.JSONDecodeError as err:
 		raise MainError( ''.join( ('Failed to decode JSON file at path: "', path, '" Reason: "', err.msg, '" Line: ', str(err.lineno), ' Col: ', str(err.colno) ) ) )
 	return obj
-
-def VerifyJSONSchema(path, obj, schema):
-	"Function to validate a JSON object against a schema."
-	try:
-		jsonschema.validate(obj, schema)
-	except jsonschema.ValidationError as err:
-		raise MainError( ''.join( ('Failed to validate JSON file at path: "', path, '" ', err.message) ) )
 
 def GetDirFiles(DirPath):
 	"Function to get all file paths from a directory."
@@ -149,7 +135,7 @@ def main():
 	if args.verbose:
 		wx.Log.SetVerbose()
 
-	settings = DialogSettings(args.schema, args.config, args.image_input, args.json_input, args.json_output)
+	settings = DialogSettings(args.config, args.image_input, args.json_input, args.json_output)
 	if not args.no_dialog:
 		dialog = FileDialogFrame(None, APPTITLE, settings)
 		dialog.Show()
@@ -162,7 +148,6 @@ def main():
 		settings.JSONOutputDir = settings.JSONInputDir
 	settings.validate()
 
-	schema = ParseJSONFile(settings.SchemaFile)
 	ImagePaths = GetFileTypes(GetDirFiles(settings.ImageInputDir), VALID_IMAGES)
 	JSONPaths = GetFileTypes(GetDirFiles(settings.JSONInputDir), VALID_JSON)
 
@@ -181,7 +166,6 @@ def main():
 							config.ConditionalTags, config.NamelessTags, config.SourcelessTags, config.TaglessTags)
 	for p in JSONPaths:
 		obj = ParseJSONFile( os.path.join(settings.JSONInputDir, p) )
-		VerifyJSONSchema(p, obj, schema)
 		OutputFiles.AddJSON(settings.ImageInputDir, settings.JSONOutputDir, obj,
 							config.DefaultName, config.DefaultSource, config.DefaultSafety,
 							config.ConditionalTags, config.NamelessTags, config.SourcelessTags, config.TaglessTags)

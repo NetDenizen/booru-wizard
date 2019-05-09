@@ -24,6 +24,8 @@ Other uploading options might be implemented later, largely depending on how wel
 
 Finally, included with each release should be a file called `imgbrd-grabber_log_template.json`, which may be used as a template for the logging feature for imgbrd-grabber utility at https://github.com/Bionus/imgbrd-grabber to allow the software to import data from existing \*booru sites. Note that the `source` field will refer back to the original \*booru page, not the source listed in that page.
 
+For reference is `output_schema.json`, which specifies the format which all metadata representations handled by the software must follow.
+
 ## Installation
 
 These basic steps may be followed to get both the wizard software, and the uploader userscript installed and running.
@@ -132,8 +134,6 @@ Dependencies should not be an issue to the end-user, since the software will be 
 
 * PyPubSub (Should be automatically included with wxPython)
 
-* jsonschema
-
 * kanji_to_romaji3 (A Python 3 port I made of the kanji_to_romaji library, which can be found here: https://github.com/NetDenizen/kanji_to_romaji3)
 
 * PyInstaller (For the officially supported build method.)
@@ -142,7 +142,7 @@ To satisfy all the dependencies, run:
 
 ```
 python3 -m pip install --upgrade pip
-python3 -m pip install wxPython PyPubSub jsonschema PyInstaller
+python3 -m pip install wxPython PyPubSub PyInstaller
 git clone https://github.com/NetDenizen/kanji_to_romaji3
 cd kanji_to_romaji3
 python3 -m pip install ./
@@ -151,7 +151,7 @@ python3 -m pip install ./
 To upgrade existing dependencies, run:
 
 ```
-python3 -m pip install --upgrade pip wxPython PyPubSub jsonschema PyInstaller
+python3 -m pip install --upgrade pip wxPython PyPubSub PyInstaller
 git clone https://github.com/NetDenizen/kanji_to_romaji3
 cd kanji_to_romaji3
 python3 -m pip install --upgrade ./

@@ -206,7 +206,6 @@ class DirPicker(wx.Panel):
 
 class FileDialogFrame(wx.Frame):
 	def _OnOK(self, e):
-		self.settings.SchemaFile = self.SchemaFileChooser.GetPath()
 		self.settings.ConfigFile = self.ConfigFileChooser.GetPath()
 		self.settings.ImageInputDir = self.ImageInputDirChooser.GetPath()
 		self.settings.JSONInputDir = self.JSONInputDirChooser.GetPath()
@@ -222,7 +221,6 @@ class FileDialogFrame(wx.Frame):
 		wx.Frame.__init__(self, parent=parent)
 
 		self.settings = settings
-		self.SchemaFileChooser = FilePicker(self, 'Pick the schema file.', settings.SchemaFile)
 		self.ConfigFileChooser = FilePicker(self, 'Pick the config file.', settings.ConfigFile)
 		self.ImageInputDirChooser = DirPicker(self, 'Pick the image directory.', settings.ImageInputDir)
 		self.JSONInputDirChooser = DirPicker(self, 'Pick the JSON input directory. The image directory is used if this is blank.', settings.JSONInputDir)
@@ -232,7 +230,6 @@ class FileDialogFrame(wx.Frame):
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.MainSizer.AddStretchSpacer(1)
-		self.MainSizer.Add(self.SchemaFileChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
 		self.MainSizer.Add(self.ConfigFileChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
 		self.MainSizer.Add(self.ImageInputDirChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
 		self.MainSizer.Add(self.JSONInputDirChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
