@@ -236,7 +236,6 @@ class QuestionPanel(QuestionDisplayComponent):
 		self.body.SetValue(self.questions[ self.positions[self.pos] ].text)
 	def _OnFocusPromptBody(self, message, arg2=None):
 		self.body.SetFocus()
-	#TODO: Roll these into a function or otherwise cleanup
 	def __init__(self, parent, NumImages, questions):
 		QuestionDisplayComponent.__init__(self, parent)
 

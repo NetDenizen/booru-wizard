@@ -10,11 +10,8 @@ DEFAULT_SQUARE_WIDTH = 8
 class TransparencyBackground:
 	def __init__(self, Color1, Color2, SquareWidth):
 		self.SquareWidth = SquareWidth
-		self.Color1Pixel = (c_ubyte * 3)()
-		self.Color2Pixel = (c_ubyte * 3)()
-		#TODO: Fix kludge, if possible
-		memmove(self.Color1Pixel, (c_ubyte * 3).from_buffer_copy(Color1), 3)
-		memmove(self.Color2Pixel, (c_ubyte * 3).from_buffer_copy(Color2), 3)
+		self.Color1Pixel = (c_ubyte * 3).from_buffer_copy(Color1)
+		self.Color2Pixel = (c_ubyte * 3).from_buffer_copy(Color2)
 	def _RepeatMove(self, StartOffset, dst, src, times):
 		SrcLen = sizeof(src)
 		offset = StartOffset

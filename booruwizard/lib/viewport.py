@@ -23,7 +23,6 @@ class ViewPortState(Enum):
 class ViewPort:
 	def _CalcSample(self):
 		"Apply zooming of an arbitrary amount."
-		#FIXME
 		SizeShift = 1.0 / self.ZoomLevel
 		MoveShift = (1.0 - SizeShift) / 2.0
 		self.SampleXPos = self.SampleXPos - ( (1.0 - self.SampleWidth) / 2.0 ) + MoveShift

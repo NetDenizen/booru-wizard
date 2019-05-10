@@ -49,7 +49,7 @@ class TagsContainer:
 			self.set(s, value)
 	def SetString(self, string, value):
 		"Set a list of tags as a space terminated string."
-		names = string.split() #TODO: Does this handle Unicode spaces
+		names = string.split()
 		self.SetStringList(names, value)
 	def SetContainer(self, container):
 		"Merge the tag objects from another TagsContainer."
@@ -67,7 +67,7 @@ class TagsContainer:
 			self.add(s, value)
 	def AddString(self, string, value):
 		"Add a list of tags as a space terminated string."
-		names = string.split() #TODO: Does this handle Unicode spaces
+		names = string.split()
 		self.AddStringList(names, value)
 	def sub(self, name, value):
 		"Register a tag object and decrement its occurrences by a value."
@@ -99,7 +99,7 @@ class TagsContainer:
 			self.clear(s, value)
 	def ClearString(self, string, value):
 		"Clear a list of tags as a space terminated string."
-		names = string.split() #TODO: Does this handle Unicode spaces
+		names = string.split()
 		self.ClearStringList(names, value)
 	def ReturnStringList(self):
 		"Return the list of tag objects with 1 or more occurrences as a list of strings."

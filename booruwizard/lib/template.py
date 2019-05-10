@@ -47,7 +47,6 @@ class PairKey(Enum):
 	PAN_INTERVAL                  = 28
 	SESSION_TAGS_IMPORTER         = 29
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
-	#TODO: keyboard controls, alias name and alias tag separately, no option tag
 
 PAIR_KEY_NAMES = {
 	'RADIO_QUESTION'                : PairKey.RADIO_QUESTION,
@@ -134,7 +133,7 @@ class lexer:
 		self._col = EndPos - self._LineStart
 	def _ParseComment(self):
 		"Search until beginning of next line."
-		#TODO: We cannot directly add the return value of _search
+		#FIXME: We cannot directly add the return value of _search
 		StartPos = self._pos
 		tmp = self._search(RE_NEWLINE)
 		self._pos += tmp
@@ -360,7 +359,6 @@ class parser:
 		self._state = ParserState.NORMAL
 		self._lexer = lexer()
 
-		#TODO: Do this differently, like keep track of these strings in the conditional tagger?
 		self._AliasFromString = ""
 		self._AliasToString = ""
 
@@ -474,7 +472,7 @@ class parser:
 		elif token.key == PairKey.OPTION_NAME:
 			self._AddOptionName(token)
 		elif token.key == PairKey.OPTION_TAG:
-			if len( token.value.split() ) > 1: # TODO: Does this handle unicode spaces?
+			if len( token.value.split() ) > 1:
 				raise ParserError(''.join( ('Tag "', token.value, '" contains whitespace.') ), token.line, token.col)
 			self._AddOptionTag(token)
 		elif token.key == PairKey.DEFAULT_SOURCE:

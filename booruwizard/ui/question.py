@@ -127,7 +127,6 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		return
 	def disp(self):
 		"Display the updated radio question for the given case."
-		#TODO: Should we only load choice on click, or preload choice in load?
 		self.OutputFile.PrepareChange()
 		self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		Last = 0
@@ -396,7 +395,6 @@ class ImageTagsEntry(EntryBase):
 		self.Bind( wx.EVT_TEXT, self._OnUpdateEvent, id=self.entry.GetId() )
 		self.Bind( wx.EVT_WINDOW_DESTROY, self._OnUpdateEvent, id=self.GetId() ) # TODO Should we bind to EVT_SET_FOCUS too?
 
-#TODO: Remove code duplication
 class SessionTags(TagChoiceQuestion):
 	def _MakeNames(self):
 		RawNames = self.TagsTracker.ReturnStringList()
@@ -428,7 +426,7 @@ class SessionTags(TagChoiceQuestion):
 			if c not in self.ChoiceNames:
 				self.ChoiceNames.append(c)
 				added = True
-		if added: # TODO: Only check if there are things in ChoiceNames not in self.ChoiceNames
+		if added:
 			self.TagNames = self.ChoiceNames
 			self.Unbind( wx.EVT_CHECKLISTBOX, id=self.choices.GetId() )
 			self.Unbind( wx.EVT_SCROLL_TOP, id=self.choices.GetId() )
@@ -636,9 +634,18 @@ class SessionTagsImporter(wx.SplitterWindow):
 		self.OwnTags = SessionTags(self, TagsTracker)
 
 		self.SetMinimumPaneSize(1)
-		self.SplitVertically(self.SourceTags, self.OwnTags) # TODO: For some reason, this does not want to split in the center, by default.
+		self.SplitVertically(self.SourceTags, self.OwnTags) # FIXME: For some reason, this does not want to split in the center, by default.
 
 class SingleStringEntry(wx.Panel): # This class should never be used on its own
+	def _GetValueTemplate(self, get):
+		"Template to reduce code duplication in the _GetValue functions of child classes."
+		self.OutputFile.lock()
+		value = get()
+		self.OutputFile.unlock()
+		if value is None:
+			return ""
+		else:
+			return value
 	def _GetValue(self): # This determines where the field gets its value initial; define it in child classes
 		"Get original value for this field."
 		pass
@@ -679,14 +686,8 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 
 class NameQuestion(SingleStringEntry):
 	def _GetValue(self):
-		"Get original value for the name field." # TODO: Should this pattern get its own function?
-		self.OutputFile.lock()
-		name = self.OutputFile.name
-		self.OutputFile.unlock()
-		if name is None:
-			return ""
-		else:
-			return name
+		"Get original value for the name field."
+		return self._GetValueTemplate(self.OutputFile.GetName)
 	def _SetValue(self):
 		"Set value controlled by the name field."
 		if self.checkbox.GetValue():
@@ -732,14 +733,8 @@ class NameQuestion(SingleStringEntry):
 
 class SourceQuestion(SingleStringEntry):
 	def _GetValue(self):
-		"Get original value for the source field." # TODO: Should this pattern get its own function?
-		self.OutputFile.lock()
-		source = self.OutputFile.source
-		self.OutputFile.unlock()
-		if source is None:
-			return ""
-		else:
-			return source
+		"Get original value for the name field."
+		return self._GetValueTemplate(self.OutputFile.GetSource)
 	def _SetValue(self):
 		"Set value controlled by the source field, if the box is checked."
 		if self.checkbox.GetValue():

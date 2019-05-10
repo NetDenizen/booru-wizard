@@ -149,6 +149,8 @@ class FileData:
 			self.tags.SetContainer(self.NamelessTags)
 		else:
 			self.tags.ClearContainer(self.NamelessTags)
+	def GetName(self):
+		return self.name
 	def SetSource(self, source):
 		"Set the source setting to the specified value. Set or unset the sourceless tags, if it is or is not None, respectively."
 		self.source = source
@@ -156,6 +158,8 @@ class FileData:
 			self.tags.SetContainer(self.SourcelessTags)
 		else:
 			self.tags.ClearContainer(self.SourcelessTags)
+	def GetSource(self):
+		return self.source
 	def SetConditionalTags(self, name):
 		"Set the conditional tags for a certain name."
 		self.ConditionalTags.SetTags(name, self.tags)
@@ -217,7 +221,6 @@ class FileData:
 		self._DataState = self._BuildData() # The current output of the DataCallback, used to determine if _IsChanged should be set.
 		self._lock = None # A lock within the ManagedFile object, used to synchronize updates.
 		self._PushUpdate = None # A callback to push data to the associated ManagedFile object
-		#TODO: Other default tag stuff
 	def lock(self):
 		"Acquire self._lock if it is not None."
 		if self._lock is not None:
@@ -311,7 +314,6 @@ DEFAULT_UPDATE_INTERVAL = 30.0
 class FileManagerError(Exception):
 	pass
 
-#TODO: Use semaphore for MaxOpenFiles itself?
 class FileManager:
 	def CheckAny(self):
 		"Return if True on the first file in need of updating. Otherwise, return False."
@@ -364,7 +366,6 @@ class FileManager:
 		self._OpenFiles = [] # List of ManagedFile objects which have open handles
 
 		self.ControlFiles = [] # List of FileData objects
-		self.paths = [] # List of original paths for the respective FileData objects
 		self.InputPaths = [] # List of paths for the respective FileData objects with prepended input directories
 
 		pub.subscribe(self._OnStartUpdateTimer, "StartUpdateTimer")
@@ -450,28 +451,17 @@ class FileManager:
 	def AddFile(self, InputDir, OutputDir, path, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
 		"Add a FileData object and its associated MangedFile object, with all the proper callbacks set."
 		wx.LogVerbose( ''.join( ("Registering file at path '", path, "'") ) )
-		if path in self.paths:
-			ControlFile = self.ControlFiles[self.paths.index(path)]
-			ControlFile.PrepareChange()
-			#TODO: To function?
-			ControlFile.name = DefaultName
-			ControlFile.source = DefaultSource
-			ControlFile.safety = DefaultSafety
-			ControlFile.SourcelessTags = SourcelessTags
-			ControlFile.FinishChange()
-		else:
+		if path not in self.InputPaths:
 			PushUpdate = None
 			if self._UpdateInterval == 0.0:
 				PushUpdate = self._UpdateTimerDelay.set
 			self.ControlFiles.append( FileData(path, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags) )
-			self.paths.append(path)
-			self.InputPaths.append( os.path.join(InputDir, path) )
+			self.InputPaths.append(path)
 			self._files.append( self.ControlFiles[-1].GetManagedFile(OutputDir, self.ReserveOpenFileSlot, PushUpdate) )
 	def AddJSON(self, InputDir, OutputDir, obj, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
 		"Loop through a .json object and load the settings to the FileData object associated with the respective path. If it does not exist, then create it first."
 		for k, v in obj.items():
-			if os.path.join(InputDir, k) not in self.InputPaths:
-				self.AddFile(InputDir, OutputDir, os.path.join(InputDir, k), DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags)
+			self.AddFile(InputDir, OutputDir, os.path.join(InputDir, k), DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags)
 			ControlFile = self.ControlFiles[self.InputPaths.index( os.path.join(InputDir, k) )]
 			ControlFile.PrepareChange()
 			ControlFile.LoadJSON(v)

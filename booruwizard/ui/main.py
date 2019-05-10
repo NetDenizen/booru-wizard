@@ -10,8 +10,6 @@ from booruwizard.ui.image import ImageContainer
 from booruwizard.ui.prompt import PromptContainer
 from booruwizard.ui.question import QuestionsContainer
 
-#TODO: Class member privacy
-
 class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 	def _SetSashes(self):
 		"Set the sash locations to be relative to the window size."
