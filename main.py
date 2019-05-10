@@ -161,7 +161,7 @@ def main():
 	OutputFiles = FileManager(config.MaxOpenFiles, config.UpdateInterval)
 	OutputFiles.FilesLock.acquire()
 	for p in ImagePaths:
-		OutputFiles.AddFile(settings.ImageInputDir, settings.JSONOutputDir, p,
+		OutputFiles.AddFile(settings.JSONOutputDir, p,
 							config.DefaultName, config.DefaultSource, config.DefaultSafety,
 							config.ConditionalTags, config.NamelessTags, config.SourcelessTags, config.TaglessTags)
 	for p in JSONPaths:
@@ -180,7 +180,7 @@ def main():
 
 	wx.LogMessage('Main window opened.')
 	wizard = MainFrame(None, APPTITLE, config.MaxImageBufSize, config.DefaultImageQuality, config.output, OutputFiles, TagsTracker, viewport)
-	wizard.Bind(wx.EVT_CLOSE, OutputFiles.OnExit) #XXX: Windows for some reason prints log messages to popup windows, instead of stderr, after the main loop ends. We destroy OutputFiles 
+	wizard.Bind(wx.EVT_CLOSE, OutputFiles.OnExit) #XXX: Windows for some reason prints log messages to popup windows, instead of stderr, after the main loop ends. We destroy OutputFiles
 
 	keybinds = KeyHandler()
 	keybinds.AddList(config.keybinds)

@@ -210,6 +210,7 @@ class FileDialogFrame(wx.Frame):
 		self.settings.JSONOutputDir = self.JSONOutputDirChooser.GetPath()
 		self.settings.EarlyExit = False
 		self.Close()
+		e.Skip()
 	def _OnEmergencyExit(self, message, arg2=None):
 		try:
 			self.Close()

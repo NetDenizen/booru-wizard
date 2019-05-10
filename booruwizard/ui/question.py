@@ -248,6 +248,7 @@ class EntryBase(wx.Panel):  # This class should never be used on its own
 		OutputStrings.append(EndText)
 		self.entry.ChangeValue( ''.join(OutputStrings) )
 		self._UpdateTags()
+		e.Skip()
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent=parent)
 
@@ -672,6 +673,7 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 									   )
 							  )
 		self._SetValue()
+		e.Skip()
 	def load(self, OutputFile):
 		"Initialize the check question for a certain case."
 		self.OutputFile = OutputFile # File data object

@@ -183,19 +183,19 @@ class FileData:
 		return json.dumps( obj, separators=(',',':') )
 	def _GetJSONTypeName(self, item):
 		"Return a string containing the equivalent JSON type of the variable."
-		if type(item) is dict:
+		if isinstance(item, dict):
 			return 'object'
-		elif type(item) is list or type(item) is tuple:
+		elif isinstance(item, list) or isinstance(item, tuple):
 			return 'array'
-		elif type(item) is str:
+		elif isinstance(item, str):
 			return 'string'
-		elif type(item) is int or type(item) is float:
+		elif isinstance(item, int) or isinstance(item, float):
 			return 'number'
 		elif item is True:
 			return 'true'
 		elif item is False:
 			return 'false'
-		elif type(item) is unfound:
+		elif isinstance(item, unfound):
 			return 'unfound'
 		else: # item is None:
 			return 'null'
@@ -243,25 +243,25 @@ class FileData:
 	def _LoadJSONName(self, obj):
 		"Load the name field from the JSON object."
 		name = obj.get( 'name', unfound() )
-		if type(name) is str:
+		if isinstance(name, str):
 			self.name = name
-		elif type(name) is unfound or name is None:
+		elif isinstance(name, unfound) or name is None:
 			pass
 		else:
 			raise ControlFileError( ''.join( ("'name' field is '", self._GetJSONTypeName(name), "' but must be a string or null, or not included.") ) )
 	def _LoadJSONSource(self, obj):
 		"Load the source field from the JSON object."
 		source = obj.get( 'source', unfound() )
-		if type(source) is str:
+		if isinstance(source, str):
 			self.SetSource(source)
-		elif type(source) is unfound or source is None:
+		elif isinstance(source, unfound) or source is None:
 			pass
 		else:
 			raise ControlFileError( ''.join( ("'source' field is '", self._GetJSONTypeName(source), "' but must be a string or null, or not included.") ) )
 	def _LoadJSONRating(self, obj):
 		"Load the rating field from a JSON object."
 		rating = obj.get( 'rating', unfound() )
-		if type(rating) is str:
+		if isinstance(rating, str):
 			found = SAFETY_NAMES_LOOKUP.get(rating, None)
 			if found is None:
 				raise ControlFileError( ''.join( ("Invalid safety name '", rating, "'. Valid choices are: 's', 'q', 'e', 'safe', 'questionable', 'explicit', 'Safe', 'Questionable', 'Explicit'") ) )
@@ -271,18 +271,18 @@ class FileData:
 	def _LoadJSONTags(self, obj):
 		"Load the tags field from the JSON object."
 		tags = obj.get( 'tags', unfound() )
-		if type(tags) is list:
+		if isinstance(tags, list):
 			if len(tags) > 2:
 				raise ControlFileError( ''.join ( ("'tags' field is an array, of ", str( len(tags) ), ' string elements in length, but must be 0 to 2.') ) )
 			self.tags = TagsContainer()
 			for l, s in enumerate(tags, start=1):
-				if type(s) is not str:
+				if not isinstance(s, str):
 					raise ControlFileError( ''.join( ("'tags' index ", str(l), " is '", self._GetJSONTypeName(s), "' but must be a string.") ) )
 				NewTags = TagsContainer()
 				NewTags.SetString(s, l)
 				self.tags.SetContainer(NewTags)
 				self.SetConditionalInitTags( NewTags.ReturnDict() )
-		elif type(tags) is unfound:
+		elif isinstance(tags, unfound):
 			pass
 		else:
 			raise ControlFileError( ''.join ( ("'tags' field is '", self._GetJSONTypeName(tags), "' but must be an array, or not included. If an array, it must be 0 to 2 string elements in length.") ) )
@@ -448,7 +448,7 @@ class FileManager:
 			self._OpenFiles.pop(0)
 		self._OpenFiles.append(item)
 		wx.LogVerbose( ''.join( ("Added file at path '", item.path, "' to output cache index ", str( len(self._OpenFiles) ) ) ) )
-	def AddFile(self, InputDir, OutputDir, path, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
+	def AddFile(self, OutputDir, path, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
 		"Add a FileData object and its associated MangedFile object, with all the proper callbacks set."
 		wx.LogVerbose( ''.join( ("Registering file at path '", path, "'") ) )
 		if path not in self.InputPaths:
@@ -461,7 +461,7 @@ class FileManager:
 	def AddJSON(self, InputDir, OutputDir, obj, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
 		"Loop through a .json object and load the settings to the FileData object associated with the respective path. If it does not exist, then create it first."
 		for k, v in obj.items():
-			self.AddFile(InputDir, OutputDir, os.path.join(InputDir, k), DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags)
+			self.AddFile(OutputDir, os.path.join(InputDir, k), DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags)
 			ControlFile = self.ControlFiles[self.InputPaths.index( os.path.join(InputDir, k) )]
 			ControlFile.PrepareChange()
 			ControlFile.LoadJSON(v)
