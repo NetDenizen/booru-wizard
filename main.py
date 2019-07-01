@@ -38,7 +38,7 @@ def ExceptHook(etype, value, trace):
 	tmp = traceback.format_exception(etype, value, trace)
 	exception = ''.join(tmp)
 
-	wx.LogError(exception)
+	wx.LogError( exception.replace('%', '%%') )
 	dialog = ExceptDialog(exception)
 	dialog.ShowModal()
 	dialog.Destroy()
@@ -151,7 +151,7 @@ def main():
 	ImagePaths = GetFileTypes(GetDirFiles(settings.ImageInputDir), VALID_IMAGES)
 	JSONPaths = GetFileTypes(GetDirFiles(settings.JSONInputDir), VALID_JSON)
 
-	wx.LogMessage( ''.join( ("Reading config at file at '", settings.ConfigFile, "'") ) )
+	wx.LogMessage( ''.join( ("Reading config at file at '", settings.ConfigFile.replace('%', '%%'), "'") ) )
 	config = parser()
 	config.parse( ReadTextFile(settings.ConfigFile) )
 
