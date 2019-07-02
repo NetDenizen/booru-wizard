@@ -49,36 +49,36 @@ class PairKey(Enum):
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 
 PAIR_KEY_NAMES = {
-	'RADIO_QUESTION'                : PairKey.RADIO_QUESTION,
-	'CHECK_QUESTION'                : PairKey.CHECK_QUESTION,
-	'OPTION_NAME'                   : PairKey.OPTION_NAME,
-	'OPTION_TAG'                    : PairKey.OPTION_TAG,
-	'ENTRY_QUESTION'                : PairKey.ENTRY_QUESTION,
-	'SESSION_TAGS'                  : PairKey.SESSION_TAGS,
-	'NAME_QUESTION'                 : PairKey.NAME_QUESTION,
-	'SOURCE_QUESTION'               : PairKey.SOURCE_QUESTION,
-	'DEFAULT_SOURCE'                : PairKey.DEFAULT_SOURCE,
-	'NAMELESS_TAG'                  : PairKey.NAMELESS_TAG,
-	'SOURCELESS_TAG'                : PairKey.SOURCELESS_TAG,
-	'TAGLESS_TAG'                   : PairKey.TAGLESS_TAG,
-	'SAFETY_QUESTION'               : PairKey.SAFETY_QUESTION,
-	'DEFAULT_SAFETY'                : PairKey.DEFAULT_SAFETY,
-	'MAX_OPEN_FILES'                : PairKey.MAX_OPEN_FILES,
-	'UPDATE_INTERVAL'               : PairKey.UPDATE_INTERVAL,
-	'MAX_IMAGE_BUFSIZE'             : PairKey.MAX_IMAGE_BUFSIZE,
-	'ALIAS_TAG_TO'                  : PairKey.ALIAS_TAG_TO,
-	'ALIAS_TAG_FROM'                : PairKey.ALIAS_TAG_FROM,
-	'IMAGE_BACKGROUND_COLOR_ONE'    : PairKey.IMAGE_BACKGROUND_COLOR_ONE,
-	'IMAGE_BACKGROUND_COLOR_TWO'    : PairKey.IMAGE_BACKGROUND_COLOR_TWO,
-	'IMAGE_BACKGROUND_SQUARE_WIDTH' : PairKey.IMAGE_BACKGROUND_SQUARE_WIDTH,
-	'KEYBIND'                       : PairKey.KEYBIND,
-	'IMAGE_TAGS_ENTRY'              : PairKey.IMAGE_TAGS_ENTRY,
-	'DEFAULT_IMAGE_QUALITY'         : PairKey.DEFAULT_IMAGE_QUALITY,
-	'START_ZOOM_INTERVAL'           : PairKey.START_ZOOM_INTERVAL,
-	'ZOOM_ACCEL'                    : PairKey.ZOOM_ACCEL,
-	'ZOOM_ACCEL_STEPS'              : PairKey.ZOOM_ACCEL_STEPS,
-	'PAN_INTERVAL'                  : PairKey.PAN_INTERVAL,
-	'SESSION_TAGS_IMPORTER'         : PairKey.SESSION_TAGS_IMPORTER
+	'radio_question'                : PairKey.RADIO_QUESTION,
+	'check_question'                : PairKey.CHECK_QUESTION,
+	'option_name'                   : PairKey.OPTION_NAME,
+	'option_tag'                    : PairKey.OPTION_TAG,
+	'entry_question'                : PairKey.ENTRY_QUESTION,
+	'session_tags'                  : PairKey.SESSION_TAGS,
+	'name_question'                 : PairKey.NAME_QUESTION,
+	'source_question'               : PairKey.SOURCE_QUESTION,
+	'default_source'                : PairKey.DEFAULT_SOURCE,
+	'nameless_tag'                  : PairKey.NAMELESS_TAG,
+	'sourceless_tag'                : PairKey.SOURCELESS_TAG,
+	'tagless_tag'                   : PairKey.TAGLESS_TAG,
+	'safety_question'               : PairKey.SAFETY_QUESTION,
+	'default_safety'                : PairKey.DEFAULT_SAFETY,
+	'max_open_files'                : PairKey.MAX_OPEN_FILES,
+	'update_interval'               : PairKey.UPDATE_INTERVAL,
+	'max_image_bufsize'             : PairKey.MAX_IMAGE_BUFSIZE,
+	'alias_tag_to'                  : PairKey.ALIAS_TAG_TO,
+	'alias_tag_from'                : PairKey.ALIAS_TAG_FROM,
+	'image_background_color_one'    : PairKey.IMAGE_BACKGROUND_COLOR_ONE,
+	'image_background_color_two'    : PairKey.IMAGE_BACKGROUND_COLOR_TWO,
+	'image_background_square_width' : PairKey.IMAGE_BACKGROUND_SQUARE_WIDTH,
+	'keybind'                       : PairKey.KEYBIND,
+	'image_tags_entry'              : PairKey.IMAGE_TAGS_ENTRY,
+	'default_image_quality'         : PairKey.DEFAULT_IMAGE_QUALITY,
+	'start_zoom_interval'           : PairKey.START_ZOOM_INTERVAL,
+	'zoom_accel'                    : PairKey.ZOOM_ACCEL,
+	'zoom_accel_steps'              : PairKey.ZOOM_ACCEL_STEPS,
+	'pan_interval'                  : PairKey.PAN_INTERVAL,
+	'session_tags_importer'         : PairKey.SESSION_TAGS_IMPORTER
 }
 
 class KeyValuePair:
@@ -150,7 +150,7 @@ class lexer:
 		KeyStartCol = self._col
 		self._search(RE_KEY_END)
 		self._TrackLinePos(KeyStart, self._pos)
-		KeyName = self._input[KeyStart:self._pos]
+		KeyName = self._input[KeyStart:self._pos].lower()
 		KeyEnum = PAIR_KEY_NAMES.get(KeyName, None)
 		if KeyEnum is None:
 			raise LexerError(''.join( ("Key '", KeyName, "' is invalid") ), KeyStartLine, KeyStartCol)
@@ -334,24 +334,24 @@ class ParserState(Enum):
 	ALIAS_TO        = 4 # When we added the tags to alias to and are waiting for the tags to alias from.
 
 RE_HUMANSIZE = re.compile('^([0-9.]+)[ \t]*([a-zA-Z]*)$')
-SIZE_SPECIFIERS = {'kB'       : 1000.0,
-				   'kilobyte' : 1000.0,
-				   'Kilobyte' : 1000.0,
-				   'MB'       : 1000000.0,
-				   'megabyte' : 1000000.0,
-				   'Megabyte' : 1000000.0,
-				   'GB'       : 1000000000.0,
-				   'gigabyte' : 1000000000.0,
-				   'Gigabyte' : 1000000000.0,
-				   'KiB'      : 1024.0,
-				   'kibibyte' : 1024.0,
-				   'Kibibyte' : 1024.0,
-				   'MiB'      : 1048576.0,
-				   'mebibyte' : 1048576.0,
-				   'Mebibyte' : 1048576.0,
-				   'GiB'      : 1073741800.0,
-				   'gibibyte' : 1073741800.0,
-				   'Gibibyte' : 1073741800.0
+SIZE_SPECIFIERS = {'kb'        : 1000.0,
+				   'kilobyte'  : 1000.0,
+				   'kilobytes' : 1000.0,
+				   'mb'        : 1000000.0,
+				   'megabyte'  : 1000000.0,
+				   'megabytes' : 1000000.0,
+				   'gb'        : 1000000000.0,
+				   'gigabyte'  : 1000000000.0,
+				   'gigabytes' : 1000000000.0,
+				   'kib'       : 1024.0,
+				   'kibibyte'  : 1024.0,
+				   'kibibytes' : 1024.0,
+				   'mib'       : 1048576.0,
+				   'mebibyte'  : 1048576.0,
+				   'mebibytes' : 1048576.0,
+				   'gib'       : 1073741800.0,
+				   'gibibyte'  : 1073741800.0,
+				   'gibibytes' : 1073741800.0
 }
 
 class parser:
@@ -503,7 +503,7 @@ class parser:
 			if m is None:
 				raise ParserError(''.join( ("Unable to match size specified as: ", token.value) ), token.line, token.col)
 			if m.group(2) != '':
-				specifier = SIZE_SPECIFIERS.get(m.group(2), None)
+				specifier = SIZE_SPECIFIERS.get(m.group(2).lower(), None)
 				if specifier is None:
 					raise ParserError(''.join( ( "Unable to look up size specifier: ", m.group(2) ) ), token.line, token.col)
 			else:
@@ -530,7 +530,7 @@ class parser:
 		elif token.key == PairKey.KEYBIND:
 			self.keybinds.append(token.value)
 		elif token.key == PairKey.DEFAULT_IMAGE_QUALITY:
-			found = IMAGE_QUALITY_LOOKUP.get(token.value, None)
+			found = IMAGE_QUALITY_LOOKUP.get(token.value.lower(), None)
 			if found is None:
 				raise ParserError(''.join( ("Invalid image quality name '", token.value, "'") ), token.line, token.col)
 			self.DefaultImageQuality = found
