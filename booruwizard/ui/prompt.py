@@ -51,10 +51,7 @@ class QuestionSearch(wx.Panel):
 		Remove = self.FieldMenu.Remove
 		for i in self.FieldMenu.GetMenuItems():
 			Remove(i)
-		FieldValue = self.field.GetValue()
-		if not FieldValue:
-			return
-		terms = tuple( t.lower().strip() for t in FieldValue.split(',') )
+		terms = tuple( t.lower().strip() for t in self.field.GetValue().split(',') )
 		Append = self.FieldMenu.Append
 		FieldMenuItems = self.FieldMenuItems
 		for i, q in enumerate(self.questions):

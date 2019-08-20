@@ -17,7 +17,7 @@ class ManagedImage:
 	def open(self):
 		"Open the image path and set the WX image object."
 		try:
-			wx.LogMessage( ''.join( ("Loading image at path '", self.path, "'") ) )
+			wx.LogMessage( ''.join( ("Loading image at path '", self.path.replace('%', '%%'), "'") ) )
 			stream = open(self.path, mode='rb')
 			self.image = wx.Image(stream)
 			self.FileSize = os.fstat( stream.fileno() ).st_size
@@ -49,7 +49,7 @@ class ImageReader:
 		"Add the image object's WX Image object to the open images array if it is not None."
 		if image.image is None:
 			return
-		wx.LogVerbose( ''.join( ('Adding image of ', str(image.DataSize), " bytes at path '", image.path,
+		wx.LogVerbose( ''.join( ('Adding image of ', str(image.DataSize), " bytes at path '", image.path.replace('%', '%%'),
 								 "' to image data cache index ", str( len(self._OpenImages) )
 								)
 							  )
@@ -74,7 +74,8 @@ class ImageReader:
 			self._CurrentBufSize -= self._OpenImages[0].DataSize
 			self._OpenImages[0].close()
 			wx.LogVerbose( ''.join( ('Removing image of ', str(self._OpenImages[0].DataSize), " bytes at path '",
-									 self._OpenImages[0].path, "' from image data cache index ", str( len(self._OpenImages) )
+									 self._OpenImages[0].path.replace('%', '%%'), "' from image data cache index ",
+									 str( len(self._OpenImages) )
 									)
 								  )
 						 )

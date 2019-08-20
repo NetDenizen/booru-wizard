@@ -14,35 +14,20 @@ from booruwizard.lib.tag import TagsContainer
 DEFAULT_MAX_IMAGE_BUFSIZE = 100000000
 DEFAULT_IMAGE_QUALITY = wx.IMAGE_QUALITY_HIGH
 IMAGE_QUALITY_LOOKUP = {
-	'H2+1'    : wx.IMAGE_QUALITY_HIGH,
 	'h2+1'    : wx.IMAGE_QUALITY_HIGH,
-	'Hi2+1'   : wx.IMAGE_QUALITY_HIGH,
 	'hi2+1'   : wx.IMAGE_QUALITY_HIGH,
-	'High2+1' : wx.IMAGE_QUALITY_HIGH,
 	'high2+1' : wx.IMAGE_QUALITY_HIGH,
-	'H2'      : wx.IMAGE_QUALITY_BICUBIC,
 	'h2'      : wx.IMAGE_QUALITY_BICUBIC,
-	'Hi2'     : wx.IMAGE_QUALITY_BICUBIC,
 	'hi2'     : wx.IMAGE_QUALITY_BICUBIC,
-	'High2'   : wx.IMAGE_QUALITY_BICUBIC,
 	'high2'   : wx.IMAGE_QUALITY_BICUBIC,
-	'H1'      : wx.IMAGE_QUALITY_BOX_AVERAGE,
 	'h1'      : wx.IMAGE_QUALITY_BOX_AVERAGE,
-	'Hi1'     : wx.IMAGE_QUALITY_BOX_AVERAGE,
 	'hi1'     : wx.IMAGE_QUALITY_BOX_AVERAGE,
-	'High1'   : wx.IMAGE_QUALITY_BOX_AVERAGE,
 	'high1'   : wx.IMAGE_QUALITY_BOX_AVERAGE,
-	'M'       : wx.IMAGE_QUALITY_BILINEAR,
 	'm'       : wx.IMAGE_QUALITY_BILINEAR,
-	'Med'     : wx.IMAGE_QUALITY_BILINEAR,
 	'med'     : wx.IMAGE_QUALITY_BILINEAR,
-	'Medium'  : wx.IMAGE_QUALITY_BILINEAR,
 	'medium'  : wx.IMAGE_QUALITY_BILINEAR,
-	'L'       : wx.IMAGE_QUALITY_NEAREST,
 	'l'       : wx.IMAGE_QUALITY_NEAREST,
-	'Lo'      : wx.IMAGE_QUALITY_NEAREST,
 	'lo'      : wx.IMAGE_QUALITY_NEAREST,
-	'Low'     : wx.IMAGE_QUALITY_NEAREST,
 	'low'     : wx.IMAGE_QUALITY_NEAREST,
 }
 
@@ -107,7 +92,7 @@ class ManagedFile:
 		"Update changes to the file."
 		self.lock.acquire()
 		if self._IsChangedCallback():
-			wx.LogVerbose( ''.join( ("Flushing found changes to file at: '", self.path, "'") ) )
+			wx.LogVerbose( ''.join( ("Flushing found changes to file at: '", self.path.replace('%', '%%'), "'") ) )
 			if self._handle is None:
 				self._ReserveCallback(self)
 				try:
@@ -118,12 +103,12 @@ class ManagedFile:
 			self._handle.truncate()
 			self._handle.write( self._DataCallback().encode('utf-8') )
 			self._handle.flush()
-			wx.LogVerbose( ''.join( ("Finished flushing changes to file at: '", self.path, "'") ) )
+			wx.LogVerbose( ''.join( ("Finished flushing changes to file at: '", self.path.replace('%', '%%'), "'") ) )
 		self.lock.release()
 	def PushUpdate(self):
 		"Callback to use update as an alternative to it being called periodically by the file manager. If push updates are not enabled, then do nothing."
 		if self._TimerCallback is not None:
-			wx.LogVerbose( ''.join( ("Push updating file at path: '", self.path, "'") ) )
+			wx.LogVerbose( ''.join( ("Push updating file at path: '", self.path.replace('%', '%%'), "'") ) )
 			self._TimerCallback()
 
 # FileData object and exception definition
@@ -441,16 +426,24 @@ class FileManager:
 		if self._MaxOpenFiles != 0 and len(self._OpenFiles) == self._MaxOpenFiles:
 			self._OpenFiles[0].close()
 			wx.LogVerbose( ''.join( ("Removing file at path '",
-									 self._OpenFiles[0].path, "' from output cache index ", str( len(self._OpenFiles) )
+									 self._OpenFiles[0].path.replace("%", "%%"),
+									 "' from output cache index ",
+									 str( len(self._OpenFiles) )
 									)
 								  )
 						 )
 			self._OpenFiles.pop(0)
 		self._OpenFiles.append(item)
-		wx.LogVerbose( ''.join( ("Added file at path '", item.path, "' to output cache index ", str( len(self._OpenFiles) ) ) ) )
+		wx.LogVerbose( ''.join( ("Added file at path '",
+								 item.path.replace('%', '%%'),
+								 "' to output cache index ",
+								 str( len(self._OpenFiles) )
+								)
+							  )
+					 )
 	def AddFile(self, OutputDir, path, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
 		"Add a FileData object and its associated MangedFile object, with all the proper callbacks set."
-		wx.LogVerbose( ''.join( ("Registering file at path '", path, "'") ) )
+		wx.LogVerbose( ''.join( ("Registering file at path '", path.replace('%', '%%'), "'") ) )
 		if path not in self.InputPaths:
 			PushUpdate = None
 			if self._UpdateInterval == 0.0:

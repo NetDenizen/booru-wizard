@@ -551,12 +551,12 @@ class ImageLabel(wx.Panel):
 			pub.sendMessage( "IndexImage", message=self.paths.index( self.PathEntry.GetValue() ) )
 		except ValueError: # TODO: Should this work with any exception?
 			val = self.PathEntry.GetValue()
-			orig = val
+			orig = val.lower()
 			ContainsOrig = []
 			prefixes = []
 			for s in self.paths:
 				sLower = s.lower()
-				if orig.lower() in sLower:
+				if orig in sLower:
 					ContainsOrig.append(s)
 				if val.lower() in sLower:
 					if len(s) > len(val):
