@@ -60,7 +60,7 @@ These basic steps may be followed to get both the wizard software, and the uploa
 
 The basic interface of the software is as follows; each element is annotated with a green number:
 
-![screenshot](https://i.imgur.com/lqt2KcU.png)
+![screenshot](https://i.imgur.com/Oooqv90.png)
 
 The image is divided into 3 panes, which can be resized within the window, by click-and-dragging the space between them. Note that text boxes with the same color as the background are not editable.
 
