@@ -1,5 +1,15 @@
 # Changelog
 
+## 2019-08-22 1.1
+
+* Search results for question prompts should now contain all choices, by if empty.
+
+* Fix inclusion of '%' character in log messages.
+
+* Options in config files are not case-insensitive.
+
+* Minor refactoring and rewording of default configuration
+
 ## 2019-04-29 1.0
 
 * Countless fixes, refinements, and optimizations.

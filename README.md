@@ -34,9 +34,9 @@ These basic steps may be followed to get both the wizard software, and the uploa
 
 1. Download the packaged version for your respective operating system. If in doubt, you should probably choose Windows 32-bit. These links will be updated on each release:
 
-   * [Windows 64-bit](https://github.com/NetDenizen/booru-wizard/releases/download/1.0/booru-wizard-1.0-x86_64-windows.zip)
-   * [Windows 32-bit](https://github.com/NetDenizen/booru-wizard/releases/download/1.0/booru-wizard-1.0-x86-windows.zip)
-   * [Linux 64-bit](https://github.com/NetDenizen/booru-wizard/releases/download/1.0/booru-wizard-1.0-x86_64-linux.tar.gz)
+   * [Windows 64-bit](https://github.com/NetDenizen/booru-wizard/releases/download/1.1/booru-wizard-1.1-x86_64-windows.zip)
+   * [Windows 32-bit](https://github.com/NetDenizen/booru-wizard/releases/download/1.1/booru-wizard-1.1-x86-windows.zip)
+   * [Linux 64-bit](https://github.com/NetDenizen/booru-wizard/releases/download/1.1/booru-wizard-1.1-x86_64-linux.tar.gz)
 
 2. Extract the archive to the directory of your choice.
 
@@ -104,7 +104,7 @@ The image is divided into 3 panes, which can be resized within the window, by cl
 
 17. The number of the current image. This can be changed to select an arbitrary one. The default keybind to select the field is F6.
 
-18. The name of the current image. This can be changed to select another. Included is an autocomplete functionality, which will attempt to find the closest case insensitive match; possibilities will be listed in the menu. The default keybind to select the field is Shift+F6, and the default keybind to open the menu is Ctrl+Shift+F6
+18. The name of the current image. This can be changed to select another. Included is an autocomplete functionality, which will attempt to find the closest case insensitive match, when enter is pressed, or switch to the image, in event of an exact match. Otherwise, possibilities will be listed in the menu. The default keybind to select the field is Shift+F6, and the default keybind to open the menu is Ctrl+Shift+F6
 
 19. A search field to find questions. The search will be case insensitive, based on comma-separated keywords looked for in the descriptions of all questions. The default keybind to select the field is Shift+F7, and the default keybind to open the menu is Ctrl+Shift+F7.
 
