@@ -19,7 +19,7 @@ from booruwizard.lib.keyhandler import KeyHandler
 from booruwizard.ui.main import FileDialogFrame, MainFrame
 
 APPNAME = 'booru-wizard'
-APPVERSION = '1.0'
+APPVERSION = '1.1'
 APPTITLE = ''.join( (APPNAME, ' (', APPVERSION, ')') )
 
 #TODO: Better accept dialog?
