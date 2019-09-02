@@ -257,23 +257,30 @@ class EntryQuestion(EntryBase):
 		"Update the current entry text according to which tags can actually be found in the output file."
 		self.CurrentTags = TagsContainer()
 		OldStrings = []
-		start = 0
-		found = RE_NOT_WHITESPACE.search(self.EntryStrings[self.pos][start:])
-		while found is not None:
-			end = start + found.start(0) + len( found.group(0) )
-			OldStrings.append(self.EntryStrings[self.pos][start:end])
-			start = end
-			found = RE_NOT_WHITESPACE.search(self.EntryStrings[self.pos][start:])
-		FinalSpace = self.EntryStrings[self.pos][start:]
+		OldTags = []
+		SpaceStart = 0
+		while(True):
+			found = RE_NOT_WHITESPACE.search(self.EntryStrings[self.pos][SpaceStart:])
+			if found is None:
+				break
+			StringStart = SpaceStart + found.start(0)
+			StringEnd = StringStart + len( found.group(0) )
+			OldStrings.append(self.EntryStrings[self.pos][SpaceStart:StringStart])
+			OldTags.append(self.EntryStrings[self.pos][StringStart:StringEnd])
+			OldStrings.append(self.EntryStrings[self.pos][StringStart:StringEnd])
+			SpaceStart = StringEnd
+		FinalSpace = self.EntryStrings[self.pos][SpaceStart:]
 		NewStrings = []
+		NewStringsStripped = []
 		self.OutputFile.lock()
 		for s in OldStrings:
-			if self.OutputFile.tags.ReturnStringOccurrences( s.strip() ) > 0:
+			if s not in OldTags or self.OutputFile.tags.ReturnStringOccurrences( s.strip() ) > 0:
 				NewStrings.append(s)
+				NewStringsStripped.append( s.strip() )
 		NewStrings.append(FinalSpace)
 		self.EntryStrings[self.pos] = ''.join(NewStrings)
 		self.entry.ChangeValue(self.EntryStrings[self.pos])
-		self.CurrentTags.SetStringList(NewStrings, 2)
+		self.CurrentTags.SetStringList(NewStringsStripped, 2)
 		self.OutputFile.unlock()
 	def _UpdateTags(self):
 		"Subtract the previously entered tag string and add the new one"
