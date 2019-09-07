@@ -13,7 +13,7 @@ from booruwizard.lib.fileops import safety
 from booruwizard.lib.tag import TagsContainer
 from booruwizard.lib.template import QuestionType, OptionQuestionType
 
-RE_NOT_WHITESPACE = re.compile(r'\S')
+RE_NOT_WHITESPACE = re.compile(r'\S+')
 RE_WHITESPACE = re.compile(r'\s')
 
 class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
