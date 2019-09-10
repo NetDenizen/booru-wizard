@@ -304,6 +304,9 @@ class EntryQuestion(EntryBase):
 		self.OutputFile.SetTaglessTags(names)
 		self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		self.OutputFile.FinishChange()
+	def clear(self):
+		"Clear the entry question for the given case."
+		return
 	def disp(self):
 		"Display the updated entry question for the given case."
 		if self.CurrentTags is None:
@@ -311,23 +314,23 @@ class EntryQuestion(EntryBase):
 		self._UpdateEntryText()
 	def _OnIndexImage(self, message, arg2=None):
 		"Change the index index to the one specified in the message, if possible."
+		self._UpdateTags()
 		if 0 <= message < len(self.EntryStrings):
 			self.pos = message
-			self._UpdateEntryText()
 	def _OnRightImage(self, message, arg2=None):
 		"Shift to the right (+1) position to the current pos in the entry string array if the pos is less than the length of the entry string array. Otherwise, loop around to the first item."
+		self._UpdateTags()
 		if self.pos >= len(self.EntryStrings) - 1:
 			self.pos = 0
 		else:
 			self.pos += 1
-		self._UpdateEntryText()
 	def _OnLeftImage(self, message, arg2=None):
 		"Shift to the left (-1) position to the current pos in the entry string array if the pos is greater than 0. Otherwise, loop around to the last item."
+		self._UpdateTags()
 		if self.pos == 0:
 			self.pos = len(self.EntryStrings) - 1
 		else:
 			self.pos -= 1
-		self._UpdateEntryText()
 	def __init__(self, parent, NumImages, TagsTracker):
 		EntryBase.__init__(self, parent=parent)
 
