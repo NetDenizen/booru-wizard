@@ -77,7 +77,7 @@ class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 		self.OutputFile = OutputFile
 	def clear(self):
 		"Clear the question for the given case."
-		return
+		pass
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent=parent)
 
@@ -124,7 +124,7 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		self.CurrentChoice = wx.NOT_FOUND
 	def clear(self):
 		"Clear the radio question for the given case."
-		return
+		pass
 	def disp(self):
 		"Display the updated radio question for the given case."
 		self.OutputFile.PrepareChange()
@@ -306,7 +306,7 @@ class EntryQuestion(EntryBase):
 		self.OutputFile.FinishChange()
 	def clear(self):
 		"Clear the entry question for the given case."
-		return
+		pass
 	def disp(self):
 		"Display the updated entry question for the given case."
 		if self.CurrentTags is None:
@@ -552,7 +552,7 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		e.Skip()
 	def load(self, OutputFile):
 		"Initialize the question for a certain case."
-		return
+		pass
 	def disp(self):
 		"Display the updated question for the given case."
 		if self.choices is not None:
@@ -689,7 +689,7 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 		self.OutputFile = OutputFile # File data object
 	def clear(self):
 		"Clear the question for the given case."
-		return
+		pass
 	def disp(self):
 		"Display the updated check question for the given case."
 		self.entry.ChangeValue( self._GetValue() )
@@ -816,7 +816,7 @@ class SafetyQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		self.OutputFile.unlock()
 	def clear(self):
 		"Clear the safety question for the given case."
-		return
+		pass
 	def disp(self):
 		"Display the updated check question for the given case."
 		self._UpdateSafety()
