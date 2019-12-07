@@ -4,6 +4,30 @@ from os.path import commonprefix
 
 import wx
 
+class CircularCounter:
+	def set(self):
+		"Change the value to the one specified, if possible."
+		if 0 <= message < len(self.paths):
+			self.pos = message
+	def get(self):
+		"Get the current value."
+		return self.value
+	def dec(self):
+		"Decrement the value if it is greater than 0. Otherwise, loop around to the maximum value."
+		if self.value == 0:
+			self.value = self.MaxValue
+		else:
+			self.value -= 1
+	def inc(self):
+		"Increment the value if it is less than the maximum value. Otherwise, loop around to 0."
+		if self.value >= self.MaxValue - 1:
+			self.value = 0
+		else:
+			self.value += 1
+	def __init__(self, MaxValue):
+		self.MaxValue = MaxValue
+		self.value = 0
+
 class PathEntry:
 	def SetPath(self, pos):
 		"Set the path label to show the path at pos in the paths array, and the index label to show pos + 1 out of length of paths array."
