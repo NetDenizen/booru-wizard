@@ -519,8 +519,8 @@ class ImagePanel(wx.Panel):
 class ImageLabel(wx.Panel):
 	def _SetLabels(self):
 		"Set the path label to show the path at pos in the paths array, and the index label to show pos + 1 out of length of paths array."
-		self.PathEntry.SetPath(self.pos)
-		self.IndexEntry.SetValue( str(self.pos + 1) )
+		self.PathEntry.SetPath( self.pos.get() )
+		self.IndexEntry.SetValue( str(self.pos.get() + 1) )
 		self.IndexLabel.SetLabel( ''.join( ( ' /', str( self.PathsEntry.GetPathsLen() ) ) ) )
 	def _OnIndexEntry(self, e):
 		"Send an IndexImage message, if the index value can be converted to an Int; otherwise, reset labels."
@@ -546,22 +546,15 @@ class ImageLabel(wx.Panel):
 		e.Skip()
 	def _OnIndex(self, message, arg2=None):
 		"Change the index to the one specified in the event, if possible."
-		if 0 <= message < len(self.paths):
-			self.pos = message
+		self.pos.set(message)
 		self._SetLabels()
 	def _OnLeft(self, message, arg2=None):
 		"Shift to the left (-1) path to the current position in the paths array if the position is greater than 0. Otherwise, loop around to the last item."
-		if self.pos == 0:
-			self.pos = len(self.paths) - 1
-		else:
-			self.pos -= 1
+		self.pos.dec()
 		self._SetLabels()
 	def _OnRight(self, message, arg2=None):
 		"Shift to the right (+1) path to the current position in the paths array if the position is less than the length of the paths array. Otherwise, loop around to the first item."
-		if self.pos >= len(self.paths) - 1:
-			self.pos = 0
-		else:
-			self.pos += 1
+		self.pos.inc()
 		self._SetLabels()
 	def _OnFocusImageIndex(self, message, arg2=None):
 		self.IndexEntry.SetFocus()
@@ -572,8 +565,8 @@ class ImageLabel(wx.Panel):
 	def __init__(self, parent, paths):
 		wx.Panel.__init__(self, parent=parent)
 
-		self.pos = 0 # Position in paths
 		self.PathEntry = PathEntry(paths)
+		self.pos = CircularCounter(self.PathEntry.GetPathsLen) # Position in paths
 		self.IndexEntry = wx.TextCtrl(self, style= wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Editable display for current image index
 		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER) # Static part of image index display
 		self.IndexEntryTip = wx.ToolTip('Image index entry')
