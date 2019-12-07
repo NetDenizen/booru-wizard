@@ -480,7 +480,7 @@ class SessionTags(TagChoiceQuestion):
 class ImageTagsList(TagChoiceQuestion): # This class should never be used on its own
 	def _SetIndex(self):
 		self.IndexLabel.SetLabel( ''.join( ( ' /', str( len(self.OutputFiles) ) ) ) )
-		self.IndexEntry.SetValue( str(self.CurrentSource + 1) )
+		self.IndexEntry.SetValue( str(self.CurrentSource.get() + 1) )
 	def _MakeNames(self):
 		RawNames = self.OutputFile.tags.ReturnStringList()
 		UserNames = []
@@ -507,8 +507,8 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 	def _OnIndexEntry(self, e):
 		"Switch the OutputFile selected by the value of the index entry, or reset to the last valid one."
 		value = int( self.IndexEntry.GetValue() ) - 1
-		if 0 <= value < len(self.OutputFiles):
-			self.CurrentSource = value
+		success = self.CurrentSource.set(value)
+		if success:
 			self.OutputFile = self.OutputFiles[value]
 			self.disp()
 		else:
@@ -516,20 +516,14 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		e.Skip()
 	def _OnLeft(self, e):
 		"Shift to the left (-1) image to the current position in the OutputFiles array, if the position is greater than 0. Otherwise, loop around to the last item. Then, load the relevant file."
-		if self.CurrentSource == 0:
-			self.CurrentSource = len(self.OutputFiles) - 1
-		else:
-			self.CurrentSource -= 1
-		self.OutputFile = self.OutputFiles[self.CurrentSource]
+		self.CurrentSource.dec()
+		self.OutputFile = self.OutputFiles[self.CurrentSource.get()]
 		self.disp()
 		e.Skip()
 	def _OnRight(self, e):
 		"Shift to the right (+1) image to the current position in the output files array if the position is less than the length of the output files array. Otherwise, loop around to the last item. Then, load the relevant file."
-		if self.CurrentSource >= len(self.OutputFiles) - 1:
-			self.CurrentSource = 0
-		else:
-			self.CurrentSource += 1
-		self.OutputFile = self.OutputFiles[self.CurrentSource]
+		self.CurrentSource.inc()
+		self.OutputFile = self.OutputFiles[self.CurrentSource.get()]
 		self.disp()
 		e.Skip()
 	def _OnCommit(self, e):
@@ -569,10 +563,10 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		TagChoiceQuestion.__init__(self, parent)
 
 		self.parent = parent
-		self.CurrentSource = 0 # Current index in output files, for the source items
+		self.CurrentSource = CicularCounter( len(OutputFiles) ) # Current index in output files, for the source items
 		self.OutputFiles = OutputFiles # Array of all output files
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
-		self.OutputFile = OutputFiles[self.CurrentSource] # File data object
+		self.OutputFile = OutputFiles[self.CurrentSource.get()] # File data object
 		self.TagNames = [] # Names of tags corresponding to each selection name
 		self.ChoiceNames = self.TagNames # Names of each selection
 		self.choices = None
