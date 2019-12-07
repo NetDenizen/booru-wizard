@@ -5,10 +5,10 @@ from os.path import commonprefix
 import wx
 
 class CircularCounter:
-	def set(self):
+	def set(self, value):
 		"Change the value to the one specified, if possible."
-		if 0 <= message < len(self.paths):
-			self.pos = message
+		if 0 <= value < MaxValue:
+			self.pos = value
 	def get(self):
 		"Get the current value."
 		return self.value
