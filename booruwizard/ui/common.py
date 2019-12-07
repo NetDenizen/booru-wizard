@@ -12,7 +12,7 @@ class CircularCounter:
 	def get(self):
 		"Get the current value."
 		return self.value
-	def GetMaxValue(self)
+	def GetMax(self)
 		"Get the maximum value."
 		return self.MaxValue
 	def dec(self):
