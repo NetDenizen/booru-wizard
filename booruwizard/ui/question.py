@@ -827,7 +827,7 @@ class SafetyQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 class QuestionsContainer(wx.Panel):
 	def _CurrentWidget(self):
 		"Return the current widget."
-		return self.QuestionWidgets[ self.positions[self.pos] ]
+		return self.QuestionWidgets[self.positions[self.pos.get()].get()]
 	def _disp(self):
 		"Call the disp and Show functions of the current widget"
 		self._CurrentWidget().disp()
@@ -840,53 +840,43 @@ class QuestionsContainer(wx.Panel):
 	def _LoadAll(self):
 		"Load all question widgets with the associated OutputFile"
 		for w in self.QuestionWidgets:
-			w.load(self.OutputFiles.ControlFiles[self.pos])
+			w.load(self.OutputFiles.ControlFiles[self.pos.get()])
 	def _OnIndexImage(self, message, arg2=None):
 		"Change the index index to the one specified in the message, if possible."
-		if 0 <= message < len(self.positions):
+		# TODO: Streamline this to avoid a comparison that happens in the CircularCounter
+		if 0 <= message < self.pos.GetMax():
 			self._hide()
-			self.pos = message
+			self.pos.set(message)
 			self._LoadAll()
 			self._disp()
 	def _OnIndexQuestion(self, message, arg2=None):
 		"Change the question index to the one specified in the message, if possible."
-		if 0 <= message < self.NumQuestions:
+		# TODO: Streamline this to avoid a comparison that happens in the CircularCounter
+		if 0 <= message < self.positions[self.pos.get()].GetMax():
 			self._hide()
-			self.positions[self.pos] = message
+			self.positions[self.pos.get()].set(message)
 			self._disp()
 	def _OnLeftImage(self, message, arg2=None):
 		"Shift to the left (-1) position to the current pos in the positions array if the pos is greater than 0. Otherwise, loop around to the last item."
 		self._hide()
-		if self.pos == 0:
-			self.pos = len(self.positions) - 1
-		else:
-			self.pos -= 1
+		self.pos.dec()
 		self._LoadAll()
 		self._disp()
 	def _OnRightImage(self, message, arg2=None):
 		"Shift to the right (+1) position to the current pos in the positions array if the pos is less than the length of the positions array. Otherwise, loop around to the first item."
 		self._hide()
-		if self.pos >= len(self.positions) - 1:
-			self.pos = 0
-		else:
-			self.pos += 1
+		self.pos.inc()
 		self._LoadAll()
 		self._disp()
 	def _OnLeftQuestion(self, message, arg2=None):
 		"Shift to the left (-1) question to the current position in the questions array if the position is greater than 0. Otherwise, loop around to the last item."
 		self._hide()
-		if self.positions[self.pos] == 0:
-			self.positions[self.pos] = self.NumQuestions - 1
-		else:
-			self.positions[self.pos] -= 1
+		self.positions[self.pos.get()].dec()
 		self._disp()
 	def _OnRightQuestion(self, message, arg2=None):
 		"Shift to the right (+1) question to the current position in the questions array if the position is less than the length of the questions array. Otherwise, loop around to the first item."
 		self._hide()
-		if self.positions[self.pos] >= self.NumQuestions - 1:
-			self.positions[self.pos] = 0
-		else:
-			self.positions[self.pos] += 1
+		self.positions[self.pos.get()].inc()
 		self._disp()
 	def _OnFocusQuestionBody(self, message, arg2=None):
 		self._CurrentWidget().SetFocus()
@@ -894,8 +884,8 @@ class QuestionsContainer(wx.Panel):
 		wx.Panel.__init__(self, parent=parent)
 
 		self.NumQuestions = len(questions)
-		self.pos = 0 # The position in positions
-		self.positions = [0] * len(OutputFiles.InputPaths) # The position in questions corresponding to each image
+		self.pos = CircularCounter( len(OutputFiles.InputPaths) ) # The position in positions
+		self.positions = [CircularCounter(self.NumQuestions) for i in OutputFiles.InputPaths] # The position in questions corresponding to each image
 
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 		self.OutputFiles = OutputFiles # A FileManager object
