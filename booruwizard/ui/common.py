@@ -9,6 +9,9 @@ class CircularCounter:
 		"Change the value to the one specified, if possible."
 		if 0 <= value < MaxValue:
 			self.pos = value
+			return True
+		else:
+			return False
 	def get(self):
 		"Get the current value."
 		return self.value
