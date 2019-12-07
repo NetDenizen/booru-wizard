@@ -3,44 +3,32 @@
 import wx
 from pubsub import pub
 
+from booruwizard.ui.common import CircularCounter
+
 class QuestionDisplayComponent(wx.Panel):  # This class should never be used on its own
 	def _OnIndexImage(self, message, arg2=None):
 		"Change the index index to the one specified in the event, if possible."
-		if 0 <= message < len(self.positions):
-			self.pos = message
+		self.pos.set(message)
 		self._set()
 	def _OnIndexQuestion(self, message, arg2=None):
 		"Change the question index to the one specified in the event, if possible."
-		if 0 <= message < len(self.questions):
-			self.positions[self.pos] = message
+		self.positions[self.pos.get()].set(message)
 		self._set()
 	def _OnLeftImage(self, message, arg2=None):
 		"Shift to the left (-1) position to the current pos in the positions array if the pos is greater than 0. Otherwise, loop around to the last item."
-		if self.pos == 0:
-			self.pos = len(self.positions) - 1
-		else:
-			self.pos -= 1
+		self.pos.dec()
 		self._set()
 	def _OnRightImage(self, message, arg2=None):
 		"Shift to the right (+1) position to the current pos in the positions array if the pos is less than the length of the positions array. Otherwise, loop around to the first item."
-		if self.pos >= len(self.positions) - 1:
-			self.pos = 0
-		else:
-			self.pos += 1
+		self.pos.inc()
 		self._set()
 	def _OnLeftQuestion(self, message, arg2=None):
 		"Shift to the left (-1) question to the current position in the questions array if the position is greater than 0. Otherwise, loop around to the last item."
-		if self.positions[self.pos] == 0:
-			self.positions[self.pos] = len(self.questions) - 1
-		else:
-			self.positions[self.pos] -= 1
+		self.positions[self.pos.get()].dec()
 		self._set()
 	def _OnRightQuestion(self, message, arg2=None):
 		"Shift to the right (+1) question to the current position in the questions array if the position is less than the length of the questions array. Otherwise, loop around to the first item."
-		if self.positions[self.pos] >= len(self.questions) - 1:
-			self.positions[self.pos] = 0
-		else:
-			self.positions[self.pos] += 1
+		self.positions[self.pos.get()].inc()
 		self._set()
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent=parent)
