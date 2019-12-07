@@ -9,6 +9,7 @@ from pubsub import pub
 from booruwizard.ui.image import ImageContainer
 from booruwizard.ui.prompt import PromptContainer
 from booruwizard.ui.question import QuestionsContainer
+from booruwizard.ui.common import CircularCounter
 
 class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 	def _SetSashes(self):

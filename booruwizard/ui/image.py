@@ -7,7 +7,7 @@ from pubsub import pub
 
 from booruwizard.lib.imagereader import ImageReader
 from booruwizard.lib.viewport import ViewPortState
-from booruwizard.ui.common import PathEntry
+from booruwizard.ui.common import PathEntry, CircularCounter
 
 #TODO: Should we have a control to affect the scaling (maybe an alternate scrollbar setting), or to change the background color?
 class ImageDisplay(wx.Panel):
