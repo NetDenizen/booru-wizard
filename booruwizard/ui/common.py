@@ -31,10 +31,10 @@ class CircularCounter:
 class PathEntry:
 	def SetPath(self, pos):
 		"Set the path label to show the path at pos in the paths array, and the index label to show pos + 1 out of length of paths array."
-		self.entry.SetValue(self._paths[pos])
+		self._entry.SetValue(self._paths[pos])
 	def GetPath(self):
 		"Get the current value of the entry."
-		self.entry.GetValue()
+		self._entry.GetValue()
 	def GetEntryId(self):
 		"Get the ID of the path entry field."
 		return self._entry.GetId()
@@ -52,7 +52,7 @@ class PathEntry:
 		Append = _menu.Append
 		for i in _menu.GetMenuItems():
 			Remove(i)
-		EntryValue = self.entry.GetValue()
+		EntryValue = self._entry.GetValue()
 		for i, s in enumerate(self._paths):
 			if EntryValue in s:
 				Append(_MenuItems[i])
@@ -80,10 +80,10 @@ class PathEntry:
 		"Set the path entry to the chosen menu value."
 		self._entry.SetValue(self._MenuLookup[ItemId])
 	def FocusEntry(self):
-		self.PathEntry.SetFocus()
+		self._entry.SetFocus()
 	def FocusMenu(self):
 		self._UpdatePathMenu()
-		self.PathEntry.PopupMenu(self.PathMenu)
+		self._entry.PopupMenu(self.PathMenu)
 	def GetPathsLen(self):
 		return self._PathsLen
 	def SearchPath(self, query):
