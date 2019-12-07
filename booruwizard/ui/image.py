@@ -171,12 +171,12 @@ class ImagePanel(wx.Panel):
 	def _UpdateImage(self):
 		"Update the image panel."
 		OldSteps = self.image.viewport.TotalSteps
-		self.image.SetImage(self.bitmaps.load(self.pos).image)
+		self.image.SetImage(self.bitmaps.load( self.pos.get() ).image)
 		if self.image.viewport.image is not None:
 			self.image.viewport.ApplyZoomSteps(OldSteps)
 	def _UpdateImageData(self):
 		"Update statistics about the image."
-		image = self.bitmaps.get(self.pos)
+		image = self.bitmaps.get( self.pos.get() )
 		if self.image.image is not None:
 			size = self.image.image.GetSize()
 			ResolutionString = ''.join( (
@@ -305,28 +305,21 @@ class ImagePanel(wx.Panel):
 			self._OnImageQualityHigh21(None)
 	def _OnIndex(self, message, arg2=None):
 		"Change the index to the one specified in the event, if possible."
-		if 0 <= message < len(self.bitmaps.images):
-			self.pos = message
+		self.pos.set(message)
 		self._update()
 		self.Update()
 		self.Layout()
 		self.Refresh()
 	def _OnLeft(self, message, arg2=None):
 		"Shift to the left (-1) image to the current position in the bitmap array if the position is greater than 0. Otherwise, loop around to the last item."
-		if self.pos == 0:
-			self.pos = len(self.bitmaps.images) - 1
-		else:
-			self.pos -= 1
+		self.pos.dec()
 		self._update()
 		self.Update()
 		self.Layout()
 		self.Refresh()
 	def _OnRight(self, message, arg2=None):
 		"Shift to the right (+1) image to the current position in the bitmap array if the position is less than the length of the bitmap array. Otherwise, loop around to the last item."
-		if self.pos >= len(self.bitmaps.images) - 1:
-			self.pos = 0
-		else:
-			self.pos += 1
+		self.pos.inc()
 		self._update()
 		self.Update()
 		self.Layout()
@@ -403,7 +396,7 @@ class ImagePanel(wx.Panel):
 	def __init__(self, parent, MaxBufSize, ImageQuality, paths, ViewPort):
 		wx.Panel.__init__(self, parent=parent)
 
-		self.pos = 0 # Position in bitmaps
+		self.pos = None # Position in bitmaps
 		self.bitmaps = ImageReader(MaxBufSize)
 		self.ResolutionDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays the resolution of the current image
 		self.FileSizeDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays the size of the current image
@@ -475,6 +468,7 @@ class ImagePanel(wx.Panel):
 		self.ZoomActualButton.SetToolTip(self.ZoomActualButtonTip)
 
 		self.bitmaps.AddPathsList(paths)
+		self.pos = CircularCounter( len(self.bitmaps.images) )
 		if self.image.quality == wx.IMAGE_QUALITY_HIGH:
 			self.ImageQualityControl.SetSelection(0)
 		elif self.image.quality == wx.IMAGE_QUALITY_BICUBIC:
