@@ -218,15 +218,15 @@ class PromptControls(wx.Panel):
 class QuestionPanel(QuestionDisplayComponent):
 	def _set(self):
 		"Set body for the question at pos."
-		self.body.SetValue(self.questions[ self.positions[self.pos] ].text)
+		self.body.SetValue(self.questions[ self.positions[self.pos.get()].get() ].text)
 	def _OnFocusPromptBody(self, message, arg2=None):
 		self.body.SetFocus()
 	def __init__(self, parent, NumImages, questions):
 		QuestionDisplayComponent.__init__(self, parent)
 
-		self.pos = 0 # The position in positions
-		self.positions = [0] * NumImages # The position in questions corresponding to each image
 		self.questions = questions # Question objects
+		self.pos = CircularCounter(NumImages) # The position in positions
+		self.positions = [CircularCounter( len(self.questions) ) for i in range(NumImages)] # The position in questions corresponding to each image
 		self.body = wx.TextCtrl(self, style= wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH | wx.TE_NOHIDESEL | wx.TE_AUTO_URL) # The body of the question #TODO: Will poor, poor Mac users get URL highlighting? Set background color?
 		self.BodyTip = wx.ToolTip('Question prompt')
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
