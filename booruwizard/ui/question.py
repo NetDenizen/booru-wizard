@@ -12,6 +12,7 @@ from kanji_to_romaji import kanji_to_romaji
 from booruwizard.lib.fileops import safety
 from booruwizard.lib.tag import TagsContainer
 from booruwizard.lib.template import QuestionType, OptionQuestionType
+from booruwizard.ui.common import CircularCounter
 
 RE_NOT_WHITESPACE = re.compile(r'\S+')
 RE_WHITESPACE = re.compile(r'\s')
@@ -260,16 +261,16 @@ class EntryQuestion(EntryBase):
 		OldTags = []
 		SpaceStart = 0
 		while(True):
-			found = RE_NOT_WHITESPACE.search(self.EntryStrings[self.pos][SpaceStart:])
+			found = RE_NOT_WHITESPACE.search(self.EntryStrings[self.pos.get()][SpaceStart:])
 			if found is None:
 				break
 			StringStart = SpaceStart + found.start(0)
 			StringEnd = StringStart + len( found.group(0) )
-			OldStrings.append(self.EntryStrings[self.pos][SpaceStart:StringStart])
-			OldTags.append(self.EntryStrings[self.pos][StringStart:StringEnd])
-			OldStrings.append(self.EntryStrings[self.pos][StringStart:StringEnd])
+			OldStrings.append(self.EntryStrings[self.pos.get()][SpaceStart:StringStart])
+			OldTags.append(self.EntryStrings[self.pos.get()][StringStart:StringEnd])
+			OldStrings.append(self.EntryStrings[self.pos.get()][StringStart:StringEnd])
 			SpaceStart = StringEnd
-		FinalSpace = self.EntryStrings[self.pos][SpaceStart:]
+		FinalSpace = self.EntryStrings[self.pos.get()][SpaceStart:]
 		NewStrings = []
 		NewStringsStripped = []
 		self.OutputFile.lock()
@@ -278,8 +279,8 @@ class EntryQuestion(EntryBase):
 				NewStrings.append(s)
 				NewStringsStripped.append( s.strip() )
 		NewStrings.append(FinalSpace)
-		self.EntryStrings[self.pos] = ''.join(NewStrings)
-		self.entry.ChangeValue(self.EntryStrings[self.pos])
+		self.EntryStrings[self.pos.get()] = ''.join(NewStrings)
+		self.entry.ChangeValue(self.EntryStrings[self.pos.get()])
 		self.CurrentTags.SetStringList(NewStringsStripped, 2)
 		self.OutputFile.unlock()
 	def _UpdateTags(self):
@@ -293,14 +294,14 @@ class EntryQuestion(EntryBase):
 			self.OutputFile.tags.clear(s, 2)
 			self.OutputFile.ClearConditionalTags(s)
 			names.append(s)
-		for s in self.EntryStrings[self.pos].split():
+		for s in self.EntryStrings[self.pos.get()].split():
 			self.OutputFile.ClearConditionalTags(s)
-		self.CurrentTags.ClearString(self.EntryStrings[self.pos], 2)
+		self.CurrentTags.ClearString(self.EntryStrings[self.pos.get()], 2)
 		self.CurrentTags.SetString(self.entry.GetValue(), 2)
 		for s in self.CurrentTags.ReturnStringList():
 			self.OutputFile.SetConditionalTags(s)
 		self.OutputFile.tags.SetContainer(self.CurrentTags)
-		self.EntryStrings[self.pos] = self.entry.GetValue()
+		self.EntryStrings[self.pos.get()] = self.entry.GetValue()
 		self.OutputFile.SetTaglessTags(names)
 		self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		self.OutputFile.FinishChange()
@@ -315,29 +316,22 @@ class EntryQuestion(EntryBase):
 	def _OnIndexImage(self, message, arg2=None):
 		"Change the index index to the one specified in the message, if possible."
 		self._UpdateTags()
-		if 0 <= message < len(self.EntryStrings):
-			self.pos = message
+		self.pos.set(message)
 	def _OnRightImage(self, message, arg2=None):
 		"Shift to the right (+1) position to the current pos in the entry string array if the pos is less than the length of the entry string array. Otherwise, loop around to the first item."
 		self._UpdateTags()
-		if self.pos >= len(self.EntryStrings) - 1:
-			self.pos = 0
-		else:
-			self.pos += 1
+		self.pos.inc()
 	def _OnLeftImage(self, message, arg2=None):
 		"Shift to the left (-1) position to the current pos in the entry string array if the pos is greater than 0. Otherwise, loop around to the last item."
 		self._UpdateTags()
-		if self.pos == 0:
-			self.pos = len(self.EntryStrings) - 1
-		else:
-			self.pos -= 1
+		self.pos.dec()
 	def __init__(self, parent, NumImages, TagsTracker):
 		EntryBase.__init__(self, parent=parent)
 
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
 		self.OutputFile = None # File data object
 		self.CurrentTags = None # Keep track of the tags controlled by the entry box
-		self.pos = 0 # Position in entry strings
+		self.pos = CircularCounter(NumImages) # Position in entry strings
 		self.EntryStrings = [""] * NumImages # The contents of the entry boxes must be saved between images.
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL | wx.TE_MULTILINE)
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
