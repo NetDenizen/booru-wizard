@@ -98,8 +98,8 @@ class QuestionSearch(wx.Panel):
 class QuestionLabel(QuestionDisplayComponent):
 	def _set(self):
 		"Set the index label to show pos + 1 out of length of questions array."
-		self.IndexEntry.SetValue( str(self.positions[self.pos] + 1) )
-		self.IndexLabel.SetLabel( ''.join( ( ' /', str( len(self.questions) ) ) ) )
+		self.IndexEntry.SetValue( str(self.positions[self.pos.get()].get() + 1) )
+		self.IndexLabel.SetLabel( ''.join( ( ' /', str( self.positions[self.pos.get()].GetMax() ) ) ) )
 	def _OnIndexEntry(self, e):
 		"Send an IndexQuestion event, if the index value can be converted to an Int; otherwise, reset labels."
 		try:
@@ -112,9 +112,9 @@ class QuestionLabel(QuestionDisplayComponent):
 	def __init__(self, parent, NumImages, questions):
 		QuestionDisplayComponent.__init__(self, parent)
 
-		self.pos = 0 # The position in positions
-		self.positions = [0] * NumImages # The position in questions corresponding to each image
 		self.questions = questions # Question objects
+		self.pos = CircularCounter(NumImages) # The position in positions
+		self.positions = [CircularCounter( len(self.questions) ) for i in range(NumImages)] # The position in questions corresponding to each image
 		self.IndexEntry = wx.TextCtrl(self, style= wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Editable display for current image index
 		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER) # Static part of image index display
 		self.IndexEntryTip = wx.ToolTip('Question index entry')
