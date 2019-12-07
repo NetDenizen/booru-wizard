@@ -69,13 +69,13 @@ class MainFrame(wx.Frame):
 		"Set the title of the software with the path, its index, and the index of the current question."
 		self.SetTitle(''.join( ( self.BaseTitle,
 								 ' - ',
-								 str(int(self.pos) + 1),
+								 str(int( self.pos.get() ) + 1),
 								 '/',
-								 str( len(self.positions) ),
+								 str( len( self.pos.GetMax() ) ),
 								 ' ',
-								 self.paths[self.pos],
+								 self.paths[self.pos.get()],
 								 ' - ',
-								 str(self.positions[self.pos] + 1),
+								 str(self.positions[self.pos.get()].get() + 1),
 								 '/',
 								 str(self.NumQuestions)
 							   )
@@ -83,41 +83,27 @@ class MainFrame(wx.Frame):
 					 )
 	def _OnIndexImage(self, message, arg2=None):
 		"Change the index index to the one specified in the event, if possible."
-		if 0 <= message < len(self.positions):
-			self.pos = message
+		self.pos.set(message)
 		self._SetTitle()
 	def _OnIndexQuestion(self, message, arg2=None):
 		"Change the question index to the one specified in the event, if possible."
-		if 0 <= message < self.NumQuestions:
-			self.positions[self.pos] = message
+		self.positions[self.pos.get()].set(message)
 		self._SetTitle()
 	def _OnLeftImage(self, message, arg2=None):
 		"Shift to the left (-1) position to the current pos in the positions array if the pos is greater than 0. Otherwise, loop around to the last item."
-		if self.pos == 0:
-			self.pos = len(self.positions) - 1
-		else:
-			self.pos -= 1
+		self.pos.dec()
 		self._SetTitle()
 	def _OnRightImage(self, message, arg2=None):
 		"Shift to the right (+1) position to the current pos in the positions array if the pos is less than the length of the positions array. Otherwise, loop around to the first item."
-		if self.pos >= len(self.positions) - 1:
-			self.pos = 0
-		else:
-			self.pos += 1
+		self.pos.inc()
 		self._SetTitle()
 	def _OnLeftQuestion(self, message, arg2=None):
 		"Shift to the left (-1) question to the current position in the paths array if the position is greater than 0. Otherwise, loop around to the last item."
-		if self.positions[self.pos] == 0:
-			self.positions[self.pos] = self.NumQuestions - 1
-		else:
-			self.positions[self.pos] -= 1
+		self.positions[self.pos.get()].dec()
 		self._SetTitle()
 	def _OnRightQuestion(self, message, arg2=None):
 		"Shift to the right (+1) question to the current position in the paths array if the position is less than the length of the paths array. Otherwise, loop around to the first item."
-		if self.positions[self.pos] >= self.NumQuestions - 1:
-			self.positions[self.pos] = 0
-		else:
-			self.positions[self.pos] += 1
+		self.positions[self.pos.get()].inc()
 		self._SetTitle()
 	def _OnEmergencyExit(self, message, arg2=None):
 		try:
@@ -130,8 +116,8 @@ class MainFrame(wx.Frame):
 		self.BaseTitle = BaseTitle # Base window title
 		self.paths = OutputFiles.InputPaths
 		self.NumQuestions = len(questions)
-		self.pos = 0 # The position in positions
-		self.positions = [0] * len(OutputFiles.InputPaths) # The position in questions corresponding to each image
+		self.pos = CircularCounter( len(OutputFiles.InputPaths) ) # The position in positions
+		self.positions = [CircularCounter(self.NumQuestions) for p in OutputFiles.InputPaths] # The position in questions corresponding to each image
 		self.main = MainContainer(self, MaxBufSize, ImageQuality, questions, OutputFiles, TagsTracker, ViewPort)
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 		self.WrapperSizer = wx.BoxSizer(wx.HORIZONTAL)
