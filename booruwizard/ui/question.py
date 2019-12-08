@@ -64,6 +64,7 @@ class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 		"Update the name and check status of every choice."
 		# TODO: Should the choices be chosen in a different procedure?
 		self.CurrentChoices = []
+		self.OutputFile.lock()
 		for i, n in enumerate(self.TagNames):
 			self._UpdateName(i)
 			occurrences = self.OutputFile.tags.ReturnStringOccurrences(n)
@@ -73,6 +74,7 @@ class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 				self.choices.Check(i)
 			else:
 				self.choices.Check(i, False)
+		self.OutputFile.unlock()
 	def load(self, OutputFile):
 		"Initialize the question for a certain case."
 		self.OutputFile = OutputFile
@@ -174,15 +176,11 @@ class CheckQuestion(TagChoiceQuestion):
 	def _OnSelect(self, e):
 		"Bound to EVT_CHECKLISTBOX; set selected tags and remove the previously selected ones."
 		self._UpdateChoice( e.GetInt() )
-		self.OutputFile.lock()
 		self._UpdateChecks()
-		self.OutputFile.unlock()
 		e.Skip()
 	def disp(self):
 		"Display the updated check question for the given case."
-		self.OutputFile.lock()
 		self._UpdateChecks()
-		self.OutputFile.unlock()
 	def __init__(self, parent, TagsTracker, PanelQuestion):
 		TagChoiceQuestion.__init__(self, parent)
 
@@ -443,9 +441,7 @@ class SessionTags(TagChoiceQuestion):
 			self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
 			self.Bind( wx.EVT_SCROLL_TOP, self._OnScrollTop, id=self.choices.GetId() )
 			self.sizer.Layout()
-		self.OutputFile.lock()
 		self._UpdateChecks()
-		self.OutputFile.unlock()
 		e.Skip()
 	def disp(self):
 		"Display the updated check question for the given case."
@@ -461,9 +457,7 @@ class SessionTags(TagChoiceQuestion):
 		self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 		self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
 		self.Bind( wx.EVT_SCROLL_TOP, self._OnScrollTop, id=self.choices.GetId() )
-		self.OutputFile.lock()
 		self._UpdateChecks()
-		self.OutputFile.unlock()
 	def __init__(self, parent, TagsTracker):
 		TagChoiceQuestion.__init__(self, parent)
 
@@ -553,9 +547,7 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		self.choices = wx.CheckListBox(self, choices= self.ChoiceNames)
 		self.sizer.Add(self.choices, 100, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 		self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
-		self.OutputFile.lock()
 		self._UpdateChecks()
-		self.OutputFile.unlock()
 		self.CurrentChoices = list( self.choices.GetCheckedItems() ) # Currently selected checkboxes
 		self._SetIndex()
 		self.Layout()
