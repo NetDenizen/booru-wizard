@@ -647,10 +647,16 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 			return value
 	def _GetValue(self): # This determines where the field gets its value initial; define it in child classes
 		"Get original value for this field."
-		pass
+		return self._GetValueTemplate(self._ValueGetter)
 	def _SetValue(self): # This determines where the field puts its value; define it in child classes
 		"Set value controlled by this field."
-		pass
+		if self.checkbox.GetValue():
+			value = self.entry.GetValue()
+		elif self.entry.GetValue() != self.OrigValue:
+			value = self.OrigValue
+		self.OutputFile.PrepareChange()
+		self._ValueSetter(value)
+		self.OutputFile.FinishChange()
 	def _OnChange(self, e):
 		"Set the value."
 		self._SetValue()
@@ -685,29 +691,18 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 		wx.Panel.__init__(self, parent=parent)
 
 class NameQuestion(SingleStringEntry):
-	def _GetValue(self):
-		"Get original value for the name field."
-		return self._GetValueTemplate(self.OutputFile.GetName)
-	def _SetValue(self):
-		"Set value controlled by the name field."
-		if self.checkbox.GetValue():
-			self.OutputFile.PrepareChange()
-			self.OutputFile.SetName( self.entry.GetValue() )
-			self.OutputFile.FinishChange()
-		elif self.entry.GetValue() != self.OrigValue:
-			self.OutputFile.PrepareChange()
-			self.OutputFile.SetName(self.OrigValue)
-			self.OutputFile.FinishChange()
 	def load(self, OutputFile):
 		"Initialize the check question for a certain case."
 		self.OutputFile = OutputFile
-		self.OutputFile.lock()
-		self.OrigValue = self.OutputFile.name
-		self.OutputFile.unlock()
+		self._ValueGetter = self.OutputFile.GetName
+		self._ValueSetter = self.OutputFile.SetName
+		self.OrigValue = self._GetValue()
 	def __init__(self, parent):
 		SingleStringEntry.__init__(self, parent)
 
 		self.OutputFile = None # File data object
+		self._ValueSetter = None
+		self._ValueGetter = None
 		self.OrigValue = None # The original value of source
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
@@ -732,29 +727,18 @@ class NameQuestion(SingleStringEntry):
 		self.Bind( wx.EVT_CHECKBOX, self._OnChange, id=self.checkbox.GetId() )
 
 class SourceQuestion(SingleStringEntry):
-	def _GetValue(self):
-		"Get original value for the name field."
-		return self._GetValueTemplate(self.OutputFile.GetSource)
-	def _SetValue(self):
-		"Set value controlled by the source field, if the box is checked."
-		if self.checkbox.GetValue():
-			self.OutputFile.PrepareChange()
-			self.OutputFile.SetSource( self.entry.GetValue() )
-			self.OutputFile.FinishChange()
-		elif self.entry.GetValue() != self.OrigValue:
-			self.OutputFile.PrepareChange()
-			self.OutputFile.SetSource(self.OrigValue)
-			self.OutputFile.FinishChange()
 	def load(self, OutputFile):
 		"Initialize the check question for a certain case."
 		self.OutputFile = OutputFile
-		self.OutputFile.lock()
-		self.OrigValue = self.OutputFile.source
-		self.OutputFile.unlock()
+		self._ValueGetter = self.OutputFile.GetSource
+		self._ValueSetter = self.OutputFile.SetSource
+		self.OrigValue = self._GetValue()
 	def __init__(self, parent):
 		SingleStringEntry.__init__(self, parent)
 
 		self.OutputFile = None # File data object
+		self._ValueSetter = None
+		self._ValueGetter = None
 		self.OrigValue = None # The original value of source
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
