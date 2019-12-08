@@ -326,6 +326,10 @@ class color:
 class ParserError(TemplateError):
 	pass
 
+class ParserConversionError(ParserError):
+	def __init__(self, message, line, col):
+		super().__init__( ''.join( ( message, ' [', err, '] Line: ', str(line), ' Col: ', str(col) ) ) )
+
 class ParserState(Enum):
 	NORMAL          = 0 # The default parsing state.
 	OPTION_QUESTION = 1 # When we are in a RADIO_QUESTION or CHECK_QUESTION which has options.
@@ -455,6 +459,11 @@ class parser:
 			self._AliasToString = token.value
 		else:
 			raise ParserError("Alias target added when in a question.", token.line, token.col)
+	def _TryConversion(self, func, raw,  message, token):
+		try:
+			return func(raw)
+		except ValueError as err:
+			raise ParserConversionError(message, err, token.line, token.col)
 	def _add(self, token):
 		"Parse a single key-pair in the NORMAL state."
 		#TODO: Convert this contional code to a lookup table?
@@ -489,15 +498,9 @@ class parser:
 				raise ParserError(''.join( ("Invalid safety name '", token.value, "'") ), token.line, token.col)
 			self.DefaultSafety = found
 		elif token.key == PairKey.MAX_OPEN_FILES:
-			try:
-				self.MaxOpenFiles = int(token.value)
-			except ValueError:
-				raise ParserError(''.join( ("Failed to convert max open files '", token.value, "' to integer.") ), token.line, token.col)
+			self.MaxOpenFiles = self._TryConversion(int, token.value, ''.join( ("Failed to convert max open files '", token.value, "' to integer.") ), token)
 		elif token.key == PairKey.UPDATE_INTERVAL:
-			try:
-				self.UpdateInterval = float(token.value)
-			except ValueError:
-				raise ParserError(''.join( ("Failed to convert update interval '", token.value, "' to float.") ), token.line, token.col)
+			self.UpdateInterval = self._TryConversion(float, token.value, ''.join( ("Failed to convert update interval '", token.value, "' to float.") ), token)
 		elif token.key == PairKey.MAX_IMAGE_BUFSIZE:
 			m = RE_HUMANSIZE.match(token.value)
 			if m is None:
@@ -509,10 +512,7 @@ class parser:
 			else:
 				specifier = 1.0
 			number = m.group(1)
-			try:
-				val = float(number)
-			except ValueError as err:
-				raise ParserError(''.join( ("Failed to convert number ", number, " to float: [", err, "]") ), token.line, token.col)
+			val = self._TryConversion(float, number, ''.join( ("Failed to convert number ", number, " to float.") ), token)
 			self.MaxImageBufSize = int(val * specifier)
 		elif token.key == PairKey.ALIAS_TAG_FROM:
 			self._AddAliasTagFrom(token)
@@ -523,10 +523,7 @@ class parser:
 		elif token.key == PairKey.IMAGE_BACKGROUND_COLOR_TWO:
 			self.BackgroundColor2 = color(token.value, token.line, token.col).ToBytearray()
 		elif token.key == PairKey.IMAGE_BACKGROUND_SQUARE_WIDTH:
-			try:
-				self.BackgroundSquareWidth = int(token.value)
-			except ValueError:
-				raise ParserError(''.join( ("Failed to convert background square width '", token.value, "' to integer.") ), token.line, token.col)
+			self.BackgroundSquareWidth = self._TryConversion(int, token.value, ''.join( ("Failed to convert background square width '", token.value, "' to integer.") ), token)
 		elif token.key == PairKey.KEYBIND:
 			self.keybinds.append(token.value)
 		elif token.key == PairKey.DEFAULT_IMAGE_QUALITY:
@@ -535,25 +532,13 @@ class parser:
 				raise ParserError(''.join( ("Invalid image quality name '", token.value, "'") ), token.line, token.col)
 			self.DefaultImageQuality = found
 		elif token.key == PairKey.START_ZOOM_INTERVAL:
-			try:
-				self.StartZoomInterval = float(token.value)
-			except ValueError:
-				raise ParserError(''.join( ("Failed to convert start zoom interval '", token.value, "' to float.") ), token.line, token.col)
+			self.StartZoomInterval = self._TryConversion(float, token.value, ''.join( ("Failed to convert start zoom interval '", token.value, "' to float.") ), token)
 		elif token.key == PairKey.ZOOM_ACCEL:
-			try:
-				self.ZoomAccel = float(token.value)
-			except ValueError:
-				raise ParserError(''.join( ("Failed to convert zoom accel '", token.value, "' to float.") ), token.line, token.col)
+			self.ZoomAccel = self._TryConversion(float, token.value, ''.join( ("Failed to convert zoom accel '", token.value, "' to float.") ), token)
 		elif token.key == PairKey.ZOOM_ACCEL_STEPS:
-			try:
-				self.ZoomAccelSteps = float(token.value)
-			except ValueError:
-				raise ParserError(''.join( ("Failed to convert zoom accel steps '", token.value, "' to float.") ), token.line, token.col)
+			self.ZoomAccelSteps = self._TryConversion(float, token.value, ''.join( ("Failed to convert zoom accel steps '", token.value, "' to float.") ), token)
 		else: # token.key == PairKey.PAN_INTERVAL:
-			try:
-				self.PanInterval = float(token.value)
-			except ValueError:
-				raise ParserError(''.join( ("Failed to convert pan interval '", token.value, "' to float.") ), token.line, token.col)
+			self.PanInterval = self._TryConversion(float, token.value, ''.join( ("Failed to convert pan interval '", token.value, "' to float.") ), token)
 	def parse(self, string):
 		"Parse the input string and leave the result in the output array."
 		self._lexer.parse(string)
