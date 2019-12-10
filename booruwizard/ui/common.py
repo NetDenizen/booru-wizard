@@ -26,7 +26,7 @@ class CircularCounter:
 			self._value -= 1
 	def inc(self):
 		"Increment the value if it is less than the maximum value. Otherwise, loop around to 0."
-		if self._value >= self._MaxValue - 1:
+		if self._value >= self._MaxValue:
 			self._value = 0
 		else:
 			self._value += 1

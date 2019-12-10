@@ -78,7 +78,7 @@ class MainFrame(wx.Frame):
 								 ' - ',
 								 str(self.positions[self.pos.get()].get() + 1),
 								 '/',
-								 str(self.NumQuestions)
+								 str(self.positions[self.pos.get()].GetMax() + 1)
 							   )
 							 )
 					 )

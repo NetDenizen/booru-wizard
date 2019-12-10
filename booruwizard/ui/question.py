@@ -473,8 +473,8 @@ class SessionTags(TagChoiceQuestion):
 
 class ImageTagsList(TagChoiceQuestion): # This class should never be used on its own
 	def _SetIndex(self):
-		self.IndexLabel.SetLabel( ''.join( ( ' /', str( len(self.OutputFiles) ) ) ) )
 		self.IndexEntry.SetValue( str(self.CurrentSource.get() + 1) )
+		self.IndexLabel.SetLabel( ''.join( ( ' /', str(self.CurrentSource.GetMax() + 1) ) ) )
 	def _MakeNames(self):
 		RawNames = self.OutputFile.tags.ReturnStringList()
 		UserNames = []
@@ -820,7 +820,7 @@ class QuestionsContainer(wx.Panel):
 	def _OnIndexImage(self, message, arg2=None):
 		"Change the index index to the one specified in the message, if possible."
 		# TODO: Streamline this to avoid a comparison that happens in the CircularCounter
-		if 0 <= message < self.pos.GetMax():
+		if 0 <= message <= self.pos.GetMax():
 			self._hide()
 			self.pos.set(message)
 			self._LoadAll()
@@ -828,7 +828,7 @@ class QuestionsContainer(wx.Panel):
 	def _OnIndexQuestion(self, message, arg2=None):
 		"Change the question index to the one specified in the message, if possible."
 		# TODO: Streamline this to avoid a comparison that happens in the CircularCounter
-		if 0 <= message < self.positions[self.pos.get()].GetMax():
+		if 0 <= message <= self.positions[self.pos.get()].GetMax():
 			self._hide()
 			self.positions[self.pos.get()].set(message)
 			self._disp()
