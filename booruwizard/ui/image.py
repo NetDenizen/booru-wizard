@@ -554,7 +554,7 @@ class ImageLabel(wx.Panel):
 		self.sizer.Add(self.IndexEntry, 0, wx.ALIGN_CENTER)
 		self.sizer.Add(self.IndexLabel, 0, wx.ALIGN_CENTER)
 		self.sizer.AddStretchSpacer(1)
-		self.sizer.Add(self.PathEntry.GetEntryId(), 100, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.Add(self.PathEntry.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
 		self.SetSizer(self.sizer)
 
 		for i in self.PathEntry.GetMenuItemIds():
@@ -562,8 +562,8 @@ class ImageLabel(wx.Panel):
 		self._SetLabels()
 
 		self.Bind( wx.EVT_TEXT_ENTER, self._OnIndexEntry, id=self.IndexEntry.GetId() )
-		self.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self._OnPathSearch, id=self.PathEntry.GetEntryId() )
-		self.Bind( wx.EVT_TEXT_ENTER, self._OnPathEntry, id=self.PathEntry.GetEntryId() )
+		self.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self._OnPathSearch, id=self.PathEntry.entry.GetId() )
+		self.Bind( wx.EVT_TEXT_ENTER, self._OnPathEntry, id=self.PathEntry.entry.GetId() )
 		pub.subscribe(self._OnIndex, "IndexImage")
 		pub.subscribe(self._OnLeft, "LeftImage")
 		pub.subscribe(self._OnRight, "RightImage")

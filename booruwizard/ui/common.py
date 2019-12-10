@@ -37,13 +37,10 @@ class CircularCounter:
 class PathEntry:
 	def SetPath(self, pos):
 		"Set the path label to show the path at pos in the paths array, and the index label to show pos + 1 out of length of paths array."
-		self._entry.SetValue(self._paths[pos])
+		self.entry.SetValue(self._paths[pos])
 	def GetPath(self):
 		"Get the current value of the entry."
-		self._entry.GetValue()
-	def GetEntryId(self):
-		"Get the ID of the path entry field."
-		return self._entry.GetId()
+		self.entry.GetValue()
 	def GetMenuItemIds(self):
 		"Return a list of IDs for each menu item."
 		output = []
@@ -58,13 +55,13 @@ class PathEntry:
 		Append = _menu.Append
 		for i in _menu.GetMenuItems():
 			Remove(i)
-		EntryValue = self._entry.GetValue()
+		EntryValue = self.entry.GetValue()
 		for i, s in enumerate(self._paths):
 			if EntryValue in s:
 				Append(_MenuItems[i])
 	def UpdateAutocomplete(self):
 		"Try to autocomplete the contents of the path entry to a complete string."
-		val = self._entry.GetValue()
+		val = self.entry.GetValue()
 		orig = val.lower()
 		ContainsOrig = []
 		prefixes = []
@@ -81,15 +78,15 @@ class PathEntry:
 			val = ContainsOrig[0]
 		else:
 			val = max(prefixes, key=len)
-		self._entry.SetValue(val)
+		self.entry.SetValue(val)
 	def ChooseMenuItem(self, ItemId):
 		"Set the path entry to the chosen menu value."
-		self._entry.SetValue(self._MenuLookup[ItemId])
+		self.entry.SetValue(self._MenuLookup[ItemId])
 	def FocusEntry(self):
-		self._entry.SetFocus()
+		self.entry.SetFocus()
 	def FocusMenu(self):
 		self._UpdatePathMenu()
-		self._entry.PopupMenu(self.PathMenu)
+		self.entry.PopupMenu(self.PathMenu)
 	def GetPathsLen(self):
 		return self._PathsLen
 	def SearchPath(self, query):
@@ -100,16 +97,16 @@ class PathEntry:
 		self._MenuItems = []
 		self._MenuLookup = {}
 		self._menu = wx.Menu()
-		self._entry = wx.SearchCtrl(parent, style= wx.TE_LEFT | wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Search box containing path of current image
+		self.entry = wx.SearchCtrl(parent, style= wx.TE_LEFT | wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Search box containing path of current image
 		self._EntryTip = wx.ToolTip("Image path entry; if the path doesn't exist, then autocomplete.")
 
-		self._entry.SetToolTip(self._EntryTip)
+		self.entry.SetToolTip(self._EntryTip)
 
 		for p in self._paths:
 			ItemId = wx.NewId()
 			item = wx.MenuItem(self._menu, ItemId, p, p)
 			self._MenuItems.append(item)
 			self._MenuLookup[ItemId] = p
-		self._entry.SetMenu(self._menu)
-		self._entry.ShowSearchButton(False)
+		self.entry.SetMenu(self._menu)
+		self.entry.ShowSearchButton(False)
 		self.SetPath(0)
