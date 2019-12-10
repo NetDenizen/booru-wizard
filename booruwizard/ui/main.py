@@ -72,7 +72,7 @@ class MainFrame(wx.Frame):
 								 ' - ',
 								 str(int( self.pos.get() ) + 1),
 								 '/',
-								 str( self.pos.GetMax() ),
+								 str(self.pos.GetMax() + 1),
 								 ' ',
 								 self.paths[self.pos.get()],
 								 ' - ',

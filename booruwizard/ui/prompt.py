@@ -99,7 +99,7 @@ class QuestionLabel(QuestionDisplayComponent):
 	def _set(self):
 		"Set the index label to show pos + 1 out of length of questions array."
 		self.IndexEntry.SetValue( str(self.positions[self.pos.get()].get() + 1) )
-		self.IndexLabel.SetLabel( ''.join( ( ' /', str( self.positions[self.pos.get()].GetMax() ) ) ) )
+		self.IndexLabel.SetLabel( ''.join( ( ' /', str( self.positions[self.pos.get()].GetMax() + 1 ) ) ) )
 	def _OnIndexEntry(self, e):
 		"Send an IndexQuestion event, if the index value can be converted to an Int; otherwise, reset labels."
 		try:

@@ -496,7 +496,7 @@ class ImageLabel(wx.Panel):
 		"Set the path label to show the path at pos in the paths array, and the index label to show pos + 1 out of length of paths array."
 		self.PathEntry.SetPath( self.pos.get() )
 		self.IndexEntry.SetValue( str(self.pos.get() + 1) )
-		self.IndexLabel.SetLabel( ''.join( ( ' /', str( self.PathEntry.GetPathsLen() ) ) ) )
+		self.IndexLabel.SetLabel( ''.join( ( ' /', str(self.pos.GetMax() + 1) ) ) )
 	def _OnIndexEntry(self, e):
 		"Send an IndexImage message, if the index value can be converted to an Int; otherwise, reset labels."
 		try:

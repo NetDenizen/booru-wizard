@@ -7,7 +7,7 @@ import wx
 class CircularCounter:
 	def set(self, value):
 		"Change the value to the one specified, if possible."
-		if 0 <= value < self._MaxValue:
+		if 0 <= value <= self._MaxValue:
 			self._value = value
 			return True
 		else:
