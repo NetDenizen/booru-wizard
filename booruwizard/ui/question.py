@@ -820,14 +820,30 @@ class QuestionsContainer(wx.Panel):
 		"Load all question widgets with the associated OutputFile"
 		for w in self.QuestionWidgets:
 			w.load(self.OutputFiles.ControlFiles[self.pos.get()])
-	def _OnIndexImage(self, message, arg2=None):
-		"Change the index index to the one specified in the message, if possible."
-		# TODO: Streamline this to avoid a comparison that happens in the CircularCounter
-		if 0 <= message <= self.pos.GetMax():
+	def _ShiftImage(self, func):
+		if self.LockQuestion:
+			idx = self.positions[self.pos.get()].get()
 			self._hide()
-			self.pos.set(message)
+			func()
+			self._LoadAll()
+			self.positions[self.pos.get()].set(idx)
+			self._disp()
+		else:
+			self._hide()
+			func()
 			self._LoadAll()
 			self._disp()
+	def _OnIndexImage(self, message, arg2=None):
+		"Change the index index to the one specified in the event, if possible."
+		# TODO: Streamline this to avoid a comparison that happens in the CircularCounter
+		if 0 <= message <= self.pos.GetMax():
+			self._ShiftImage( lambda self=self, message=message: self.pos.set(message) )
+	def _OnLeftImage(self, message, arg2=None):
+		"Shift to the left (-1) position to the current pos in the positions array if the pos is greater than 0. Otherwise, loop around to the last item."
+		self._ShiftImage(self.pos.dec)
+	def _OnRightImage(self, message, arg2=None):
+		"Shift to the right (+1) position to the current pos in the positions array if the pos is less than the length of the positions array. Otherwise, loop around to the first item."
+		self._ShiftImage(self.pos.inc)
 	def _OnIndexQuestion(self, message, arg2=None):
 		"Change the question index to the one specified in the message, if possible."
 		# TODO: Streamline this to avoid a comparison that happens in the CircularCounter
@@ -835,18 +851,6 @@ class QuestionsContainer(wx.Panel):
 			self._hide()
 			self.positions[self.pos.get()].set(message)
 			self._disp()
-	def _OnLeftImage(self, message, arg2=None):
-		"Shift to the left (-1) position to the current pos in the positions array if the pos is greater than 0. Otherwise, loop around to the last item."
-		self._hide()
-		self.pos.dec()
-		self._LoadAll()
-		self._disp()
-	def _OnRightImage(self, message, arg2=None):
-		"Shift to the right (+1) position to the current pos in the positions array if the pos is less than the length of the positions array. Otherwise, loop around to the first item."
-		self._hide()
-		self.pos.inc()
-		self._LoadAll()
-		self._disp()
 	def _OnLeftQuestion(self, message, arg2=None):
 		"Shift to the left (-1) question to the current position in the questions array if the position is greater than 0. Otherwise, loop around to the last item."
 		self._hide()
@@ -857,12 +861,19 @@ class QuestionsContainer(wx.Panel):
 		self._hide()
 		self.positions[self.pos.get()].inc()
 		self._disp()
+	def _OnLockQuestion(self, message, arg2=None):
+		"Set the variable which will decide whether to use the question index of the previous image, when changing images."
+		self.LockQuestion = True
+	def _OnUnlockQuestion(self, message, arg2=None):
+		"Unset the variable which will decide whether to use the question index of the previous image, when changing images."
+		self.LockQuestion = False
 	def _OnFocusQuestionBody(self, message, arg2=None):
 		self._CurrentWidget().SetFocus()
 	def __init__(self, parent, TagsTracker, questions, OutputFiles):
 		wx.Panel.__init__(self, parent=parent)
 
 		self.NumQuestions = len(questions)
+		self.LockQuestion = False
 		self.pos = CircularCounter(len(OutputFiles.InputPaths) - 1) # The position in positions
 		self.positions = [CircularCounter(self.NumQuestions - 1) for i in OutputFiles.InputPaths] # The position in questions corresponding to each image
 
@@ -906,3 +917,5 @@ class QuestionsContainer(wx.Panel):
 		pub.subscribe(self._OnLeftQuestion, "LeftQuestion")
 		pub.subscribe(self._OnRightQuestion, "RightQuestion")
 		pub.subscribe(self._OnFocusQuestionBody, "FocusQuestionBody")
+		pub.subscribe(self._OnLockQuestion, "LockQuestion")
+		pub.subscribe(self._OnUnlockQuestion, "UnlockQuestion")

@@ -82,21 +82,26 @@ class MainFrame(wx.Frame):
 							   )
 							 )
 					 )
-	def _OnIndexImage(self, message, arg2=None):
-		"Change the index index to the one specified in the event, if possible."
-		self.pos.set(message)
+	def _ShiftImage(self, func):
+		if self.LockQuestion:
+			idx = self.positions[self.pos.get()].get()
+			func()
+			self.positions[self.pos.get()].set(idx)
+		else:
+			func()
 		self._SetTitle()
+	def _OnIndexImage(self, message, arg2=None):
+		"Change the index to the one specified in the event, if possible."
+		self._ShiftImage( lambda self=self, message=message: self.pos.set(message) )
+	def _OnLeftImage(self, message, arg2=None):
+		"Shift to the left (-1) position to the current pos in the positions array if the pos is greater than 0. Otherwise, loop around to the last item."
+		self._ShiftImage(self.pos.dec)
+	def _OnRightImage(self, message, arg2=None):
+		"Shift to the right (+1) position to the current pos in the positions array if the pos is less than the length of the positions array. Otherwise, loop around to the first item."
+		self._ShiftImage(self.pos.inc)
 	def _OnIndexQuestion(self, message, arg2=None):
 		"Change the question index to the one specified in the event, if possible."
 		self.positions[self.pos.get()].set(message)
-		self._SetTitle()
-	def _OnLeftImage(self, message, arg2=None):
-		"Shift to the left (-1) position to the current pos in the positions array if the pos is greater than 0. Otherwise, loop around to the last item."
-		self.pos.dec()
-		self._SetTitle()
-	def _OnRightImage(self, message, arg2=None):
-		"Shift to the right (+1) position to the current pos in the positions array if the pos is less than the length of the positions array. Otherwise, loop around to the first item."
-		self.pos.inc()
 		self._SetTitle()
 	def _OnLeftQuestion(self, message, arg2=None):
 		"Shift to the left (-1) question to the current position in the paths array if the position is greater than 0. Otherwise, loop around to the last item."
@@ -106,6 +111,12 @@ class MainFrame(wx.Frame):
 		"Shift to the right (+1) question to the current position in the paths array if the position is less than the length of the paths array. Otherwise, loop around to the first item."
 		self.positions[self.pos.get()].inc()
 		self._SetTitle()
+	def _OnLockQuestion(self, message, arg2=None):
+		"Set the variable which will decide whether to use the question index of the previous image, when changing images."
+		self.LockQuestion = True
+	def _OnUnlockQuestion(self, message, arg2=None):
+		"Unset the variable which will decide whether to use the question index of the previous image, when changing images."
+		self.LockQuestion = False
 	def _OnEmergencyExit(self, message, arg2=None):
 		try:
 			self.Close()
@@ -117,6 +128,7 @@ class MainFrame(wx.Frame):
 		self.BaseTitle = BaseTitle # Base window title
 		self.paths = OutputFiles.InputPaths
 		self.NumQuestions = len(questions)
+		self.LockQuestion = False
 		self.pos = CircularCounter(len(OutputFiles.InputPaths) - 1) # The position in positions
 		self.positions = [CircularCounter(self.NumQuestions - 1) for p in OutputFiles.InputPaths] # The position in questions corresponding to each image
 		self.main = MainContainer(self, MaxBufSize, ImageQuality, questions, OutputFiles, TagsTracker, ViewPort)
@@ -147,6 +159,8 @@ class MainFrame(wx.Frame):
 		pub.subscribe(self._OnLeftQuestion, "LeftQuestion")
 		pub.subscribe(self._OnRightQuestion, "RightQuestion")
 		pub.subscribe(self._OnEmergencyExit, "EmergencyExit")
+		pub.subscribe(self._OnLockQuestion, "LockQuestion")
+		pub.subscribe(self._OnUnlockQuestion, "UnlockQuestion")
 
 		pub.sendMessage("StartUpdateTimer", message=None)
 

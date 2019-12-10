@@ -6,22 +6,27 @@ from pubsub import pub
 from booruwizard.ui.common import CircularCounter
 
 class QuestionDisplayComponent(wx.Panel):  # This class should never be used on its own
+	def _ShiftImage(self, func):
+		if self.LockQuestion:
+			idx = self.positions[self.pos.get()].get()
+			func()
+			self.positions[self.pos.get()].set(idx)
+		else:
+			func()
+		self._set()
 	def _OnIndexImage(self, message, arg2=None):
 		"Change the index index to the one specified in the event, if possible."
-		self.pos.set(message)
-		self._set()
+		self._ShiftImage( lambda self=self, message=message: self.pos.set(message) )
 	def _OnIndexQuestion(self, message, arg2=None):
 		"Change the question index to the one specified in the event, if possible."
 		self.positions[self.pos.get()].set(message)
 		self._set()
 	def _OnLeftImage(self, message, arg2=None):
 		"Shift to the left (-1) position to the current pos in the positions array if the pos is greater than 0. Otherwise, loop around to the last item."
-		self.pos.dec()
-		self._set()
+		self._ShiftImage(self.pos.dec)
 	def _OnRightImage(self, message, arg2=None):
 		"Shift to the right (+1) position to the current pos in the positions array if the pos is less than the length of the positions array. Otherwise, loop around to the first item."
-		self.pos.inc()
-		self._set()
+		self._ShiftImage(self.pos.inc)
 	def _OnLeftQuestion(self, message, arg2=None):
 		"Shift to the left (-1) question to the current position in the questions array if the position is greater than 0. Otherwise, loop around to the last item."
 		self.positions[self.pos.get()].dec()
@@ -30,6 +35,12 @@ class QuestionDisplayComponent(wx.Panel):  # This class should never be used on 
 		"Shift to the right (+1) question to the current position in the questions array if the position is less than the length of the questions array. Otherwise, loop around to the first item."
 		self.positions[self.pos.get()].inc()
 		self._set()
+	def _OnLockQuestion(self, message, arg2=None):
+		"Set the variable which will decide whether to use the question index of the previous image, when changing images."
+		self.LockQuestion = True
+	def _OnUnlockQuestion(self, message, arg2=None):
+		"Unset the variable which will decide whether to use the question index of the previous image, when changing images."
+		self.LockQuestion = False
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent=parent)
 
@@ -109,21 +120,37 @@ class QuestionLabel(QuestionDisplayComponent):
 		e.Skip()
 	def _OnFocusQuestionIndex(self, message, arg2=None):
 		self.IndexEntry.SetFocus()
+	def _OnLockQuestion(self, message, arg2=None):
+		QuestionDisplayComponent._OnLockQuestion(self, message, arg2=None)
+		self.LockCheck.SetValue(True)
+	def _OnUnlockQuestion(self, message, arg2=None):
+		QuestionDisplayComponent._OnUnlockQuestion(self, message, arg2=None)
+		self.LockCheck.SetValue(False)
+	def _OnLockCheck(self, e):
+		if self.LockCheck.GetValue():
+			pub.sendMessage("LockQuestion", message=None)
+		else:
+			pub.sendMessage("UnlockQuestion", message=None)
 	def __init__(self, parent, NumImages, questions):
 		QuestionDisplayComponent.__init__(self, parent)
 
 		self.questions = questions # Question objects
+		self.LockQuestion = False
 		self.pos = CircularCounter(NumImages - 1) # The position in positions
 		self.positions = [CircularCounter(len(self.questions) - 1) for i in range(NumImages)] # The position in questions corresponding to each image
+		self.LockCheck = wx.CheckBox(self, label= "Lock ")
 		self.IndexEntry = wx.TextCtrl(self, style= wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Editable display for current image index
 		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER) # Static part of image index display
 		self.IndexEntryTip = wx.ToolTip('Question index entry')
 		self.IndexLabelTip = wx.ToolTip('Total number of questions')
+		self.LockCheckTip = wx.ToolTip('Lock all images to use the current question')
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
+		self.LockCheck.SetToolTip(self.LockCheckTip)
 		self.IndexEntry.SetToolTip(self.IndexEntryTip)
 		self.IndexLabel.SetToolTip(self.IndexLabelTip)
 
+		self.sizer.Add(self.LockCheck, 0, wx.ALIGN_CENTER)
 		self.sizer.Add(self.IndexEntry, 0, wx.ALIGN_CENTER)
 		self.sizer.Add(self.IndexLabel, 0, wx.ALIGN_CENTER)
 		self.SetSizer(self.sizer)
@@ -131,6 +158,7 @@ class QuestionLabel(QuestionDisplayComponent):
 		self._set()
 
 		self.Bind( wx.EVT_TEXT_ENTER, self._OnIndexEntry, id=self.IndexEntry.GetId() )
+		self.Bind( wx.EVT_CHECKBOX, self._OnLockCheck, id=self.LockCheck.GetId() )
 		pub.subscribe(self._OnIndexImage, "IndexImage")
 		pub.subscribe(self._OnIndexQuestion, "IndexQuestion")
 		pub.subscribe(self._OnLeftImage, "LeftImage")
@@ -138,6 +166,8 @@ class QuestionLabel(QuestionDisplayComponent):
 		pub.subscribe(self._OnLeftQuestion, "LeftQuestion")
 		pub.subscribe(self._OnRightQuestion, "RightQuestion")
 		pub.subscribe(self._OnFocusQuestionIndex, "FocusQuestionIndex")
+		pub.subscribe(self._OnLockQuestion, "LockQuestion")
+		pub.subscribe(self._OnUnlockQuestion, "UnlockQuestion")
 
 class PositionButtons(wx.Panel):
 	def _OnLeftImage(self, e):
@@ -225,6 +255,7 @@ class QuestionPanel(QuestionDisplayComponent):
 		QuestionDisplayComponent.__init__(self, parent)
 
 		self.questions = questions # Question objects
+		self.LockQuestion = False
 		self.pos = CircularCounter(NumImages - 1) # The position in positions
 		self.positions = [CircularCounter(len(self.questions) - 1) for i in range(NumImages)] # The position in questions corresponding to each image
 		self.body = wx.TextCtrl(self, style= wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH | wx.TE_NOHIDESEL | wx.TE_AUTO_URL) # The body of the question #TODO: Will poor, poor Mac users get URL highlighting? Set background color?
@@ -246,6 +277,8 @@ class QuestionPanel(QuestionDisplayComponent):
 		pub.subscribe(self._OnLeftQuestion, "LeftQuestion")
 		pub.subscribe(self._OnRightQuestion, "RightQuestion")
 		pub.subscribe(self._OnFocusPromptBody, "FocusPromptBody")
+		pub.subscribe(self._OnLockQuestion, "LockQuestion")
+		pub.subscribe(self._OnUnlockQuestion, "UnlockQuestion")
 
 class PromptContainer(wx.Panel):
 	def __init__(self, parent, NumImages, questions):

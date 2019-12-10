@@ -32,6 +32,8 @@ ID_ZOOM_IN = wx.NewId()
 ID_ZOOM_OUT = wx.NewId()
 ID_ZOOM_FIT = wx.NewId()
 ID_ZOOM_ACTUAL_SIZE = wx.NewId()
+ID_LOCK_QUESTION = wx.NewId()
+ID_UNLOCK_QUESTION = wx.NewId()
 KEYBIND_IDS = {
 	'exit'                        : ID_EMERGENCY_EXIT             ,
 	'flush_changes'               : ID_FILE_UPDATE_FORCE          ,
@@ -61,7 +63,9 @@ KEYBIND_IDS = {
 	'zoom_in'                     : ID_ZOOM_IN                    ,
 	'zoom_out'                    : ID_ZOOM_OUT                   ,
 	'zoom_fit'                    : ID_ZOOM_FIT                   ,
-	'zoom_actual_size'            : ID_ZOOM_ACTUAL_SIZE
+	'zoom_actual_size'            : ID_ZOOM_ACTUAL_SIZE           ,
+	'lock_question'               : ID_LOCK_QUESTION              ,
+	'unlock_question'             : ID_UNLOCK_QUESTION
 }
 KEYBIND_MESSAGES = {
 	ID_EMERGENCY_EXIT              : 'EmergencyExit'          ,
@@ -92,7 +96,9 @@ KEYBIND_MESSAGES = {
 	ID_ZOOM_IN                     : 'ZoomIn'                 ,
 	ID_ZOOM_OUT                    : 'ZoomOut'                ,
 	ID_ZOOM_FIT                    : 'ZoomFit'                ,
-	ID_ZOOM_ACTUAL_SIZE            : 'ZoomActualSize'
+	ID_ZOOM_ACTUAL_SIZE            : 'ZoomActualSize'         ,
+	ID_LOCK_QUESTION               : 'LockQuestion'           ,
+	ID_UNLOCK_QUESTION             : 'UnlockQuestion'
 }
 
 class KeyHandlerError(Exception):
@@ -129,6 +135,8 @@ class KeyHandler(wx.Object):
 		self.ZoomOutItem = wx.MenuItem(id=wx.NewId(), text="ZoomOut", helpString="Zoom out image.")
 		self.ZoomFitItem = wx.MenuItem(id=wx.NewId(), text="ZoomFit", helpString="Zoom image to fit perfectly in the window.")
 		self.ZoomActualSizeItem = wx.MenuItem(id=wx.NewId(), text="ZoomActualSize", helpString="Zoom image so it is displayed at actual size, whether or not it fits in the window.")
+		self.LockQuestionItem = wx.MenuItem(id=wx.NewId(), text="LockQuestion", helpString="Make the currently loaded question also load for the next image, regardless of whatever question that image might currently be set to load.")
+		self.UnlockQuestionItem = wx.MenuItem(id=wx.NewId(), text="UnlockQuestion", helpString="Disable the effect of 'LockQuestion'.")
 		self.MenuItems = {'exit'                        : self.EmergencyExitItem                ,
 						  'flush_changes'               : self.FileUpdateForceItem              ,
 						  'left_image'                  : self.LeftImageItem                    ,
@@ -157,7 +165,9 @@ class KeyHandler(wx.Object):
 						  'zoom_in'                     : self.ZoomInItem                       ,
 						  'zoom_out'                    : self.ZoomOutItem                      ,
 						  'zoom_fit'                    : self.ZoomFitItem                      ,
-						  'zoom_actual_size'            : self.ZoomActualSizeItem
+						  'zoom_actual_size'            : self.ZoomActualSizeItem               ,
+						  'lock_question'               : self.LockQuestionItem                 ,
+						  'unlock_question'               : self.UnlockQuestionItem
 						 }
 		self.entries = []
 	def _OnEntry(self, e):
@@ -194,6 +204,8 @@ class KeyHandler(wx.Object):
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_ZOOM_OUT)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_ZOOM_FIT)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_ZOOM_ACTUAL_SIZE)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_LOCK_QUESTION)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_UNLOCK_QUESTION)
 	def add(self, text):
 		"Add a keybind to the handler."
 		values = text.split()
