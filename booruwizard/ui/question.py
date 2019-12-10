@@ -12,7 +12,7 @@ from kanji_to_romaji import kanji_to_romaji
 from booruwizard.lib.fileops import safety
 from booruwizard.lib.tag import TagsContainer
 from booruwizard.lib.template import QuestionType, OptionQuestionType
-from booruwizard.ui.common import CircularCounter
+from booruwizard.ui.common import CircularCounter, PathEntry
 
 RE_NOT_WHITESPACE = re.compile(r'\S+')
 RE_WHITESPACE = re.compile(r'\s')
@@ -535,14 +535,33 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 			self.parent.OwnTags.OutputFile.FinishChange()
 		self.parent.disp()
 		e.Skip()
+	def _OnPathSearch(self, e):
+		"Update the search menu, based on matches found in the paths array."
+		self.PathEntry.UpdateMenu()
+		e.Skip()
+	def _OnPathEntry(self, e):
+		"Send an IndexImage message, if the index of PathEntry contents can be found in paths; otherwise, try to autocomplete the contents."
+		try:
+			value = self.PathEntry.SearchPath( self.PathEntry.GetPath() )
+			self.CurrentSource.set(value)
+			self.OutputFile = self.OutputFiles[value]
+			self.disp()
+		except ValueError: # TODO: Should this work with any exception?
+			self.PathEntry.UpdateAutocomplete()
+		e.Skip()
+	def _OnMenuPathChosen(self, e):
+		"Set the path entry to the chosen menu value."
+		self.PathEntry.ChooseMenuItem(e.GetId())
+		e.Skip()
 	def load(self, OutputFile):
 		"Initialize the question for a certain case."
 		pass
 	def disp(self):
 		"Display the updated question for the given case."
+		self.PathEntry.SetPath( self.CurrentSource.get() )
 		if self.choices is not None:
 			self.Unbind( wx.EVT_CHECKLISTBOX, id=self.choices.GetId() )
-			self.sizer.Remove(2)
+			self.sizer.Remove(5)
 			self.choices.Destroy()
 			self.choices = None
 		self.ChoiceNames = self._MakeNames()
@@ -566,6 +585,7 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		self.ChoiceNames = self.TagNames # Names of each selection
 		self.choices = None
 		self.CurrentChoices = [] # Currently selected checkboxes
+		self.PathEntry = PathEntry( self, tuple( (f.path for f in self.OutputFiles) ) )
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 		self.ButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -598,14 +618,22 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		self.ButtonSizer.AddStretchSpacer(1)
 		self.ButtonSizer.Add(self.commit, 0, wx.ALIGN_CENTER_VERTICAL)
 		self.ButtonSizer.AddStretchSpacer(10)
+		self.sizer.AddStretchSpacer(1)
 		self.sizer.Add(self.ButtonSizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_TOP | wx.TOP | wx.EXPAND)
-		self.sizer.AddStretchSpacer(3)
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.PathEntry.entry, 0, wx.CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(1)
 		self.SetSizer(self.sizer)
+
+		for i in self.PathEntry.GetMenuItemIds():
+			self.Bind(wx.EVT_MENU, self._OnMenuPathChosen, id=i)
 
 		self.Bind( wx.EVT_BUTTON, self._OnLeft, id=self.LeftSource.GetId() )
 		self.Bind( wx.EVT_TEXT_ENTER, self._OnIndexEntry, id=self.IndexEntry.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnRight, id=self.RightSource.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnCommit, id=self.commit.GetId() )
+		self.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self._OnPathSearch, id=self.PathEntry.entry.GetId() )
+		self.Bind( wx.EVT_TEXT_ENTER, self._OnPathEntry, id=self.PathEntry.entry.GetId() )
 
 class SessionTagsImporter(wx.SplitterWindow):
 	def load(self, OutputFile):
