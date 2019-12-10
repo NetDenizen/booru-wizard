@@ -500,7 +500,6 @@ class ImageLabel(wx.Panel):
 	def _OnIndexEntry(self, e):
 		"Send an IndexImage message, if the index value can be converted to an Int; otherwise, reset labels."
 		try:
-			print(int( self.IndexEntry.GetValue() ))
 			pub.sendMessage("IndexImage", message=int( self.IndexEntry.GetValue() ) - 1)
 		except ValueError: # TODO: Should this work with any exception?
 			self._SetLabels()
