@@ -649,6 +649,8 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 			value = self.entry.GetValue()
 		elif self.entry.GetValue() != self.OrigValue:
 			value = self.OrigValue
+		else:
+			return
 		self.OutputFile.PrepareChange()
 		self._ValueSetter(value)
 		self.OutputFile.FinishChange()
