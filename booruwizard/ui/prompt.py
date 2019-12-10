@@ -113,8 +113,8 @@ class QuestionLabel(QuestionDisplayComponent):
 		QuestionDisplayComponent.__init__(self, parent)
 
 		self.questions = questions # Question objects
-		self.pos = CircularCounter(NumImages) # The position in positions
-		self.positions = [CircularCounter( len(self.questions) ) for i in range(NumImages)] # The position in questions corresponding to each image
+		self.pos = CircularCounter(NumImages - 1) # The position in positions
+		self.positions = [CircularCounter(len(self.questions) - 1) for i in range(NumImages)] # The position in questions corresponding to each image
 		self.IndexEntry = wx.TextCtrl(self, style= wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Editable display for current image index
 		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER) # Static part of image index display
 		self.IndexEntryTip = wx.ToolTip('Question index entry')
@@ -225,8 +225,8 @@ class QuestionPanel(QuestionDisplayComponent):
 		QuestionDisplayComponent.__init__(self, parent)
 
 		self.questions = questions # Question objects
-		self.pos = CircularCounter(NumImages) # The position in positions
-		self.positions = [CircularCounter( len(self.questions) ) for i in range(NumImages)] # The position in questions corresponding to each image
+		self.pos = CircularCounter(NumImages - 1) # The position in positions
+		self.positions = [CircularCounter(len(self.questions) - 1) for i in range(NumImages)] # The position in questions corresponding to each image
 		self.body = wx.TextCtrl(self, style= wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH | wx.TE_NOHIDESEL | wx.TE_AUTO_URL) # The body of the question #TODO: Will poor, poor Mac users get URL highlighting? Set background color?
 		self.BodyTip = wx.ToolTip('Question prompt')
 		self.sizer = wx.BoxSizer(wx.VERTICAL)

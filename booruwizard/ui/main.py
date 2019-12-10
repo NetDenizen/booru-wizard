@@ -72,7 +72,7 @@ class MainFrame(wx.Frame):
 								 ' - ',
 								 str(int( self.pos.get() ) + 1),
 								 '/',
-								 str( len( self.pos.GetMax() ) ),
+								 str( self.pos.GetMax() ),
 								 ' ',
 								 self.paths[self.pos.get()],
 								 ' - ',
@@ -117,8 +117,8 @@ class MainFrame(wx.Frame):
 		self.BaseTitle = BaseTitle # Base window title
 		self.paths = OutputFiles.InputPaths
 		self.NumQuestions = len(questions)
-		self.pos = CircularCounter( len(OutputFiles.InputPaths) ) # The position in positions
-		self.positions = [CircularCounter(self.NumQuestions) for p in OutputFiles.InputPaths] # The position in questions corresponding to each image
+		self.pos = CircularCounter(len(OutputFiles.InputPaths) - 1) # The position in positions
+		self.positions = [CircularCounter(self.NumQuestions - 1) for p in OutputFiles.InputPaths] # The position in questions corresponding to each image
 		self.main = MainContainer(self, MaxBufSize, ImageQuality, questions, OutputFiles, TagsTracker, ViewPort)
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 		self.WrapperSizer = wx.BoxSizer(wx.HORIZONTAL)

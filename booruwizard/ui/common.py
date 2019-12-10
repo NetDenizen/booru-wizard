@@ -7,32 +7,32 @@ import wx
 class CircularCounter:
 	def set(self, value):
 		"Change the value to the one specified, if possible."
-		if 0 <= value < MaxValue:
-			self.pos = value
+		if 0 <= value < self._MaxValue:
+			self._value = value
 			return True
 		else:
 			return False
 	def get(self):
 		"Get the current value."
-		return self.value
-	def GetMax(self)
+		return self._value
+	def GetMax(self):
 		"Get the maximum value."
-		return self.MaxValue
+		return self._MaxValue
 	def dec(self):
 		"Decrement the value if it is greater than 0. Otherwise, loop around to the maximum value."
-		if self.value == 0:
-			self.value = self.MaxValue
+		if self._value == 0:
+			self._value = self._MaxValue
 		else:
-			self.value -= 1
+			self._value -= 1
 	def inc(self):
 		"Increment the value if it is less than the maximum value. Otherwise, loop around to 0."
-		if self.value >= self.MaxValue - 1:
-			self.value = 0
+		if self._value >= self._MaxValue - 1:
+			self._value = 0
 		else:
-			self.value += 1
+			self._value += 1
 	def __init__(self, MaxValue):
-		self.MaxValue = MaxValue
-		self.value = 0
+		self._MaxValue = MaxValue
+		self._value = 0
 
 class PathEntry:
 	def SetPath(self, pos):
@@ -94,23 +94,22 @@ class PathEntry:
 		return self._PathsLen
 	def SearchPath(self, query):
 		return self._paths.index(query)
-	def __init__(self, paths):
+	def __init__(self, parent, paths):
 		self._paths = paths
 		self._PathsLen = len(self._paths)
 		self._MenuItems = []
 		self._MenuLookup = {}
 		self._menu = wx.Menu()
-		self._entry = wx.SearchCtrl(self, style= wx.TE_LEFT | wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Search box containing path of current image
+		self._entry = wx.SearchCtrl(parent, style= wx.TE_LEFT | wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Search box containing path of current image
 		self._EntryTip = wx.ToolTip("Image path entry; if the path doesn't exist, then autocomplete.")
 
 		self._entry.SetToolTip(self._EntryTip)
 
 		for p in self._paths:
 			ItemId = wx.NewId()
-			item = wx.MenuItem(self.PathMenu, ItemId, p, p)
+			item = wx.MenuItem(self._menu, ItemId, p, p)
 			self._MenuItems.append(item)
 			self._MenuLookup[ItemId] = p
-			self.Bind(wx.EVT_MENU, self._OnMenuPathChosen, id=ItemId)
 		self._entry.SetMenu(self._menu)
 		self._entry.ShowSearchButton(False)
 		self.SetPath(0)

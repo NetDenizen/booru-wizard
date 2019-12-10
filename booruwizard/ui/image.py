@@ -309,17 +309,17 @@ class ImagePanel(wx.Panel):
 		"Change the index to the one specified in the event, if possible."
 		self.pos.set(message)
 		self._update()
-		self.ImageUpdateLayoutRefresh()
+		self._ImageUpdateLayoutRefresh()
 	def _OnLeft(self, message, arg2=None):
 		"Shift to the left (-1) image to the current position in the bitmap array if the position is greater than 0. Otherwise, loop around to the last item."
 		self.pos.dec()
 		self._update()
-		self.ImageUpdateLayoutRefresh()
+		self._ImageUpdateLayoutRefresh()
 	def _OnRight(self, message, arg2=None):
 		"Shift to the right (+1) image to the current position in the bitmap array if the position is less than the length of the bitmap array. Otherwise, loop around to the last item."
 		self.pos.inc()
 		self._update()
-		self.ImageUpdateLayoutRefresh()
+		self._ImageUpdateLayoutRefresh()
 	def _OnImageQualitySelect(self, e):
 		"Bound to EVT_RADIOBOX; update image quality from the relevant radio box."
 		selection = self.ImageQualityControl.GetSelection()
@@ -354,25 +354,25 @@ class ImagePanel(wx.Panel):
 	def _OnZoomInReceived(self, message, arg2=None):
 		self.UpdateZoomControls()
 		self.ZoomInButton.SetFocus()
-		self.ImageUpdateLayoutRefresh()
+		self._ImageUpdateLayoutRefresh()
 	def _OnZoomOutReceived(self, message, arg2=None):
 		self.UpdateZoomControls()
 		if self.ZoomOutButton.IsEnabled():
 			self.ZoomOutButton.SetFocus()
 		else:
 			self.ZoomInButton.SetFocus()
-		self.ImageUpdateLayoutRefresh()
+		self._ImageUpdateLayoutRefresh()
 	def _OnZoomFitReceived(self, message, arg2=None):
 		self.UpdateZoomControls()
 		self.ZoomInButton.SetFocus()
-		self.ImageUpdateLayoutRefresh()
+		self._ImageUpdateLayoutRefresh()
 	def _OnZoomActualReceived(self, message, arg2=None):
 		self.UpdateZoomControls()
 		if self.ZoomOutButton.IsEnabled():
 			self.ZoomOutButton.SetFocus()
 		else:
 			self.ZoomInButton.SetFocus()
-		self.ImageUpdateLayoutRefresh()
+		self._ImageUpdateLayoutRefresh()
 	def _OnOutputUpdateButton(self, e):
 		pub.sendMessage("FileUpdateForce", message=None)
 		e.Skip()
@@ -451,7 +451,7 @@ class ImagePanel(wx.Panel):
 		self.ZoomActualButton.SetToolTip(self.ZoomActualButtonTip)
 
 		self.bitmaps.AddPathsList(paths)
-		self.pos = CircularCounter( len(self.bitmaps.images) )
+		self.pos = CircularCounter(len(self.bitmaps.images) - 1)
 		if self.image.quality == wx.IMAGE_QUALITY_HIGH:
 			self.ImageQualityControl.SetSelection(0)
 		elif self.image.quality == wx.IMAGE_QUALITY_BICUBIC:
@@ -489,17 +489,18 @@ class ImagePanel(wx.Panel):
 		pub.subscribe(self._OnRight, "RightImage")
 
 		self._update()
-		self.ImageUpdateLayoutRefresh()
+		self._ImageUpdateLayoutRefresh()
 
 class ImageLabel(wx.Panel):
 	def _SetLabels(self):
 		"Set the path label to show the path at pos in the paths array, and the index label to show pos + 1 out of length of paths array."
 		self.PathEntry.SetPath( self.pos.get() )
 		self.IndexEntry.SetValue( str(self.pos.get() + 1) )
-		self.IndexLabel.SetLabel( ''.join( ( ' /', str( self.PathsEntry.GetPathsLen() ) ) ) )
+		self.IndexLabel.SetLabel( ''.join( ( ' /', str( self.PathEntry.GetPathsLen() ) ) ) )
 	def _OnIndexEntry(self, e):
 		"Send an IndexImage message, if the index value can be converted to an Int; otherwise, reset labels."
 		try:
+			print(int( self.IndexEntry.GetValue() ))
 			pub.sendMessage("IndexImage", message=int( self.IndexEntry.GetValue() ) - 1)
 		except ValueError: # TODO: Should this work with any exception?
 			self._SetLabels()
@@ -511,7 +512,7 @@ class ImageLabel(wx.Panel):
 	def _OnPathEntry(self, e):
 		"Send an IndexImage message, if the index of PathEntry contents can be found in paths; otherwise, try to autocomplete the contents."
 		try:
-			pub.sendMessage( "IndexImage", message=self.PathsEntry.SearchPath( self.PathEntry.GetPath() ) )
+			pub.sendMessage( "IndexImage", message=self.PathEntry.SearchPath( self.PathEntry.GetPath() ) )
 		except ValueError: # TODO: Should this work with any exception?
 			self.PathEntry.UpdateAutocomplete()
 		e.Skip()
@@ -540,15 +541,14 @@ class ImageLabel(wx.Panel):
 	def __init__(self, parent, paths):
 		wx.Panel.__init__(self, parent=parent)
 
-		self.PathEntry = PathEntry(paths)
-		self.pos = CircularCounter(self.PathEntry.GetPathsLen) # Position in paths
+		self.PathEntry = PathEntry(self, paths)
+		self.pos = CircularCounter(self.PathEntry.GetPathsLen() - 1) # Position in paths
 		self.IndexEntry = wx.TextCtrl(self, style= wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Editable display for current image index
 		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER) # Static part of image index display
 		self.IndexEntryTip = wx.ToolTip('Image index entry')
 		self.IndexLabelTip = wx.ToolTip('Total number of images')
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-		self.PathEntry.SetToolTip(self.PathEntryTip)
 		self.IndexEntry.SetToolTip(self.IndexEntryTip)
 		self.IndexLabel.SetToolTip(self.IndexLabelTip)
 

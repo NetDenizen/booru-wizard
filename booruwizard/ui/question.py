@@ -329,7 +329,7 @@ class EntryQuestion(EntryBase):
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
 		self.OutputFile = None # File data object
 		self.CurrentTags = None # Keep track of the tags controlled by the entry box
-		self.pos = CircularCounter(NumImages) # Position in entry strings
+		self.pos = CircularCounter(NumImages - 1) # Position in entry strings
 		self.EntryStrings = [""] * NumImages # The contents of the entry boxes must be saved between images.
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL | wx.TE_MULTILINE)
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
@@ -555,7 +555,7 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		TagChoiceQuestion.__init__(self, parent)
 
 		self.parent = parent
-		self.CurrentSource = CicularCounter( len(OutputFiles) ) # Current index in output files, for the source items
+		self.CurrentSource = CircularCounter(len(OutputFiles) - 1) # Current index in output files, for the source items
 		self.OutputFiles = OutputFiles # Array of all output files
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
 		self.OutputFile = OutputFiles[self.CurrentSource.get()] # File data object
@@ -860,8 +860,8 @@ class QuestionsContainer(wx.Panel):
 		wx.Panel.__init__(self, parent=parent)
 
 		self.NumQuestions = len(questions)
-		self.pos = CircularCounter( len(OutputFiles.InputPaths) ) # The position in positions
-		self.positions = [CircularCounter(self.NumQuestions) for i in OutputFiles.InputPaths] # The position in questions corresponding to each image
+		self.pos = CircularCounter(len(OutputFiles.InputPaths) - 1) # The position in positions
+		self.positions = [CircularCounter(self.NumQuestions - 1) for i in OutputFiles.InputPaths] # The position in questions corresponding to each image
 
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 		self.OutputFiles = OutputFiles # A FileManager object
