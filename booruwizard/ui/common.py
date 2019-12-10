@@ -40,7 +40,7 @@ class PathEntry:
 		self.entry.SetValue(self._paths[pos])
 	def GetPath(self):
 		"Get the current value of the entry."
-		self.entry.GetValue()
+		return self.entry.GetValue()
 	def GetMenuItemIds(self):
 		"Return a list of IDs for each menu item."
 		output = []
