@@ -394,6 +394,10 @@ class parser:
 		self.keybinds = []
 
 		self.output = [] # Output array of question objects
+	def _SetDefaultSafety(self, value):
+		self.DefaultSafety = value
+	def _SetDefaultImageQuality(self, value):
+		self.DefaultImageQuality = value
 	def _IsOptionQuestionPrepared(self):
 		"Return True if the state is NORMAL or if the state is OPTION_QUESTION and there is at least one option entry in its array."
 		if self._state == ParserState.NORMAL:
@@ -428,6 +432,8 @@ class parser:
 		else:
 			raise ParserError("Option name added when not in a question.", token.line, token.col)
 	def _AddOptionTag(self, token):
+		if len( token.value.split() ) > 1:
+			raise ParserError(''.join( ('Tag "', token.value, '" contains whitespace.') ), token.line, token.col)
 		if self._state == ParserState.OPTION_NAME:
 			self.output[-1].options[-1].tag = token.value
 			self._state = ParserState.OPTION_QUESTION
@@ -459,6 +465,11 @@ class parser:
 			self._AliasToString = token.value
 		else:
 			raise ParserError("Alias target added when in a question.", token.line, token.col)
+	def _SetFromLookup(self, lookup, token, errmsg, setter):
+		found = lookup.get(token.value, None)
+		if found is None:
+			raise ParserError(''.join( (errmsg, token.value, "'") ), token.line, token.col)
+		setter(found)
 	def _TryConversion(self, func, raw,  message, token):
 		try:
 			return func(raw)
@@ -481,8 +492,6 @@ class parser:
 		elif token.key == PairKey.OPTION_NAME:
 			self._AddOptionName(token)
 		elif token.key == PairKey.OPTION_TAG:
-			if len( token.value.split() ) > 1:
-				raise ParserError(''.join( ('Tag "', token.value, '" contains whitespace.') ), token.line, token.col)
 			self._AddOptionTag(token)
 		elif token.key == PairKey.DEFAULT_SOURCE:
 			self.DefaultSource = token.value
@@ -493,10 +502,7 @@ class parser:
 		elif token.key == PairKey.TAGLESS_TAG:
 			self.TaglessTags.SetString(token.value, 1)
 		elif token.key == PairKey.DEFAULT_SAFETY:
-			found = SAFETY_NAMES_LOOKUP.get(token.value, None)
-			if found is None:
-				raise ParserError(''.join( ("Invalid safety name '", token.value, "'") ), token.line, token.col)
-			self.DefaultSafety = found
+			self._SetFromLookup(SAFETY_NAMES_LOOKUP, token, "Invalid safety name '", self._SetDefaultSafety)
 		elif token.key == PairKey.MAX_OPEN_FILES:
 			self.MaxOpenFiles = self._TryConversion(int, token.value, ''.join( ("Failed to convert max open files '", token.value, "' to integer.") ), token)
 		elif token.key == PairKey.UPDATE_INTERVAL:
@@ -527,10 +533,7 @@ class parser:
 		elif token.key == PairKey.KEYBIND:
 			self.keybinds.append(token.value)
 		elif token.key == PairKey.DEFAULT_IMAGE_QUALITY:
-			found = IMAGE_QUALITY_LOOKUP.get(token.value.lower(), None)
-			if found is None:
-				raise ParserError(''.join( ("Invalid image quality name '", token.value, "'") ), token.line, token.col)
-			self.DefaultImageQuality = found
+			self._SetFromLookup(IMAGE_QUALITY_LOOKUP, token, "Invalid image quality name '", self._SetDefaultImageQuality)
 		elif token.key == PairKey.START_ZOOM_INTERVAL:
 			self.StartZoomInterval = self._TryConversion(float, token.value, ''.join( ("Failed to convert start zoom interval '", token.value, "' to float.") ), token)
 		elif token.key == PairKey.ZOOM_ACCEL:
