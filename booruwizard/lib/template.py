@@ -466,7 +466,7 @@ class parser:
 		else:
 			raise ParserError("Alias target added when in a question.", token.line, token.col)
 	def _SetFromLookup(self, lookup, token, errmsg, setter):
-		found = lookup.get(token.value, None)
+		found = lookup.get(token.value.lower(), None)
 		if found is None:
 			raise ParserError(''.join( (errmsg, token.value, "'") ), token.line, token.col)
 		setter(found)

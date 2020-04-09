@@ -44,15 +44,9 @@ SAFETY_NAMES_LOOKUP = {
 	'safe'         : safety.SAFE,
 	'questionable' : safety.QUESTIONABLE,
 	'explicit'     : safety.EXPLICIT,
-	'Safe'         : safety.SAFE,
-	'Questionable' : safety.QUESTIONABLE,
-	'Explicit'     : safety.EXPLICIT,
 	's'            : safety.SAFE,
 	'q'            : safety.QUESTIONABLE,
-	'e'            : safety.EXPLICIT,
-	'S'            : safety.SAFE,
-	'Q'            : safety.QUESTIONABLE,
-	'E'            : safety.EXPLICIT
+	'e'            : safety.EXPLICIT
 }
 
 SAFETY_VALUES_LOOKUP = {
