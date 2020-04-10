@@ -101,6 +101,18 @@ class TagsContainer:
 		"Clear a list of tags as a space terminated string."
 		names = string.split()
 		self.ClearStringList(names, value)
+	def has(self, name):
+		return (name and name in self.lookup and self.ReturnStringOccurrences(name) > 0)
+	def HasAnyOfStringList(self, strings):
+		for s in strings:
+			if self.has(s):
+				return True
+		return False
+	def HasAllOfStringList(self, strings):
+		for s in strings:
+			if not self.has(s):
+				return False
+		return True
 	def ReturnStringList(self):
 		"Return the list of tag objects with 1 or more occurrences as a list of strings."
 		output = []
