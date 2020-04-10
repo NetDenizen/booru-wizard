@@ -658,6 +658,233 @@ class SessionTagsImporter(wx.SplitterWindow):
 		self.SetMinimumPaneSize(1)
 		self.SplitVertically(self.SourceTags, self.OwnTags) # FIXME: For some reason, this does not want to split in the center, by default.
 
+class BulkTagger(wx.Panel):
+	def clear(self):
+		pass
+	def load(self, OutputFile):
+		pass
+	def disp(self):
+		pass
+	def _SetActionButtons(self, EnableRemove, EnableReplace, EnableAdd):
+		self.RemoveButton.Enable(EnableRemove)
+		self.ReplaceButton.Enable(EnableReplace)
+		self.AddButton.Enable(EnableAdd)
+	def _DisableButtons(self):
+		self._SetActionButtons(False, False, False)
+	def _AddNumber(self, value):
+		self.NumberEntry.write( ''.join( ( str(value), ' ' ) ) )
+	def _ProcessNumbers(self):
+		"Get list of indices from the NumberEntry, or disable actions on failure."
+		output = []
+		for group in self.NumberEntry.GetValue().split():
+			items = group.strip().split('-', 1)
+			items = tuple( (i.strip() for i in items) )
+			if len(items) == 1:
+				if items[0]:
+					try:
+						tmp = int(items[0])
+						if tmp <= 0 or tmp > len(self.OutputFiles):
+							raise ValueError()
+						output.append(tmp - 1)
+					except ValueError:
+						self._DisableButtons()
+						return
+			elif len(items) == 2:
+				if not items[0] or not items[1]:
+					self._DisableButtons()
+					return
+				else:
+					try:
+						start = int(items[0])
+						stop = int(items[1])
+						if start <= 0 or stop <= 0:
+							raise ValueError()
+						if start > stop:
+							tmp = start
+							start = stop
+							top = tmp
+						if stop > len(self.OutputFiles):
+							raise ValueError
+						output.extend( range(start - 1, stop - 1) )
+					except ValueError:
+						self._DisableButtons()
+						return
+		self._CalculateTagCoverage()
+		self.indices = output
+	def _CalculateTagCoverage(self):
+		"Compute the valid actions based on which tags are selected for which indices."
+		RemoveTags = ( e.strip() for e in self.RemoveEntry.GetValue().split() )
+		AddTags = ( e.strip() for e in self.AddEntry.GetValue().split() )
+		EnableRemove = False
+		EnableReplace = False
+		EnableAdd = False
+		for i in self.indices:
+			f = self.OutputFiles[i]
+			f.lock()
+			if f.tags.HasAnyOfStringList(RemoveTags):
+				EnableRemove = True
+			if not f.tags.HasAllOfStringList(AddTags):
+				EnableAdd = True
+			f.unlock()
+			if EnableRemove and EnableAdd:
+				EnableReplace = True
+				break
+		self._SetActionButtons(EnableRemove, EnableReplace, EnableAdd)
+	def _OnPathSearch(self, e):
+		"Update the search menu, based on matches found in the paths array."
+		self.PathEntry.UpdateMenu()
+		e.Skip()
+	def _OnMenuPathChosen(self, e):
+		"Set the path entry to the chosen menu value."
+		self.PathEntry.ChooseMenuItem(e.GetId())
+		e.Skip()
+	def _OnPathEntry(self, e):
+		"Send an IndexImage message, if the index of PathEntry contents can be found in paths; otherwise, try to autocomplete the contents."
+		try:
+			self._AddNumber(self.PathEntry.SearchPath( self.PathEntry.GetPath() ) + 1)
+		except ValueError: # TODO: Should this work with any exception?
+			self.PathEntry.UpdateAutocomplete()
+		e.Skip()
+	def _OnNumberEntry(self, e):
+		self._ProcessNumbers()
+		e.Skip()
+	def _OnUpdate(self, e):
+		self._CalculateTagCoverage()
+		e.Skip()
+	def _OnSwapEntryButton(self, e):
+		tmp = self.RemoveEntry.GetValue()
+		self.RemoveEntry.SetValue( self.AddEntry.GetValue() )
+		self.AddEntry.SetValue(tmp)
+		e.Skip()
+	def _OnRemoveButton(self, e):
+		RemoveTags = ( en.strip() for en in self.RemoveEntry.GetValue().split() )
+		for i in self.indices:
+			f = self.OutputFiles[i]
+			f.PrepareChange()
+			self.TagsTracker.SubStringList(f.tags.ReturnStringList(), 1)
+			f.tags.ClearStringList(RemoveTags, 2)
+			self.TagsTracker.AddStringList(f.tags.ReturnStringList(), 1)
+			f.FinishChange()
+		self._CalculateTagCoverage()
+		e.Skip()
+	def _OnReplaceButton(self, e):
+		RemoveTags = ( en.strip() for en in self.RemoveEntry.GetValue().split() )
+		AddTags = ( en.strip() for en in self.AddEntry.GetValue().split() )
+		for i in self.indices:
+			f = self.OutputFiles[i]
+			f.PrepareChange()
+			if f.tags.HasAnyOfStringList(RemoveTags):
+				self.TagsTracker.SubStringList(f.tags.ReturnStringList(), 1)
+				f.tags.ClearStringList(RemoveTags, 2)
+				f.tags.SetStringList(AddTags, 2)
+				self.TagsTracker.AddStringList(f.tags.ReturnStringList(), 1)
+			f.FinishChange()
+		self._CalculateTagCoverage()
+		e.Skip()
+	def _OnAddButton(self, e):
+		AddTags = ( en.strip() for en in self.AddEntry.GetValue().split() )
+		for i in self.indices:
+			f = self.OutputFiles[i]
+			f.PrepareChange()
+			self.TagsTracker.SubStringList(f.tags.ReturnStringList(), 1)
+			f.tags.SetStringList(AddTags, 2)
+			self.TagsTracker.AddStringList(f.tags.ReturnStringList(), 1)
+			f.FinishChange()
+		self._CalculateTagCoverage()
+		e.Skip()
+	def __init__(self, parent, OutputFiles, TagsTracker):
+		wx.Panel.__init__(self, parent=parent)
+
+		# Data
+		self.TagsTracker = TagsTracker # Global record of the number of tags in use
+		self.OutputFiles = OutputFiles # File data object
+		self.indices = []              # File indexes to apply our operations to
+
+		# Index selection controls
+		self.PathEntryLabel = wx.StaticText(self, label='Path Select')
+		self.PathEntry = PathEntry( self, tuple( (f.path for f in self.OutputFiles) ) )
+		self.NumberEntryLabel = wx.StaticText(self, label='to image indices')
+		self.NumberEntry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
+
+		# Tag entry controls
+		self.RemoveEntry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL | wx.TE_MULTILINE)
+		self.SwapEntryButton = wx.Button(self, label='Swap')
+		self.AddEntry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL | wx.TE_MULTILINE)
+
+		# Action controls
+		self.RemoveButton = wx.Button(self, label='Remove')
+		self.ReplaceButton = wx.Button(self, label='Replace')
+		self.AddButton = wx.Button(self, label='Add')
+
+		self._DisableButtons()
+
+		# Tooltips
+		self.NumberEntryTip = wx.ToolTip('Image numbers to operate on.')
+		self.RemoveEntryTip = wx.ToolTip('Tags to be removed.')
+		self.AddEntryTip = wx.ToolTip('Tags to be added.')
+		self.RemoveButtonTip = wx.ToolTip('Remove the tags listed in the left (remove) entry.')
+		self.ReplaceButtonTip = wx.ToolTip('If any tags listed in the left (remove) entry can be found, do the remove then add actions.')
+		self.AddButtonTip = wx.ToolTip('Add the tags listed in the right (add) entry.')
+
+		# Setting tooltips
+		self.NumberEntry.SetToolTip(self.NumberEntryTip)
+		self.RemoveEntry.SetToolTip(self.RemoveEntryTip)
+		self.AddEntry.SetToolTip(self.AddEntryTip)
+		self.RemoveButton.SetToolTip(self.RemoveButtonTip)
+		self.ReplaceButton.SetToolTip(self.ReplaceButtonTip)
+		self.AddButton.SetToolTip(self.AddButtonTip)
+
+		# Event binding
+		for i in self.PathEntry.GetMenuItemIds():
+			self.Bind(wx.EVT_MENU, self._OnMenuPathChosen, id=i)
+
+		self.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self._OnPathSearch, id=self.PathEntry.entry.GetId() )
+		self.Bind( wx.EVT_TEXT_ENTER, self._OnPathEntry, id=self.PathEntry.entry.GetId() )
+		self.Bind( wx.EVT_BUTTON, self._OnSwapEntryButton, id=self.SwapEntryButton.GetId() )
+		self.Bind( wx.EVT_TEXT, self._OnNumberEntry, id=self.NumberEntry.GetId() )
+		self.Bind( wx.EVT_TEXT, self._OnUpdate, id=self.RemoveEntry.GetId() )
+		self.Bind( wx.EVT_TEXT, self._OnUpdate, id=self.AddEntry.GetId() )
+		self.Bind( wx.EVT_BUTTON, self._OnRemoveButton, id=self.RemoveButton.GetId() )
+		self.Bind( wx.EVT_BUTTON, self._OnReplaceButton, id=self.ReplaceButton.GetId() )
+		self.Bind( wx.EVT_BUTTON, self._OnAddButton, id=self.AddButton.GetId() )
+
+		# Sizers
+		self.SelectionSizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.EntrySizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.ActionSizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		# Layout
+		self.SelectionSizer.Add(self.PathEntryLabel, 0, wx.CENTER | wx.ALIGN_CENTER)
+		self.SelectionSizer.AddStretchSpacer(1)
+		self.SelectionSizer.Add(self.PathEntry.entry, 50, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
+		self.SelectionSizer.AddStretchSpacer(1)
+		self.SelectionSizer.Add(self.NumberEntryLabel, 0, wx.CENTER | wx.ALIGN_CENTER)
+		self.SelectionSizer.AddStretchSpacer(1)
+		self.SelectionSizer.Add(self.NumberEntry, 50, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
+
+		self.EntrySizer.Add(self.RemoveEntry, 75, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
+		self.EntrySizer.AddStretchSpacer(1)
+		self.EntrySizer.Add(self.SwapEntryButton, 0, wx.CENTER | wx.ALIGN_CENTER | wx.SHAPED)
+		self.EntrySizer.AddStretchSpacer(1)
+		self.EntrySizer.Add(self.AddEntry, 75, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
+
+		self.ActionSizer.Add(self.RemoveButton, 0, wx.CENTER | wx.ALIGN_CENTER | wx.SHAPED)
+		self.ActionSizer.AddStretchSpacer(5)
+		self.ActionSizer.Add(self.ReplaceButton, 0, wx.CENTER | wx.ALIGN_CENTER | wx.SHAPED)
+		self.ActionSizer.AddStretchSpacer(5)
+		self.ActionSizer.Add(self.AddButton, 0, wx.CENTER | wx.ALIGN_CENTER | wx.SHAPED)
+
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.SelectionSizer, 2, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.EntrySizer, 25, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.ActionSizer, 2, wx.CENTER | wx.ALIGN_CENTER | wx.SHAPED)
+		self.sizer.AddStretchSpacer(1)
+
+		self.SetSizer(self.sizer)
+
 class SingleStringEntry(wx.Panel): # This class should never be used on its own
 	def _GetValueTemplate(self, get):
 		"Template to reduce code duplication in the _GetValue functions of child classes."
@@ -930,8 +1157,10 @@ class QuestionsContainer(wx.Panel):
 				self.QuestionWidgets.append( SafetyQuestion(self) )
 			elif q.type == QuestionType.IMAGE_TAGS_ENTRY:
 				self.QuestionWidgets.append( ImageTagsEntry(self, TagsTracker) )
-			else: # q.type == QuestionType.SESSION_TAGS_IMPORTER
+			elif q.type == QuestionType.SESSION_TAGS_IMPORTER:
 				self.QuestionWidgets.append( SessionTagsImporter(self, OutputFiles.ControlFiles, TagsTracker) )
+			else: # q.type == QuestionType.BULK_TAGGER:
+				self.QuestionWidgets.append( BulkTagger(self, OutputFiles.ControlFiles, TagsTracker) )
 			self.sizer.Add(self.QuestionWidgets[-1], proportion, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 			self.QuestionWidgets[-1].Hide()
 

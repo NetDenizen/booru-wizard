@@ -46,6 +46,7 @@ class PairKey(Enum):
 	ZOOM_ACCEL_STEPS              = 27
 	PAN_INTERVAL                  = 28
 	SESSION_TAGS_IMPORTER         = 29
+	BULK_TAGGER                   = 30
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 
 PAIR_KEY_NAMES = {
@@ -78,7 +79,8 @@ PAIR_KEY_NAMES = {
 	'zoom_accel'                    : PairKey.ZOOM_ACCEL,
 	'zoom_accel_steps'              : PairKey.ZOOM_ACCEL_STEPS,
 	'pan_interval'                  : PairKey.PAN_INTERVAL,
-	'session_tags_importer'         : PairKey.SESSION_TAGS_IMPORTER
+	'session_tags_importer'         : PairKey.SESSION_TAGS_IMPORTER,
+	'bulk_tagger'                   : PairKey.BULK_TAGGER
 }
 
 class KeyValuePair:
@@ -210,6 +212,7 @@ class QuestionType(Enum):
 	SAFETY_QUESTION       = 4 # Displays a RADIO_QUESTION that sets the content rating to 'Safe', 'Questionable', or 'Explicit'.
 	IMAGE_TAGS_ENTRY      = 5 # Displays an ENTRY_QUESTION with the current tags of the image.
 	SESSION_TAGS_IMPORTER = 6 # Displays a pane split between controls to select an image and commit its tags to the current one, check boxes to select which tags to move, and SESSION_TAGS for the current file on the right side.
+	BULK_TAGGER           = 7 # Displays a path entry which adds to a list of potentially dash-separated numbers to specify ranges. These specify the images to be targeted with remove, replace, and add operations of the tags specified in entry boxes.
 
 QuestionTypeLookup = {
 	PairKey.ENTRY_QUESTION        : QuestionType.ENTRY_QUESTION,
@@ -218,7 +221,8 @@ QuestionTypeLookup = {
 	PairKey.SOURCE_QUESTION       : QuestionType.SOURCE_QUESTION,
 	PairKey.SAFETY_QUESTION       : QuestionType.SAFETY_QUESTION,
 	PairKey.IMAGE_TAGS_ENTRY      : QuestionType.IMAGE_TAGS_ENTRY,
-	PairKey.SESSION_TAGS_IMPORTER : QuestionType.SESSION_TAGS_IMPORTER
+	PairKey.SESSION_TAGS_IMPORTER : QuestionType.SESSION_TAGS_IMPORTER,
+	PairKey.BULK_TAGGER           : QuestionType.BULK_TAGGER
 }
 
 class OptionQuestionType(Enum):
@@ -481,13 +485,14 @@ class parser:
 		if token.key == PairKey.RADIO_QUESTION or\
 		   token.key == PairKey.CHECK_QUESTION:
 			self._AddOptionQuestion(token)
-		elif token.key == PairKey.ENTRY_QUESTION   or\
-			 token.key == PairKey.NAME_QUESTION    or\
-			 token.key == PairKey.SOURCE_QUESTION  or\
-			 token.key == PairKey.SAFETY_QUESTION  or\
-			 token.key == PairKey.SESSION_TAGS     or\
-			 token.key == PairKey.IMAGE_TAGS_ENTRY or\
-			 token.key == PairKey.SESSION_TAGS_IMPORTER:
+		elif token.key == PairKey.ENTRY_QUESTION        or\
+			 token.key == PairKey.NAME_QUESTION         or\
+			 token.key == PairKey.SOURCE_QUESTION       or\
+			 token.key == PairKey.SAFETY_QUESTION       or\
+			 token.key == PairKey.SESSION_TAGS          or\
+			 token.key == PairKey.IMAGE_TAGS_ENTRY      or\
+			 token.key == PairKey.SESSION_TAGS_IMPORTER or\
+			 token.key == PairKey.BULK_TAGGER:
 			self._AddQuestion(token)
 		elif token.key == PairKey.OPTION_NAME:
 			self._AddOptionName(token)
