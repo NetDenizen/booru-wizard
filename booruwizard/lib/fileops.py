@@ -39,6 +39,7 @@ class safety(Enum): #TODO: Change name to rating
 
 DEFAULT_SAFETY = safety.QUESTIONABLE
 
+#TODO: Case insensitive dict
 SAFETY_NAMES_LOOKUP = {
 	'safe'         : safety.SAFE,
 	'questionable' : safety.QUESTIONABLE,
@@ -240,7 +241,7 @@ class FileData:
 		"Load the rating field from a JSON object."
 		rating = obj.get( 'rating', unfound() )
 		if isinstance(rating, str):
-			found = SAFETY_NAMES_LOOKUP.get(rating.lower(), None)
+			found = SAFETY_NAMES_LOOKUP.get(rating, None)
 			if found is None:
 				raise ControlFileError( ''.join( ("Invalid safety name '", rating, "'. Valid choices are: 's', 'q', 'e', 'safe', 'questionable', 'explicit', 'Safe', 'Questionable', 'Explicit'") ) )
 			self.rating = found
