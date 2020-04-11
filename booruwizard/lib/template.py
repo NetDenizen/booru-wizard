@@ -4,7 +4,7 @@ import re
 from enum import Enum
 import colorsys
 
-from booruwizard.lib.fileops import SAFETY_NAMES_LOOKUP, DEFAULT_SAFETY, DEFAULT_MAX_OPEN_FILES, DEFAULT_UPDATE_INTERVAL, DEFAULT_MAX_IMAGE_BUFSIZE, DEFAULT_IMAGE_QUALITY, IMAGE_QUALITY_LOOKUP
+from booruwizard.lib.fileops import CONFIG_SAFETY_NAMES_LOOKUP, DEFAULT_SAFETY, DEFAULT_MAX_OPEN_FILES, DEFAULT_UPDATE_INTERVAL, DEFAULT_MAX_IMAGE_BUFSIZE, DEFAULT_IMAGE_QUALITY, IMAGE_QUALITY_LOOKUP
 from booruwizard.lib.tag import TagsContainer, ConditionalTagger
 from booruwizard.lib.alphabackground import DEFAULT_COLOR1_PIXEL, DEFAULT_COLOR2_PIXEL, DEFAULT_SQUARE_WIDTH
 from booruwizard.lib.viewport import DEFAULT_ZOOM_INTERVAL, DEFAULT_ZOOM_ACCEL, DEFAULT_ZOOM_ACCEL_STEPS, DEFAULT_PAN_INTERVAL
@@ -507,7 +507,7 @@ class parser:
 		elif token.key == PairKey.TAGLESS_TAG:
 			self.TaglessTags.SetString(token.value, 1)
 		elif token.key == PairKey.DEFAULT_SAFETY:
-			self._SetFromLookup(SAFETY_NAMES_LOOKUP, token, "Invalid safety name '", self._SetDefaultSafety)
+			self._SetFromLookup(CONFIG_SAFETY_NAMES_LOOKUP, token, "Invalid safety name '", self._SetDefaultSafety)
 		elif token.key == PairKey.MAX_OPEN_FILES:
 			self.MaxOpenFiles = self._TryConversion(int, token.value, ''.join( ("Failed to convert max open files '", token.value, "' to integer.") ), token)
 		elif token.key == PairKey.UPDATE_INTERVAL:
