@@ -248,7 +248,7 @@ class FileData:
 		if isinstance(rating, str):
 			found = SAFETY_NAMES_LOOKUP.get(rating, None)
 			if found is None:
-				raise ControlFileError( ''.join( ("Invalid safety name '", rating, "'. Valid choices are: 's', 'q', 'e', 'safe', 'questionable', 'explicit', 'Safe', 'Questionable', 'Explicit'") ) )
+				raise ControlFileError( ''.join( ("Invalid safety name '", rating, "'. Valid choices are: 's' (safe), 'q' (questionable), 'e' (explicit).") ) )
 			self.rating = found
 		else:
 			raise ControlFileError( ''.join( ("'rating' field is '", self._GetJSONTypeName(rating), "' but must be included as a string. Valid choices are: 's', 'q', 'e', 'safe', 'questionable', 'explicit', 'Safe', 'Questionable', 'Explicit'") ) )
