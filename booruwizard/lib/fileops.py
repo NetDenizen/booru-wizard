@@ -39,7 +39,6 @@ class safety(Enum): #TODO: Change name to rating
 
 DEFAULT_SAFETY = safety.QUESTIONABLE
 
-#TODO: Case insensitive dict
 SAFETY_NAMES_LOOKUP = {
 	'safe'         : safety.SAFE,
 	'questionable' : safety.QUESTIONABLE,
