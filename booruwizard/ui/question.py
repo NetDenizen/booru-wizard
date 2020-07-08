@@ -979,12 +979,39 @@ class NameQuestion(SingleStringEntry):
 		self.Bind( wx.EVT_CHECKBOX, self._OnChange, id=self.checkbox.GetId() )
 
 class SourceQuestion(SingleStringEntry):
+	def _SetPathFormatReplacement(self):
+		self.PathFormatReplacement = None
+		self.OutputFile.lock()
+		FullPath = self.OutputFile.FullPath
+		self.OutputFile.unlock()
+		PatternValue = self.PathFormatPatternEntry.GetValue()
+		ReplaceValue = self.PathFormatReplaceEntry.GetValue()
+		if PatternValue and ReplaceValue:
+			try:
+				self.PathFormatReplacement = re.sub(PatternValue,
+													ReplaceValue,
+													FullPath)
+			except:
+				pass
+	def _SetPathFormatButtonState(self):
+		if self.PathFormatReplacement is not None:
+			self.PathFormatButton.Enable()
+		else:
+			self.PathFormatButton.Disable()
 	def load(self, OutputFile):
 		"Initialize the check question for a certain case."
 		self.OutputFile = OutputFile
 		self._ValueGetter = self.OutputFile.GetSource
 		self._ValueSetter = self.OutputFile.SetSource
 		self.OrigValue = self._GetValue()
+	def _OnPathFormatButton(self, e):
+		self.entry.ChangeValue(self.PathFormatReplacement)
+		self._SetValue()
+		e.Skip()
+	def _OnPathFormatEntry(self, e):
+		self._SetPathFormatReplacement()
+		self._SetPathFormatButtonState()
+		e.Skip()
 	def __init__(self, parent):
 		SingleStringEntry.__init__(self, parent)
 
@@ -996,16 +1023,43 @@ class SourceQuestion(SingleStringEntry):
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
 		self.RomanizeButtonTip = wx.ToolTip('Convert selected (or all) Kana characters to their Romaji equivalents.')
 		self.checkbox = wx.CheckBox(self, label= 'Use this source')
+		self.PathFormatButton = wx.Button(self, label='->')
+		self.PathFormatReplaceText = wx.StaticText(self, label='Replace')
+		self.PathFormatPatternEntry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
+		self.PathFormatWithText = wx.StaticText(self, label=' with')
+		self.PathFormatReplaceEntry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
+		self.PathFormatButtonTip = wx.ToolTip('Replace all Python regex backreferences in the source field with the corresponding groups.')
+		self.PathFormatPatternEntryTip = wx.ToolTip('Enter the Python regex which will be matched against the path of the current image.')
+		self.PathFormatReplaceEntryTip = wx.ToolTip('Enter the Python regex backreferences that will replace the pattern.')
+		self.PathFormatReplacement = None
+		self._SetPathFormatButtonState()
+
 		self.EntrySizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.PathFormatSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
+		self.PathFormatPatternEntry.SetToolTip(self.PathFormatPatternEntryTip)
+		self.PathFormatReplaceEntry.SetToolTip(self.PathFormatReplaceEntryTip)
+		self.PathFormatButton.SetToolTip(self.PathFormatButtonTip)
 
 		self.EntrySizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
 		self.EntrySizer.AddStretchSpacer(1)
 		self.EntrySizer.Add(self.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
 
+		self.PathFormatSizer.Add(self.PathFormatButton, 0, wx.ALIGN_CENTER)
+		self.PathFormatSizer.AddStretchSpacer(1)
+		self.PathFormatSizer.Add(self.PathFormatReplaceText, 0, wx.ALIGN_CENTER)
+		self.PathFormatSizer.AddStretchSpacer(1)
+		self.PathFormatSizer.Add(self.PathFormatPatternEntry, 60, wx.ALIGN_CENTER | wx.EXPAND)
+		self.PathFormatSizer.AddStretchSpacer(1)
+		self.PathFormatSizer.Add(self.PathFormatWithText, 0, wx.ALIGN_CENTER)
+		self.PathFormatSizer.AddStretchSpacer(1)
+		self.PathFormatSizer.Add(self.PathFormatReplaceEntry, 60, wx.ALIGN_CENTER | wx.EXPAND)
+
 		self.MainSizer.Add(self.EntrySizer, 40, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.AddStretchSpacer(15)
+		self.MainSizer.Add(self.PathFormatSizer, 40, wx.ALIGN_CENTER | wx.EXPAND)
 		self.MainSizer.AddStretchSpacer(15)
 		self.MainSizer.Add(self.RomanizeButton, 0, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
 		self.SetSizer(self.MainSizer)
@@ -1013,6 +1067,9 @@ class SourceQuestion(SingleStringEntry):
 		self.Bind( wx.EVT_BUTTON, self._OnRomanize, id=self.RomanizeButton.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnChange, id=self.entry.GetId() )
 		self.Bind( wx.EVT_CHECKBOX, self._OnChange, id=self.checkbox.GetId() )
+		self.Bind( wx.EVT_BUTTON, self._OnPathFormatButton, id=self.PathFormatButton.GetId() )
+		self.Bind( wx.EVT_TEXT, self._OnPathFormatEntry, id=self.PathFormatPatternEntry.GetId() )
+		self.Bind( wx.EVT_TEXT, self._OnPathFormatEntry, id=self.PathFormatReplaceEntry.GetId() )
 
 class SafetyQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 	def _UpdateSafety(self):

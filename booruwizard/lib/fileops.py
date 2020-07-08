@@ -185,6 +185,7 @@ class FileData:
 			return 'null'
 	def __init__(self, path, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
 		# The data fields
+		self.FullPath = path #TODO: Can we stuff this somewhere else?
 		self.path = os.path.basename(path)
 		self.rating = DefaultSafety
 		self.tags = TagsContainer()
