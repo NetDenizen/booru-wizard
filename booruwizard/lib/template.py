@@ -576,8 +576,10 @@ class parser:
 			self.PanInterval = self._TryConversion(float, token.value, ''.join( ("Failed to convert pan interval '", token.value, "' to float.") ), token)
 		elif token.key == PairKey.SOURCE_QUESTION_PATTERN:
 			self._SetSourceQuestionPattern(token)
-		else: #token.key == PairKey.SOURCE_QUESTION_REPLACEMENT:
+		elif token.key == PairKey.SOURCE_QUESTION_REPLACEMENT:
 			self._SetSourceQuestionReplacement(token)
+		else:
+			raise ParserError("Unhandled token.", token.line, token.col)
 	def parse(self, string):
 		"Parse the input string and leave the result in the output array."
 		self._lexer.parse(string)
