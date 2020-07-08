@@ -47,6 +47,8 @@ class PairKey(Enum):
 	PAN_INTERVAL                  = 28
 	SESSION_TAGS_IMPORTER         = 29
 	BULK_TAGGER                   = 30
+	SOURCE_QUESTION_PATTERN       = 31
+	SOURCE_QUESTION_REPLACEMENT   = 32
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 
 PAIR_KEY_NAMES = {
@@ -80,7 +82,9 @@ PAIR_KEY_NAMES = {
 	'zoom_accel_steps'              : PairKey.ZOOM_ACCEL_STEPS,
 	'pan_interval'                  : PairKey.PAN_INTERVAL,
 	'session_tags_importer'         : PairKey.SESSION_TAGS_IMPORTER,
-	'bulk_tagger'                   : PairKey.BULK_TAGGER
+	'bulk_tagger'                   : PairKey.BULK_TAGGER,
+	'source_question_pattern'		: PairKey.SOURCE_QUESTION_PATTERN,
+	'source_question_replacement'	: PairKey.SOURCE_QUESTION_REPLACEMENT
 }
 
 class KeyValuePair:
@@ -239,6 +243,12 @@ class question:
 		self.type = ThisType
 		self.text = text
 
+class SourceQuestion(question):
+	def __init__(self, ThisType, text):
+		super().__init__(ThisType, text)
+		self.DefaultPattern = ""
+		self.DefaultReplacement = ""
+
 class option:
 	def __init__(self, name, tag):
 		self.name = name
@@ -340,6 +350,7 @@ class ParserState(Enum):
 	OPTION_NAME     = 2 # When we added the name of an option and are waiting for the tag.
 	ALIAS_FROM      = 3 # When we added the tags to alias from and are waiting for the tags to alias to.
 	ALIAS_TO        = 4 # When we added the tags to alias to and are waiting for the tags to alias from.
+	SOURCE_QUESTION = 5 # When we are in a SOURCE_QUESTION.
 
 RE_HUMANSIZE = re.compile('^([0-9.]+)[ \t]*([a-zA-Z]*)$')
 SIZE_SPECIFIERS = {'kb'        : 1000.0,
@@ -404,7 +415,8 @@ class parser:
 		self.DefaultImageQuality = value
 	def _IsOptionQuestionPrepared(self):
 		"Return True if the state is NORMAL or if the state is OPTION_QUESTION and there is at least one option entry in its array."
-		if self._state == ParserState.NORMAL:
+		if self._state == ParserState.NORMAL or\
+		   self._state == ParserState.SOURCE_QUESTION:
 			return True
 		if self._state == ParserState.OPTION_NAME or\
 		   self._state == ParserState.ALIAS_FROM  or\
@@ -420,6 +432,10 @@ class parser:
 			raise ParserError("New question started while existing question or alias is being defined.", token.line, token.col)
 		self._state = ParserState.NORMAL
 		self.output.append( question(QuestionTypeLookup[token.key], token.value) )
+	def _AddSourceQuestion(self, token):
+		"Add a SOURCE_QUESTION to the end of output"
+		self._AddQuestion(token)
+		self._state = ParserState.SOURCE_QUESTION
 	def _AddOptionQuestion(self, token):
 		"Add a option question to the end of output if possible and adjust the state accordingly."
 		if not self._IsOptionQuestionPrepared():
@@ -469,6 +485,16 @@ class parser:
 			self._AliasToString = token.value
 		else:
 			raise ParserError("Alias target added when in a question.", token.line, token.col)
+	def _AddSourceQuestionPattern(self, token):
+		if self._state == ParserState.SOURCE_QUESTION:
+			self.output[-1].DefaultPattern = token.value
+		else:
+			raise ParserError("SOURCE_QUESTION_PATTERN added when not in a SOURCE_QUESTION.", token.line, token.col)
+	def _AddSourceQuestionReplacement(self, token):
+		if self._state == ParserState.SOURCE_QUESTION:
+			self.output[-1].DefaultReplacement = token.value
+		else:
+			raise ParserError("SOURCE_QUESTION_REPLACEMENT added when not in a SOURCE_QUESTION.", token.line, token.col)
 	def _SetFromLookup(self, lookup, token, errmsg, setter):
 		found = lookup.get(token.value.lower(), None)
 		if found is None:
@@ -485,9 +511,10 @@ class parser:
 		if token.key == PairKey.RADIO_QUESTION or\
 		   token.key == PairKey.CHECK_QUESTION:
 			self._AddOptionQuestion(token)
+		elif token.key == PairKey.SOURCE_QUESTION:
+			self._AddSourceQuestion(token)
 		elif token.key == PairKey.ENTRY_QUESTION        or\
 			 token.key == PairKey.NAME_QUESTION         or\
-			 token.key == PairKey.SOURCE_QUESTION       or\
 			 token.key == PairKey.SAFETY_QUESTION       or\
 			 token.key == PairKey.SESSION_TAGS          or\
 			 token.key == PairKey.IMAGE_TAGS_ENTRY      or\
@@ -545,8 +572,12 @@ class parser:
 			self.ZoomAccel = self._TryConversion(float, token.value, ''.join( ("Failed to convert zoom accel '", token.value, "' to float.") ), token)
 		elif token.key == PairKey.ZOOM_ACCEL_STEPS:
 			self.ZoomAccelSteps = self._TryConversion(float, token.value, ''.join( ("Failed to convert zoom accel steps '", token.value, "' to float.") ), token)
-		else: # token.key == PairKey.PAN_INTERVAL:
+		elif token.key == PairKey.PAN_INTERVAL:
 			self.PanInterval = self._TryConversion(float, token.value, ''.join( ("Failed to convert pan interval '", token.value, "' to float.") ), token)
+		elif token.key == PairKey.SOURCE_QUESTION_PATTERN:
+			self._SetSourceQuestionPattern(token)
+		else: #token.key == PairKey.SOURCE_QUESTION_REPLACEMENT:
+			self._SetSourceQuestionReplacement(token)
 	def parse(self, string):
 		"Parse the input string and leave the result in the output array."
 		self._lexer.parse(string)
