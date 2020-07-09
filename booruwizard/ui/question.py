@@ -1003,16 +1003,15 @@ class SourceQuestion(SingleStringEntry):
 			if value == i.GetItemLabel():
 				return True
 		return False
-	def _AddPathFormatMenuItem(self, entry, menu, func):
-		value = entry.GetValue()
+	def _AddPathFormatMenuItem(self, value, menu, func):
 		if not self._MenuItemExists(value, menu):
 			NewId = wx.NewId()
 			item = wx.MenuItem(menu, NewId, value, value)
 			menu.Append(item)
 			self.Bind(wx.EVT_MENU, func, id=NewId)
 	def _UpdatePathFormatMenuItems(self):
-		self._AddPathFormatMenuItem(self.PathFormatPatternEntry, self.PathFormatPatternMenu, self._OnPathFormatPatternMenuItemChosen)
-		self._AddPathFormatMenuItem(self.PathFormatReplaceEntry, self.PathFormatReplaceMenu, self._OnPathFormatReplaceMenuItemChosen)
+		self._AddPathFormatMenuItem(self.PathFormatPatternEntry.GetValue(), self.PathFormatPatternMenu, self._OnPathFormatPatternMenuItemChosen)
+		self._AddPathFormatMenuItem(self.PathFormatReplaceEntry.GetValue(), self.PathFormatReplaceMenu, self._OnPathFormatReplaceMenuItemChosen)
 	def load(self, OutputFile):
 		"Initialize the check question for a certain case."
 		self.OutputFile = OutputFile
@@ -1040,7 +1039,7 @@ class SourceQuestion(SingleStringEntry):
 		#self._SetPathFormatReplacement()
 		#self._SetPathFormatButtonState()
 		e.Skip()
-	def __init__(self, parent):
+	def __init__(self, parent, q):
 		SingleStringEntry.__init__(self, parent)
 
 		self.OutputFile = None # File data object
@@ -1068,6 +1067,12 @@ class SourceQuestion(SingleStringEntry):
 		self.PathFormatPatternEntry.ShowSearchButton(False)
 		self.PathFormatReplaceEntry.SetMenu(self.PathFormatReplaceMenu)
 		self.PathFormatReplaceEntry.ShowSearchButton(False)
+
+		#TODO: Rewrite?
+		for v in q.DefaultPattern:
+			self._AddPathFormatMenuItem(v, self.PathFormatPatternMenu, self._OnPathFormatPatternMenuItemChosen):
+		for v in q.DefaulReplacement:
+			self._AddPathFormatMenuItem(v, self.PathFormatReplaceMenu, self._OnPathFormatReplaceMenuItemChosen):
 
 		self.EntrySizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.PathFormatSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1243,7 +1248,7 @@ class QuestionsContainer(wx.Panel):
 				self.QuestionWidgets.append( NameQuestion(self) )
 				proportion = 0
 			elif q.type == QuestionType.SOURCE_QUESTION:
-				self.QuestionWidgets.append( SourceQuestion(self) )
+				self.QuestionWidgets.append( SourceQuestion(self, q) )
 				proportion = 0
 			elif q.type == QuestionType.SAFETY_QUESTION:
 				self.QuestionWidgets.append( SafetyQuestion(self) )
