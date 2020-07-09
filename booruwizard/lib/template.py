@@ -426,15 +426,15 @@ class parser:
 			return False
 		else:
 			return True
-	def _AddQuestion(self, token):
+	def _AddQuestion(self, constructor, token):
 		"Add a non-option question to the end of output"
 		if not self._IsOptionQuestionPrepared():
 			raise ParserError("New question started while existing question or alias is being defined.", token.line, token.col)
 		self._state = ParserState.NORMAL
-		self.output.append( question(QuestionTypeLookup[token.key], token.value) )
+		self.output.append( constructor(QuestionTypeLookup[token.key], token.value) )
 	def _AddSourceQuestion(self, token):
 		"Add a SOURCE_QUESTION to the end of output"
-		self._AddQuestion(token)
+		self._AddQuestion(SourceQuestion, token)
 		self._state = ParserState.SOURCE_QUESTION
 	def _AddOptionQuestion(self, token):
 		"Add a option question to the end of output if possible and adjust the state accordingly."
@@ -522,7 +522,7 @@ class parser:
 			 token.key == PairKey.IMAGE_TAGS_ENTRY      or\
 			 token.key == PairKey.SESSION_TAGS_IMPORTER or\
 			 token.key == PairKey.BULK_TAGGER:
-			self._AddQuestion(token)
+			self._AddQuestion(question, token)
 		elif token.key == PairKey.OPTION_NAME:
 			self._AddOptionName(token)
 		elif token.key == PairKey.OPTION_TAG:

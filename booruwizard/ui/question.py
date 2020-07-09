@@ -1070,9 +1070,9 @@ class SourceQuestion(SingleStringEntry):
 
 		#TODO: Rewrite?
 		for v in q.DefaultPattern:
-			self._AddPathFormatMenuItem(v, self.PathFormatPatternMenu, self._OnPathFormatPatternMenuItemChosen):
-		for v in q.DefaulReplacement:
-			self._AddPathFormatMenuItem(v, self.PathFormatReplaceMenu, self._OnPathFormatReplaceMenuItemChosen):
+			self._AddPathFormatMenuItem(v, self.PathFormatPatternMenu, self._OnPathFormatPatternMenuItemChosen)
+		for v in q.DefaultReplacement:
+			self._AddPathFormatMenuItem(v, self.PathFormatReplaceMenu, self._OnPathFormatReplaceMenuItemChosen)
 
 		self.EntrySizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.PathFormatSizer = wx.BoxSizer(wx.HORIZONTAL)
