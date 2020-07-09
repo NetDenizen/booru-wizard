@@ -486,11 +486,13 @@ class parser:
 		else:
 			raise ParserError("Alias target added when in a question.", token.line, token.col)
 	def _AddSourceQuestionPattern(self, token):
+		#TODO: Rewrite?
 		if self._state == ParserState.SOURCE_QUESTION:
 			self.output[-1].DefaultPattern = token.value
 		else:
 			raise ParserError("SOURCE_QUESTION_PATTERN added when not in a SOURCE_QUESTION.", token.line, token.col)
 	def _AddSourceQuestionReplacement(self, token):
+		#TODO: Rewrite?
 		if self._state == ParserState.SOURCE_QUESTION:
 			self.output[-1].DefaultReplacement = token.value
 		else:
