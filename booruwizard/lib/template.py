@@ -246,8 +246,8 @@ class question:
 class SourceQuestion(question):
 	def __init__(self, ThisType, text):
 		super().__init__(ThisType, text)
-		self.DefaultPattern = ""
-		self.DefaultReplacement = ""
+		self.DefaultPattern = []
+		self.DefaultReplacement = []
 
 class option:
 	def __init__(self, name, tag):
@@ -488,13 +488,13 @@ class parser:
 	def _AddSourceQuestionPattern(self, token):
 		#TODO: Rewrite?
 		if self._state == ParserState.SOURCE_QUESTION:
-			self.output[-1].DefaultPattern = token.value
+			self.output[-1].DefaultPattern.append(token.value)
 		else:
 			raise ParserError("SOURCE_QUESTION_PATTERN added when not in a SOURCE_QUESTION.", token.line, token.col)
 	def _AddSourceQuestionReplacement(self, token):
 		#TODO: Rewrite?
 		if self._state == ParserState.SOURCE_QUESTION:
-			self.output[-1].DefaultReplacement = token.value
+			self.output[-1].DefaultReplacement.append(token.value)
 		else:
 			raise ParserError("SOURCE_QUESTION_REPLACEMENT added when not in a SOURCE_QUESTION.", token.line, token.col)
 	def _SetFromLookup(self, lookup, token, errmsg, setter):
