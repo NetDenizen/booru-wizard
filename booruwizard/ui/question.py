@@ -998,6 +998,21 @@ class SourceQuestion(SingleStringEntry):
 			self.PathFormatButton.Enable()
 		else:
 			self.PathFormatButton.Disable()
+	def _MenuItemExists(self, value, menu):
+		for i in menu.GetMenuItems():
+			if value == i.GetItemLabel():
+				return True
+		return False
+	def _AddPathFormatMenuItem(self, entry, menu, func):
+		value = entry.GetValue()
+		if not self._MenuItemExists(value, menu):
+			NewId = wx.NewId()
+			item = wx.MenuItem(menu, NewId, value, value)
+			menu.Append(item)
+			self.Bind(wx.EVT_MENU, func, id=NewId)
+	def _UpdatePathFormatMenuItems(self):
+		self._AddPathFormatMenuItem(self.PathFormatPatternEntry, self.PathFormatPatternMenu, self._OnPathFormatPatternMenuItemChosen)
+		self._AddPathFormatMenuItem(self.PathFormatReplaceEntry, self.PathFormatReplaceMenu, self._OnPathFormatReplaceMenuItemChosen)
 	def load(self, OutputFile):
 		"Initialize the check question for a certain case."
 		self.OutputFile = OutputFile
@@ -1006,11 +1021,24 @@ class SourceQuestion(SingleStringEntry):
 		self.OrigValue = self._GetValue()
 	def _OnPathFormatButton(self, e):
 		self.entry.ChangeValue(self.PathFormatReplacement)
+		self._UpdatePathFormatMenuItems()
 		self._SetValue()
 		e.Skip()
 	def _OnPathFormatEntry(self, e):
 		self._SetPathFormatReplacement()
 		self._SetPathFormatButtonState()
+		e.Skip()
+	def _OnPathFormatPatternMenuItemChosen(self, e):
+		#TODO: Rewrite?
+		self.PathFormatPatternEntry.SetValue( self.PathFormatPatternMenu.FindItemById( e.GetId() ).GetItemLabel() )
+		#self._SetPathFormatReplacement()
+		#self._SetPathFormatButtonState()
+		e.Skip()
+	def _OnPathFormatReplaceMenuItemChosen(self, e):
+		#TODO: Rewrite?
+		self.PathFormatReplaceEntry.SetValue( self.PathFormatReplaceMenu.FindItemById( e.GetId() ).GetItemLabel() )
+		#self._SetPathFormatReplacement()
+		#self._SetPathFormatButtonState()
 		e.Skip()
 	def __init__(self, parent):
 		SingleStringEntry.__init__(self, parent)
@@ -1025,14 +1053,21 @@ class SourceQuestion(SingleStringEntry):
 		self.checkbox = wx.CheckBox(self, label= 'Use this source')
 		self.PathFormatButton = wx.Button(self, label='->')
 		self.PathFormatReplaceText = wx.StaticText(self, label='Replace')
-		self.PathFormatPatternEntry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
+		self.PathFormatPatternEntry = wx.SearchCtrl(self, style= wx.TE_NOHIDESEL)
+		self.PathFormatPatternMenu = wx.Menu()
 		self.PathFormatWithText = wx.StaticText(self, label=' with')
-		self.PathFormatReplaceEntry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
+		self.PathFormatReplaceEntry = wx.SearchCtrl(self, style= wx.TE_NOHIDESEL)
+		self.PathFormatReplaceMenu = wx.Menu()
 		self.PathFormatButtonTip = wx.ToolTip('Replace all Python regex backreferences in the source field with the corresponding groups.')
 		self.PathFormatPatternEntryTip = wx.ToolTip('Enter the Python regex which will be matched against the path of the current image.')
 		self.PathFormatReplaceEntryTip = wx.ToolTip('Enter the Python regex backreferences that will replace the pattern.')
 		self.PathFormatReplacement = None
 		self._SetPathFormatButtonState()
+
+		self.PathFormatPatternEntry.SetMenu(self.PathFormatPatternMenu)
+		self.PathFormatPatternEntry.ShowSearchButton(False)
+		self.PathFormatReplaceEntry.SetMenu(self.PathFormatReplaceMenu)
+		self.PathFormatReplaceEntry.ShowSearchButton(False)
 
 		self.EntrySizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.PathFormatSizer = wx.BoxSizer(wx.HORIZONTAL)
