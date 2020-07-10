@@ -53,43 +53,9 @@ class PairKey(Enum):
 	ADDED_TAGS_ENTRY			  = 34
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 
-PAIR_KEY_NAMES = {
-	'radio_question'                : PairKey.RADIO_QUESTION,
-	'check_question'                : PairKey.CHECK_QUESTION,
-	'option_name'                   : PairKey.OPTION_NAME,
-	'option_tag'                    : PairKey.OPTION_TAG,
-	'entry_question'                : PairKey.ENTRY_QUESTION,
-	'session_tags'                  : PairKey.SESSION_TAGS,
-	'name_question'                 : PairKey.NAME_QUESTION,
-	'source_question'               : PairKey.SOURCE_QUESTION,
-	'default_source'                : PairKey.DEFAULT_SOURCE,
-	'nameless_tag'                  : PairKey.NAMELESS_TAG,
-	'sourceless_tag'                : PairKey.SOURCELESS_TAG,
-	'tagless_tag'                   : PairKey.TAGLESS_TAG,
-	'safety_question'               : PairKey.SAFETY_QUESTION,
-	'default_safety'                : PairKey.DEFAULT_SAFETY,
-	'max_open_files'                : PairKey.MAX_OPEN_FILES,
-	'update_interval'               : PairKey.UPDATE_INTERVAL,
-	'max_image_bufsize'             : PairKey.MAX_IMAGE_BUFSIZE,
-	'alias_tag_to'                  : PairKey.ALIAS_TAG_TO,
-	'alias_tag_from'                : PairKey.ALIAS_TAG_FROM,
-	'image_background_color_one'    : PairKey.IMAGE_BACKGROUND_COLOR_ONE,
-	'image_background_color_two'    : PairKey.IMAGE_BACKGROUND_COLOR_TWO,
-	'image_background_square_width' : PairKey.IMAGE_BACKGROUND_SQUARE_WIDTH,
-	'keybind'                       : PairKey.KEYBIND,
-	'image_tags_entry'              : PairKey.IMAGE_TAGS_ENTRY,
-	'default_image_quality'         : PairKey.DEFAULT_IMAGE_QUALITY,
-	'start_zoom_interval'           : PairKey.START_ZOOM_INTERVAL,
-	'zoom_accel'                    : PairKey.ZOOM_ACCEL,
-	'zoom_accel_steps'              : PairKey.ZOOM_ACCEL_STEPS,
-	'pan_interval'                  : PairKey.PAN_INTERVAL,
-	'session_tags_importer'         : PairKey.SESSION_TAGS_IMPORTER,
-	'bulk_tagger'                   : PairKey.BULK_TAGGER,
-	'source_question_pattern'		: PairKey.SOURCE_QUESTION_PATTERN,
-	'source_question_replacement'	: PairKey.SOURCE_QUESTION_REPLACEMENT,
-	'added_tags'					: PairKey.ADDED_TAGS,
-	'added_tags_entry'				: PairKey.ADDED_TAGS_ENTRY
-}
+PAIR_KEY_NAMES = {}
+for k in PairKey:
+	PAIR_KEY_NAMES[k.name.lower()] = k
 
 class KeyValuePair:
 	def __init__(self, line, col, key, value):
