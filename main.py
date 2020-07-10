@@ -12,7 +12,7 @@ import wx
 from pubsub import pub
 
 from booruwizard.lib.tag import TagsContainer
-from booruwizard.lib.template import parser
+from booruwizard.lib.template import parser, OptionQuestion
 from booruwizard.lib.fileops import FileManager
 from booruwizard.lib.viewport import ViewPort
 from booruwizard.lib.keyhandler import KeyHandler
@@ -158,6 +158,13 @@ def main():
 	viewport = ViewPort(config.BackgroundColor1, config.BackgroundColor2, config.BackgroundSquareWidth,
 						config.StartZoomInterval, config.ZoomAccel, config.ZoomAccelSteps, config.PanInterval)
 
+	TagsTracker = TagsContainer()
+	for q in config.output:
+		if not isinstance(q, OptionQuestion):
+			continue
+		for t in q.GetChoiceTags():
+			TagsTracker.RegisterConfig(t)
+
 	OutputFiles = FileManager(config.MaxOpenFiles, config.UpdateInterval)
 	OutputFiles.FilesLock.acquire()
 	for p in ImagePaths:
@@ -173,7 +180,6 @@ def main():
 	if not OutputFiles.ControlFiles:
 		raise MainError('No input files found.')
 
-	TagsTracker = TagsContainer()
 	for f in OutputFiles.ControlFiles:
 		TagsTracker.AddStringList(f.tags.ReturnStringList(), 1)
 	OutputFiles.FilesLock.release()

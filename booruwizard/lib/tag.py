@@ -7,6 +7,7 @@ class tag:
 	def __init__(self, name):
 		self.name = name # Name of tag.
 		self.occurrences = 0 # Number of times a tag has occurred
+		self.ConfigTag = False # This flag is registered in the configuration file.
 	def sub(self, val):
 		"Subtract a value from the occurrences if the outcome is greater than 0."
 		occurrences = self.occurrences - val
@@ -33,6 +34,12 @@ class TagsContainer:
 			return new
 		else:
 			return found
+	def RegisterConfig(self, name):
+		"Register a given tag object, and set it to be a ConfigTag."
+		if not name:
+			return
+		registered = self.register(name)
+		registered.ConfigTag = True
 	def set(self, name, value):
 		"Register a tag object and set its occurrences to the specified value, if that value is greater than the current number of occurrences."
 		if not name:
@@ -113,6 +120,15 @@ class TagsContainer:
 			if not self.has(s):
 				return False
 		return True
+	def HasConfigTag(self, name):
+		"Determine if a ConfigTag is registered under a given name, and it has more than one occurrences."
+		if not name:
+			return False
+		registered = self.register(name)
+		if registered.occurrences > 0 and registered.ConfigTag:
+			return True
+		else:
+			return False
 	def ReturnStringList(self):
 		"Return the list of tag objects with 1 or more occurrences as a list of strings."
 		output = []

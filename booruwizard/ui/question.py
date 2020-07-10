@@ -399,8 +399,8 @@ class ImageTagsEntry(EntryBase):
 		self.Bind( wx.EVT_WINDOW_DESTROY, self._OnUpdateEvent, id=self.GetId() ) # TODO Should we bind to EVT_SET_FOCUS too?
 
 class SessionTags(TagChoiceQuestion):
-	def _MakeNames(self):
-		RawNames = self.TagsTracker.ReturnStringList()
+	def _MakeNamesFrom(self, func):
+		RawNames = func()
 		UserNames = []
 		AutoNames = []
 		NoneNames = []
@@ -417,6 +417,8 @@ class SessionTags(TagChoiceQuestion):
 		output.extend(AutoNames)
 		output.extend(NoneNames)
 		return output
+	def _MakeNames(self):
+		return self._MakeNamesFrom(self.TagsTracker.ReturnStringList)
 	def _OnScrollTop(self, e):
 		"Prevent the widget from scrolling to the top when a box is checked."
 		e.StopPropagation()
@@ -470,6 +472,41 @@ class SessionTags(TagChoiceQuestion):
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.SetSizer(self.sizer)
+
+class AddedTags(SessionTags):
+	def _FilterStringList(self):
+		output = []
+		for n in self.TagsTracker.ReturnStringList():
+			if not self.TagsTracker.HasConfigTag(n):
+				output.append(n)
+		return output
+	def _MakeNames(self):
+		return self._MakeNamesFrom(self._FilterStringList)
+
+class SplitterQuestion(wx.SplitterWindow): # This class should never be used on its own
+	def load(self, OutputFile):
+		"Initialize the question for a certain case."
+		self.first.load(OutputFile)
+		self.second.load(OutputFile)
+	def clear(self):
+		"Clear the question for the given case."
+		self.first.clear()
+		self.second.clear()
+	def disp(self):
+		"Display the updated question for the given case."
+		self.first.disp()
+		self.second.disp()
+		self.second.Layout()
+
+class AddedTagsEntry(SplitterQuestion):
+	def __init__(self, parent, NumImages, OutputFiles, TagsTracker):
+		wx.SplitterWindow.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
+
+		self.first = EntryQuestion(self, NumImages, TagsTracker)
+		self.second = AddedTags(self, TagsTracker)
+
+		self.SetMinimumPaneSize(1)
+		self.SplitVertically(self.first, self.second) # FIXME: For some reason, this does not want to split in the center, by default.
 
 class ImageTagsList(TagChoiceQuestion): # This class should never be used on its own
 	def _SetIndex(self):
@@ -635,28 +672,16 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		self.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self._OnPathSearch, id=self.PathEntry.entry.GetId() )
 		self.Bind( wx.EVT_TEXT_ENTER, self._OnPathEntry, id=self.PathEntry.entry.GetId() )
 
-class SessionTagsImporter(wx.SplitterWindow):
-	def load(self, OutputFile):
-		"Initialize the question for a certain case."
-		self.SourceTags.load(OutputFile)
-		self.OwnTags.load(OutputFile)
-	def clear(self):
-		"Clear the question for the given case."
-		self.SourceTags.clear()
-		self.OwnTags.clear()
-	def disp(self):
-		"Display the updated question for the given case."
-		self.SourceTags.disp()
-		self.OwnTags.disp()
-		self.OwnTags.Layout()
+class SessionTagsImporter(SplitterQuestion):
 	def __init__(self, parent, OutputFiles, TagsTracker):
 		wx.SplitterWindow.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
 
-		self.SourceTags = ImageTagsList(self, OutputFiles, TagsTracker)
-		self.OwnTags = SessionTags(self, TagsTracker)
+		self.first = ImageTagsList(self, OutputFiles, TagsTracker)
+		self.second = SessionTags(self, TagsTracker)
+		self.OwnTags = self.second
 
 		self.SetMinimumPaneSize(1)
-		self.SplitVertically(self.SourceTags, self.OwnTags) # FIXME: For some reason, this does not want to split in the center, by default.
+		self.SplitVertically(self.first, self.second) # FIXME: For some reason, this does not want to split in the center, by default.
 
 class BulkTagger(wx.Panel):
 	def clear(self):
@@ -1226,6 +1251,8 @@ class QuestionsContainer(wx.Panel):
 	def __init__(self, parent, TagsTracker, questions, OutputFiles):
 		wx.Panel.__init__(self, parent=parent)
 
+		NumImages = len(OutputFiles.InputPaths)
+
 		self.NumQuestions = len(questions)
 		self.LockQuestion = False
 		self.pos = CircularCounter(len(OutputFiles.InputPaths) - 1) # The position in positions
@@ -1241,7 +1268,7 @@ class QuestionsContainer(wx.Panel):
 			elif q.type == OptionQuestionType.CHECK_QUESTION:
 				self.QuestionWidgets.append( CheckQuestion(self, TagsTracker, q) )
 			elif q.type == QuestionType.ENTRY_QUESTION:
-				self.QuestionWidgets.append( EntryQuestion(self, len(OutputFiles.InputPaths), TagsTracker) )
+				self.QuestionWidgets.append( EntryQuestion(self, NumImages, TagsTracker) )
 			elif q.type == QuestionType.SESSION_TAGS:
 				self.QuestionWidgets.append( SessionTags(self, TagsTracker) )
 			elif q.type == QuestionType.NAME_QUESTION:
@@ -1256,8 +1283,15 @@ class QuestionsContainer(wx.Panel):
 				self.QuestionWidgets.append( ImageTagsEntry(self, TagsTracker) )
 			elif q.type == QuestionType.SESSION_TAGS_IMPORTER:
 				self.QuestionWidgets.append( SessionTagsImporter(self, OutputFiles.ControlFiles, TagsTracker) )
-			else: # q.type == QuestionType.BULK_TAGGER:
+			elif q.type == QuestionType.BULK_TAGGER:
 				self.QuestionWidgets.append( BulkTagger(self, OutputFiles.ControlFiles, TagsTracker) )
+			elif q.type == QuestionType.ADDED_TAGS:
+				self.QuestionWidgets.append( AddedTags(self, TagsTracker) )
+			elif q.type == QuestionType.ADDED_TAGS_ENTRY:
+				self.QuestionWidgets.append( AddedTagsEntry(self, NumImages, OutputFiles, TagsTracker) )
+			else:
+				#TODO: Rewrite?
+				raise ValueError() # We should never get this.
 			self.sizer.Add(self.QuestionWidgets[-1], proportion, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 			self.QuestionWidgets[-1].Hide()
 

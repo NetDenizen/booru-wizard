@@ -49,6 +49,8 @@ class PairKey(Enum):
 	BULK_TAGGER                   = 30
 	SOURCE_QUESTION_PATTERN       = 31
 	SOURCE_QUESTION_REPLACEMENT   = 32
+	ADDED_TAGS                    = 33
+	ADDED_TAGS_ENTRY			  = 34
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 
 PAIR_KEY_NAMES = {
@@ -84,7 +86,9 @@ PAIR_KEY_NAMES = {
 	'session_tags_importer'         : PairKey.SESSION_TAGS_IMPORTER,
 	'bulk_tagger'                   : PairKey.BULK_TAGGER,
 	'source_question_pattern'		: PairKey.SOURCE_QUESTION_PATTERN,
-	'source_question_replacement'	: PairKey.SOURCE_QUESTION_REPLACEMENT
+	'source_question_replacement'	: PairKey.SOURCE_QUESTION_REPLACEMENT,
+	'added_tags'					: PairKey.ADDED_TAGS,
+	'added_tags_entry'				: PairKey.ADDED_TAGS_ENTRY
 }
 
 class KeyValuePair:
@@ -217,6 +221,8 @@ class QuestionType(Enum):
 	IMAGE_TAGS_ENTRY      = 5 # Displays an ENTRY_QUESTION with the current tags of the image.
 	SESSION_TAGS_IMPORTER = 6 # Displays a pane split between controls to select an image and commit its tags to the current one, check boxes to select which tags to move, and SESSION_TAGS for the current file on the right side.
 	BULK_TAGGER           = 7 # Displays a path entry which adds to a list of potentially dash-separated numbers to specify ranges. These specify the images to be targeted with remove, replace, and add operations of the tags specified in entry boxes.
+	ADDED_TAGS            = 8 # Displays a special SESSION_TAGS which only displays tags not present in the configuration file.
+	ADDED_TAGS_ENTRY      = 9 # Displays a pane split between an ENTRY_QUESTION and an ADDED_TAGS.
 
 QuestionTypeLookup = {
 	PairKey.ENTRY_QUESTION        : QuestionType.ENTRY_QUESTION,
@@ -226,7 +232,9 @@ QuestionTypeLookup = {
 	PairKey.SAFETY_QUESTION       : QuestionType.SAFETY_QUESTION,
 	PairKey.IMAGE_TAGS_ENTRY      : QuestionType.IMAGE_TAGS_ENTRY,
 	PairKey.SESSION_TAGS_IMPORTER : QuestionType.SESSION_TAGS_IMPORTER,
-	PairKey.BULK_TAGGER           : QuestionType.BULK_TAGGER
+	PairKey.BULK_TAGGER           : QuestionType.BULK_TAGGER,
+	PairKey.ADDED_TAGS            : QuestionType.ADDED_TAGS,
+	PairKey.ADDED_TAGS_ENTRY      : QuestionType.ADDED_TAGS_ENTRY
 }
 
 class OptionQuestionType(Enum):
@@ -521,7 +529,9 @@ class parser:
 			 token.key == PairKey.SESSION_TAGS          or\
 			 token.key == PairKey.IMAGE_TAGS_ENTRY      or\
 			 token.key == PairKey.SESSION_TAGS_IMPORTER or\
-			 token.key == PairKey.BULK_TAGGER:
+			 token.key == PairKey.BULK_TAGGER           or\
+			 token.key == PairKey.ADDED_TAGS            or\
+			 token.key == PairKey.ADDED_TAGS_ENTRY:
 			self._AddQuestion(question, token)
 		elif token.key == PairKey.OPTION_NAME:
 			self._AddOptionName(token)
