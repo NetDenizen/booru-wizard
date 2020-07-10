@@ -86,6 +86,10 @@ class TagsContainer:
 		"Sub a list of tags as individual strings."
 		for s in strings:
 			self.sub(s, value)
+	def SubString(self, string, value):
+		"Sub a list of tags as individual strings."
+		names = string.split()
+		self.SubStringList(names, value)
 	def clear(self, name, value):
 		"Register a tag object and set its occurrences to 0 if it is less than or equal to 0."
 		if not name:

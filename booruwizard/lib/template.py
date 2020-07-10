@@ -51,6 +51,8 @@ class PairKey(Enum):
 	SOURCE_QUESTION_REPLACEMENT   = 32
 	ADDED_TAGS                    = 33
 	ADDED_TAGS_ENTRY			  = 34
+	IMAGE_CONDITION_CONDITION     = 35
+	IMAGE_CONDITION_TAGS          = 36
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 
 PAIR_KEY_NAMES = {}
@@ -310,6 +312,11 @@ class color:
 		output[2] = int(self.blue * 255.0)
 		return output
 
+class ImageCondition:
+	def __init__(self, condition):
+		self.condition = condition
+		self.TagString = None
+
 # Main parser definition
 class ParserError(TemplateError):
 	pass
@@ -325,6 +332,7 @@ class ParserState(Enum):
 	ALIAS_FROM      = 3 # When we added the tags to alias from and are waiting for the tags to alias to.
 	ALIAS_TO        = 4 # When we added the tags to alias to and are waiting for the tags to alias from.
 	SOURCE_QUESTION = 5 # When we are in a SOURCE_QUESTION.
+	IMAGE_CONDITION = 6 # When we have processed an IMAGE_CONDITION_CONDITION and are waiting for a IMAGE_CONDITION_TAGS.
 
 RE_HUMANSIZE = re.compile('^([0-9.]+)[ \t]*([a-zA-Z]*)$')
 SIZE_SPECIFIERS = {'kb'        : 1000.0,
@@ -354,6 +362,8 @@ class parser:
 
 		self._AliasFromString = ""
 		self._AliasToString = ""
+
+		self.ImageConditions = []
 
 		self.DefaultName = None # Actually cannot currently be changed by the configuration file, but is here for extra flexibility.
 		self.NamelessTags = TagsContainer()
@@ -394,7 +404,8 @@ class parser:
 			return True
 		if self._state == ParserState.OPTION_NAME or\
 		   self._state == ParserState.ALIAS_FROM  or\
-		   self._state == ParserState.ALIAS_TO:
+		   self._state == ParserState.ALIAS_TO or\
+		   self._state == ParserState.IMAGE_CONDITION:
 			return False
 		if not self.output[-1].options:
 			return False
@@ -471,6 +482,17 @@ class parser:
 			self.output[-1].DefaultReplacement.append(token.value)
 		else:
 			raise ParserError("SOURCE_QUESTION_REPLACEMENT added when not in a SOURCE_QUESTION.", token.line, token.col)
+	def _AddImageConditionCondition(self, token):
+		if not self._IsOptionQuestionPrepared():
+			raise ParserError("Image condition added when in a question.", token.line, token.col)
+		self._state = ParserState.IMAGE_CONDITION
+		self.ImageConditions.append( ImageCondition(token.value) )
+	def _AddImageConditionTags(self, token):
+		if self._state == ParserState.IMAGE_CONDITION:
+			self.ImageConditions[-1].TagString = token.value
+			self._state = ParserState.NORMAL
+		else:
+			raise ParserError("Image condition tags added when not in an image condition.", token.line, token.col)
 	def _SetFromLookup(self, lookup, token, errmsg, setter):
 		found = lookup.get(token.value.lower(), None)
 		if found is None:
@@ -556,6 +578,10 @@ class parser:
 			self._AddSourceQuestionPattern(token)
 		elif token.key == PairKey.SOURCE_QUESTION_REPLACEMENT:
 			self._AddSourceQuestionReplacement(token)
+		elif token.key == PairKey.IMAGE_CONDITION_CONDITION:
+			self._AddImageConditionCondition(token)
+		elif token.key == PairKey.IMAGE_CONDITION_TAGS:
+			self._AddImageConditionTags(token)
 		else:
 			raise ParserError("Unhandled token.", token.line, token.col)
 	def parse(self, string):

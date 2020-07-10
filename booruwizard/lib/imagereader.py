@@ -8,6 +8,10 @@ class ImageReaderError(Exception):
 	def __init__(self, message, errno, strerror):
 		super().__init__( ''.join( (message, ' [errno ', errno, ']: ', strerror) ) )
 
+class ImageConditionError(ImageReaderError):
+	def __init__(self, message):
+		super().__init__(message)
+
 class ManagedImage:
 	def __init__(self, path):
 		self.path = path # Path to image
@@ -16,6 +20,8 @@ class ManagedImage:
 		self.FileSize = 0
 	def open(self):
 		"Open the image path and set the WX image object."
+		if self.image is not None:
+			return
 		try:
 			wx.LogMessage( ''.join( ("Loading image at path '", self.path.replace('%', '%%'), "'") ) )
 			stream = open(self.path, mode='rb')
@@ -38,6 +44,41 @@ class ManagedImage:
 		self.image = None
 		self.DataSize = 0
 		self.FileSize = 0
+	def CheckImageCondition(self, s):
+		ErrorMessage = ''.join( ("Failed to parse condition string of '", s, "' for image at path'", self.path.replace('%', '%%'), "'.") )
+		tokens = s.split()
+		if len(tokens) != 3:
+			raise ImageConditionError( ''.join( (ErrorMessage, '(', str( len(tokens) ), ' space-separated tokens.)') ) )
+		CompareFrom = tokens[0].lower()
+		if CompareFrom == 'width':
+			CompareFrom = self.image.GetWidth()
+		elif CompareFrom == 'height':
+			CompareFrom = self.image.GetHeight()
+		elif CompareFrom == 'pixels':
+			CompareFrom = self.image.GetWidth() * self.image.GetHeight()
+		elif CompareFrom == 'size':
+			CompareFrom = self.FileSize
+		else:
+			raise ImageConditionError( ''.join( (ErrorMessage, "(First token must be 'width', 'height', 'pixels', or 'size'. We found '", CompareFrom, "'.)") ) )
+		CompareTo = tokens[2]
+		try:
+			CompareTo = int(tokens[2])
+		except:
+			raise ImageConditionError( ''.join( (ErrorMessage, "(Third token must be an integer. We found '", CompareTo, "'.)") ) )
+		result = None
+		if tokens[1] == '<':
+			result = CompareFrom < CompareTo
+		elif tokens[1] == '<=':
+			result = CompareFrom <= CompareTo
+		elif tokens[1] == '==' or tokens[1] == '=':
+			result = CompareFrom == CompareTo
+		elif tokens[1] == '>=':
+			result = CompareFrom >= CompareTo
+		elif tokens[1] == '>':
+			result = CompareFrom > CompareTo
+		else:
+			raise ImageConditionError( ''.join( (ErrorMessage, "(Second token must be '<', '<=', '==', '=', '>=', or '>'. We found '", tokens[1], "'.)") ) )
+		return result
 
 class ImageReader:
 	def __init__(self, MaxBufSize):

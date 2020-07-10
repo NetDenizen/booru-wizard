@@ -16,6 +16,7 @@ from booruwizard.lib.template import parser, OptionQuestion
 from booruwizard.lib.fileops import FileManager
 from booruwizard.lib.viewport import ViewPort
 from booruwizard.lib.keyhandler import KeyHandler
+from booruwizard.lib.imagereader import ImageReader
 from booruwizard.ui.main import FileDialogFrame, MainFrame
 
 APPNAME = 'booru-wizard'
@@ -155,6 +156,8 @@ def main():
 	config = parser()
 	config.parse( ReadTextFile(settings.ConfigFile) )
 
+	images = ImageReader(config.MaxImageBufSize)
+
 	viewport = ViewPort(config.BackgroundColor1, config.BackgroundColor2, config.BackgroundSquareWidth,
 						config.StartZoomInterval, config.ZoomAccel, config.ZoomAccelSteps, config.PanInterval)
 
@@ -182,10 +185,21 @@ def main():
 
 	for f in OutputFiles.ControlFiles:
 		TagsTracker.AddStringList(f.tags.ReturnStringList(), 1)
+
+	images.AddPathsList(OutputFiles.InputPaths)
+	for i, f in reversed( list( enumerate(OutputFiles.ControlFiles) ) ):
+		for c in config.ImageConditions:
+			if images.load(i).CheckImageCondition(c.condition):
+				f.PrepareChange()
+				f.tags.SetString(c.TagString, 1)
+				f.SetConditionalTags(c.TagString)
+				f.SetTaglessTags()
+				TagsTracker.AddString(c.TagString, 1)
+				f.FinishChange()
 	OutputFiles.FilesLock.release()
 
 	wx.LogMessage('Main window opened.')
-	wizard = MainFrame(None, APPTITLE, config.MaxImageBufSize, config.DefaultImageQuality, config.output, OutputFiles, TagsTracker, viewport)
+	wizard = MainFrame(None, APPTITLE, images, config.DefaultImageQuality, config.output, OutputFiles, TagsTracker, viewport)
 	wizard.Bind(wx.EVT_CLOSE, OutputFiles.OnExit) #XXX: Windows for some reason prints log messages to popup windows, instead of stderr, after the main loop ends. We destroy OutputFiles
 
 	keybinds = KeyHandler()

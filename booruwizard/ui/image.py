@@ -376,11 +376,11 @@ class ImagePanel(wx.Panel):
 	def _OnOutputUpdateButton(self, e):
 		pub.sendMessage("FileUpdateForce", message=None)
 		e.Skip()
-	def __init__(self, parent, MaxBufSize, ImageQuality, paths, ViewPort):
+	def __init__(self, parent, images, ImageQuality, ViewPort):
 		wx.Panel.__init__(self, parent=parent)
 
 		self.pos = None # Position in bitmaps
-		self.bitmaps = ImageReader(MaxBufSize)
+		self.bitmaps = images
 		self.ResolutionDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays the resolution of the current image
 		self.FileSizeDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays the size of the current image
 		self.DataSizeDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays statistics about imagebuffer usage
@@ -450,7 +450,6 @@ class ImagePanel(wx.Panel):
 		self.ZoomFitButton.SetToolTip(self.ZoomFitButtonTip)
 		self.ZoomActualButton.SetToolTip(self.ZoomActualButtonTip)
 
-		self.bitmaps.AddPathsList(paths)
 		self.pos = CircularCounter(len(self.bitmaps.images) - 1)
 		if self.image.quality == wx.IMAGE_QUALITY_HIGH:
 			self.ImageQualityControl.SetSelection(0)
@@ -572,10 +571,10 @@ class ImageLabel(wx.Panel):
 		pub.subscribe(self._OnFocusPathNameMenu, "FocusPathNameMenu")
 
 class ImageContainer(wx.Panel):
-	def __init__(self, parent, MaxBufSize, ImageQuality, paths, viewport):
+	def __init__(self, parent, images, ImageQuality, paths, viewport):
 		wx.Panel.__init__(self, parent=parent)
 
-		self.image = ImagePanel(self, MaxBufSize, ImageQuality, paths, viewport)
+		self.image = ImagePanel(self, images, ImageQuality, viewport)
 		self.label = ImageLabel(self, paths)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
