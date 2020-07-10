@@ -221,7 +221,7 @@ class ImagePanel(wx.Panel):
 			   self.image.viewport.TotalSteps == 0) or\
 			   (ImageSize.GetWidth() <= self.image.viewport.DisplayWidth and\
 			   ImageSize.GetHeight() <= self.image.viewport.DisplayHeight and\
-			   self.image.viewport.GetActualSizeRatio()[0] > 1.0):
+			   self.image.viewport.GetActualSizeRatio()[0] == 1.0):
 				self.ZoomActualButton.Disable()
 			else:
 				self.ZoomActualButton.Enable()
