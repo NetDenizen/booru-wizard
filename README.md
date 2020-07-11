@@ -62,65 +62,7 @@ The basic interface of the software is as follows; each element is annotated wit
 
 ![screenshot](https://i.imgur.com/Oooqv90.png)
 
-The image is divided into 3 panes, which can be resized within the window, by click-and-dragging the space between them. Note that text boxes with the same color as the background are not editable.
-
-1. The name of the software and its current version.
-
-2. The number of the current image.
-
-3. The name of the current image.
-
-4. The number of the current question.
-
-5. The resolution of the current image.
-
-6. The size of the current image file.
-
-7. The amount of memory the loaded image takes up / The amount of memory all loaded images take up / The amount of memory available to hold loaded image data (The current image in the loaded image cache/The total number of images in the loaded image cache)
-
-8. The current image quality. By default, the keybinds to cycle these left and right are respectively: Ctrl+shift+q and Ctrl+q. The options, the default keybinds to select them, and their descriptions are:
-
-   `H2+1` : ctrl+g : Bicubic algorithm on upscaling, Box Average algorithm on downscaling
-   `H2`   : ctrl+h : Bicubic algorithm; high quality, especially for upscaling
-   `H1`   : ctrl+j : Box Average algorithm; high quality, especially for downscaling
-   `M`    : ctrl+k : Medium quality Bilinear algorithm
-   `L`    : ctrl+l : Lowest quality Nearest Neighbor algorithm
-
-9. The time until any unupdated information is flushed to the hard drive.
-
-10. A button to force unupdated information to be immediately flushed to the hard drive. This is disabled if there is none. The default keybind associated with this operation is F9.
-
-11. The current zoom level relevant to the size of the image (The dimensions of the sampled area).
-
-12. Zoom the image in. The default keybind associated with this operation is Ctrl+z.
-
-13. Zoom the image out. It is impossible to zoom out past the point of fitting the window. The default keybind associated with this operation is Ctrl+Shift+z
-
-14. Zoom the image to fit the window. It is impossible to zoom out past this point. The default keybind associated with this operation is Ctrl+f
-
-15. Zoom the image to its actual size, or zoom level 1.0. The default keybind associated with this operation is Ctrl+Shift+f.
-
-16. The current image is overlaid on a checkered transparency background.
-
-17. The number of the current image. This can be changed to select an arbitrary one. The default keybind to select the field is F6.
-
-18. The name of the current image. This can be changed to select another. Included is an autocomplete functionality, which will attempt to find the closest case insensitive match, when enter is pressed, or switch to the image, in event of an exact match. Otherwise, possibilities will be listed in the menu. The default keybind to select the field is Shift+F6, and the default keybind to open the menu is Ctrl+Shift+F6
-
-19. A search field to find questions. The search will be case insensitive, based on comma-separated keywords looked for in the descriptions of all questions. The default keybind to select the field is Shift+F7, and the default keybind to open the menu is Ctrl+Shift+F7.
-
-20. The number of the current question. This can be changed to select an arbitrary one. The default keybind to select the field is F7.
-
-21. Change to the 'left', or previous image. The default keybind associated with this operation is F1.
-
-22. Change to the 'left', or previous question. The default keybind associated with this operation is F2.
-
-23. Change to the 'right', or next image. The default keybind associated with this operation is F3.
-
-24. Change to the 'right', or next question. The default keybind associated with this operation is F4.
-
-25. The instructions or prompt for the current question are in this text box. The default keybind to select the field is F8.
-
-26. The field in which the prompt at element 8 is answered. The default keybind to select it is F5.
+The image is divided into 3 panes, which can be resized within the window, by click-and-dragging the divider between them. Most elements should be marked with a tooltip (which is displayed when the element is hovered over with the mouse cursor).
 
 ## Building and Dependencies
 
@@ -128,7 +70,7 @@ The software is intended to run on Windows and Linux. A Mac port is a possibilit
 
 Dependencies should not be an issue to the end-user, since the software will be packaged as a standalone executable along with the default configuration file, and a script to run the executable using that. Otherwise, the dependencies are:
 
-* Python 3.2 or newer
+* Python 3.4 or newer
 
 * wxPython 4
 
