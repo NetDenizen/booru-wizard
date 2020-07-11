@@ -13,6 +13,9 @@ RE_NOT_WHITESPACE = re.compile(r'\S+')
 RE_WHITESPACE = re.compile(r'\s')
 
 class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
+	def SetChoicesTip(self):
+		if self.ChoicesTipText is not None:
+			self.choices.SetToolTip( wx.ToolTip(self.ChoicesTipText) )
 	def _UpdateChoice(self, choice):
 		"Bound to EVT_CHECKLISTBOX; set selected tags and remove the previously selected ones."
 		if choice in self.CurrentChoices:
@@ -96,6 +99,7 @@ class ArbitraryCheckQuestion(TagChoiceQuestion):  # This class should never be u
 			self.sizer.Remove(0)
 			self.choices.Destroy()
 		self.choices = wx.CheckListBox(self, choices= self.ChoiceNames)
+		self.SetChoicesTip()
 		self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
 		self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 		self.sizer.Layout()
@@ -106,12 +110,12 @@ class ArbitraryCheckQuestion(TagChoiceQuestion):  # This class should never be u
 
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
 		self.OutputFile = None # File data object
+		self.ChoicesTipText = None
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 		self.SetSizer(self.sizer)
 		self.choices = None
 		self.SetChoices([])
 		self.CurrentChoices = [] # Currently selected checkboxes
-
 
 class EntryBase(wx.Panel):  # This class should never be used on its own
 	def load(self, OutputFile):
@@ -309,6 +313,7 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		self.ChoiceNames = self._MakeNames()
 		self.TagNames = self.ChoiceNames
 		self.choices = wx.CheckListBox(self, choices= self.ChoiceNames)
+		self.SetChoicesTip()
 		self.sizer.Add(self.choices, 100, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 		self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
 		self._UpdateChecks()

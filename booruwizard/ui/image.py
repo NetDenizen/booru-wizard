@@ -384,6 +384,8 @@ class ImagePanel(wx.Panel):
 		self.ResolutionDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays the resolution of the current image
 		self.FileSizeDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays the size of the current image
 		self.DataSizeDisplay = wx.StaticText(self, style= wx.ALIGN_LEFT) # Displays statistics about imagebuffer usage
+		self.ResolutionTip = wx.ToolTip('Resolution of current image: WidthxHeight (Number of Pixels)')
+		self.FileSizeTip = wx.ToolTip('Size of current image file on disk. Not loaded into memory.')
 		self.DataSizeTip = wx.ToolTip('Current/Cumulative/Maximum (Cache Index/Number of files loaded)')
 		self.ImageQualityControl = wx.RadioBox(self, label='Image Quality:',
 											   choices= ('H2+1', 'H2', 'H1', 'M', 'L'),
@@ -436,6 +438,8 @@ class ImagePanel(wx.Panel):
 		self.MainSizer.Add(self.image, 20, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
 		self.SetSizer(self.MainSizer)
 
+		self.ResolutionDisplay.SetToolTip(self.ResolutionTip)
+		self.FileSizeDisplay.SetToolTip(self.FileSizeTip)
 		self.DataSizeDisplay.SetToolTip(self.DataSizeTip)
 		self.OutputUpdateTimer.SetToolTip(self.OutputUpdateTimerTip)
 		self.OutputUpdateButton.SetToolTip(self.OutputUpdateButtonTip)

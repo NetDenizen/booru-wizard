@@ -90,7 +90,10 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		self.ChoiceNames = PanelQuestion.GetChoiceNames() # Names of each selection
 		self.CurrentChoice = wx.NOT_FOUND # Current selection in the radio box
 		self.choices = wx.RadioBox(self, choices= self.ChoiceNames, style= wx.RA_SPECIFY_ROWS | wx.BORDER_NONE)
+		self.ChoicesTip = wx.ToolTip("Select a tag here. Empty options set no tag.")
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.choices.SetToolTip(self.ChoicesTip)
 
 		self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 		self.SetSizer(self.sizer)
@@ -109,8 +112,11 @@ class CheckQuestion(TagChoiceQuestion):
 		self.TagNames = PanelQuestion.GetChoiceTags() # Names of tags corresponding to each selection name
 		self.ChoiceNames = PanelQuestion.GetChoiceNames() # Names of each selection
 		self.choices = wx.CheckListBox(self, choices= self.ChoiceNames)
+		self.ChoicesTipText = "Select tags here."
 		self.CurrentChoices = [] # Currently selected checkboxes
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.SetChoicesTip()
 
 		self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 		self.SetSizer(self.sizer)
@@ -126,6 +132,11 @@ class CustomTags(SplitterBase):
 
 		self.first = StoragelessEntry(self)
 		self.second = ArbitraryCheckQuestion(self, TagsTracker)
+
+		self.EntryTip = wx.ToolTip("Enter tags here. They will be displayed to the right.")
+		self.first.entry.SetToolTip(self.EntryTip)
+		self.second.ChoicesTipText = "Select tags to be written to file, here."
+		self.second.SetChoicesTip()
 
 		self.SetMinimumPaneSize( self.GetSize().GetWidth() )
 		self.SplitVertically(self.first, self.second)
@@ -213,10 +224,12 @@ class EntryQuestion(EntryBase):
 		self.pos = CircularCounter(NumImages - 1) # Position in entry strings
 		self.EntryStrings = [""] * NumImages # The contents of the entry boxes must be saved between images.
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL | wx.TE_MULTILINE)
+		self.EntryTip = wx.ToolTip("Enter tags here.")
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
 		self.RomanizeButtonTip = wx.ToolTip('Convert selected (or all) Kana characters to their Romaji equivalents.')
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
+		self.entry.SetToolTip(self.EntryTip)
 		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
 
 		self.sizer.Add(self.entry, 55, wx.ALIGN_CENTER | wx.EXPAND)
@@ -263,12 +276,14 @@ class ImageTagsEntry(EntryBase):
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
 		self.OutputFile = None # File data object
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL | wx.TE_MULTILINE)
+		self.EntryTip = wx.ToolTip("All tags present in the image are displayed here, and can be edited freely.")
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
 		self.RomanizeButtonTip = wx.ToolTip('Convert selected (or all) Kana characters to their Romaji equivalents.')
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 		self.CurrentString = []
 
 		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
+		self.entry.SetToolTip(self.EntryTip)
 
 		self.sizer.Add(self.entry, 55, wx.ALIGN_CENTER | wx.EXPAND)
 		self.sizer.AddStretchSpacer(2)
@@ -320,6 +335,7 @@ class SessionTags(TagChoiceQuestion):
 			self.choices.Destroy()
 			self.choices = None
 			self.choices = wx.CheckListBox(self, choices= self.ChoiceNames)
+			self.SetChoicesTip()
 			self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 			self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
 			self.Bind( wx.EVT_SCROLL_TOP, self._OnScrollTop, id=self.choices.GetId() )
@@ -337,6 +353,7 @@ class SessionTags(TagChoiceQuestion):
 		self.ChoiceNames = self._MakeNames()
 		self.TagNames = self.ChoiceNames
 		self.choices = wx.CheckListBox(self, choices= self.ChoiceNames)
+		self.SetChoicesTip()
 		self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 		self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
 		self.Bind( wx.EVT_SCROLL_TOP, self._OnScrollTop, id=self.choices.GetId() )
@@ -349,6 +366,7 @@ class SessionTags(TagChoiceQuestion):
 		self.TagNames = [] # Names of tags corresponding to each selection name
 		self.ChoiceNames = self.TagNames # Names of each selection
 		self.choices = None
+		self.ChoicesTipText = "All tags present in the image are displayed here, and can be edited freely."
 		self.CurrentChoices = [] # Currently selected checkboxes
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -379,6 +397,7 @@ class SessionTagsImporter(SplitterBase):
 		wx.SplitterWindow.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
 
 		self.first = ImageTagsList(self, OutputFiles, TagsTracker)
+		self.first.ChoicesTipText = "Select tags to copy over. Only those not already present in the current image will be listed."
 		self.second = SessionTags(self, TagsTracker)
 		self.OwnTags = self.second
 
@@ -548,6 +567,7 @@ class BulkTagger(wx.Panel):
 		# Tooltips
 		self.NumberEntryTip = wx.ToolTip('Image numbers to operate on.')
 		self.RemoveEntryTip = wx.ToolTip('Tags to be removed.')
+		self.SwapEntryButtonTip = wx.ToolTip("Swap the two entries.")
 		self.AddEntryTip = wx.ToolTip('Tags to be added.')
 		self.RemoveButtonTip = wx.ToolTip('Remove the tags listed in the left (remove) entry.')
 		self.ReplaceButtonTip = wx.ToolTip('If any tags listed in the left (remove) entry can be found, do the remove then add actions.')
@@ -556,6 +576,7 @@ class BulkTagger(wx.Panel):
 		# Setting tooltips
 		self.NumberEntry.SetToolTip(self.NumberEntryTip)
 		self.RemoveEntry.SetToolTip(self.RemoveEntryTip)
+		self.SwapEntryButton.SetToolTip(self.SwapEntryButtonTip)
 		self.AddEntry.SetToolTip(self.AddEntryTip)
 		self.RemoveButton.SetToolTip(self.RemoveButtonTip)
 		self.ReplaceButton.SetToolTip(self.ReplaceButtonTip)
@@ -627,13 +648,17 @@ class NameQuestion(SingleStringEntry):
 		self._ValueGetter = None
 		self.OrigValue = None # The original value of source
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
+		self.EntryTip = wx.ToolTip("Set name to use here.")
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
 		self.RomanizeButtonTip = wx.ToolTip('Convert selected (or all) Kana characters to their Romaji equivalents.')
 		self.checkbox = wx.CheckBox(self, label= 'Use this name')
+		self.CheckboxTip = wx.ToolTip("The entered name will only be used if this is selected.")
 		self.EntrySizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
+		self.checkbox.SetToolTip(self.CheckboxTip)
+		self.entry.SetToolTip(self.EntryTip)
 
 		self.EntrySizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
 		self.EntrySizer.AddStretchSpacer(1)
@@ -717,9 +742,11 @@ class SourceQuestion(SingleStringEntry):
 		self._ValueGetter = None
 		self.OrigValue = None # The original value of source
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
+		self.EntryTip = wx.ToolTip("Enter source here.")
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
 		self.RomanizeButtonTip = wx.ToolTip('Convert selected (or all) Kana characters to their Romaji equivalents.')
 		self.checkbox = wx.CheckBox(self, label= 'Use this source')
+		self.CheckboxTip = wx.ToolTip("The entered source will only be used if this is selected.")
 		self.PathFormatButton = wx.Button(self, label='->')
 		self.PathFormatReplaceText = wx.StaticText(self, label='Replace')
 		self.PathFormatPatternEntry = wx.SearchCtrl(self, style= wx.TE_NOHIDESEL)
@@ -748,6 +775,8 @@ class SourceQuestion(SingleStringEntry):
 		self.PathFormatSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 
+		self.entry.SetToolTip(self.EntryTip)
+		self.checkbox.SetToolTip(self.CheckboxTip)
 		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
 		self.PathFormatPatternEntry.SetToolTip(self.PathFormatPatternEntryTip)
 		self.PathFormatReplaceEntry.SetToolTip(self.PathFormatReplaceEntryTip)
@@ -817,7 +846,10 @@ class SafetyQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		self.CurrentChoice = wx.NOT_FOUND
 		self.OutputFile = None # File data object
 		self.choices = wx.RadioBox(self, choices=('Safe', 'Questionable', 'Explicit'), style= wx.RA_SPECIFY_ROWS | wx.BORDER_NONE)
+		self.ChoicesTip = wx.ToolTip("Set safety rating here.")
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.choices.SetToolTip(self.ChoicesTip)
 
 		self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 		self.SetSizer(self.sizer)
