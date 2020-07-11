@@ -333,7 +333,6 @@ class SessionTags(TagChoiceQuestion):
 			self.Unbind( wx.EVT_SCROLL_TOP, id=self.choices.GetId() )
 			self.sizer.Remove(0)
 			self.choices.Destroy()
-			self.choices = None
 			self.choices = wx.CheckListBox(self, choices= self.ChoiceNames)
 			self.SetChoicesTip()
 			self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
