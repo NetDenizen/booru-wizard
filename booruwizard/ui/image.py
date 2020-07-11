@@ -142,6 +142,9 @@ class ImageDisplay(wx.Panel):
 		self.MouseStartX = None
 		self.MouseStartY = None
 
+		self.tip = wx.ToolTip("The currently loaded image.")
+		self.SetToolTip(self.tip)
+
 		self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
 
 		self.Bind( wx.EVT_LEFT_DOWN, self._OnMouseDown, id=self.GetId() )
