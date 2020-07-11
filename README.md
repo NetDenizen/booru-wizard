@@ -173,15 +173,23 @@ There are a number of features and changes which I consider for this software. T
 
 * A color picker might be added to lend less ambiguity to the process of determining colors in images. A number of colors would be specified in the configuration file, and upon mousing over or clicking a pixel in the image, the closest 'match' among these colors would be shown.
 
-* A scrollable menu of thumbnails for each image, which can be selected to change to a certain image might be handy for navigation. In the current state of the software, the user would need to remember the images by number, alone, to navigate to a specific one.
+* A scrollable menu of thumbnails for each image, which can be selected to change to a certain image might be handy for navigation. In the current state of the software, the user would need to remember the images by number, alone, to navigate to a specific one. (Note that the user can also search via path, now.)
 
 * Currently, the software only identifies which files to open by their name, allowing the metadata files to freely be applied to any image. This could be considered a useful feature since the information can be readily copied and transferred between images. On the other hand, it could lead to mistaken application of metadata to the wrong image.
 
   The solution I consider is to implement some sort of hashing to identify images. This could be a complex component of the software itself, and I am not sure it is within the scope of purpose for the software to act as a search engine.
 
-### Open
+* The software produces JSON output that is fed into another utility to actually upload to a booru. Consider adding upload functionality directly to this software.
 
-* Especially in the case of imagesets, I consider that the same sequence of tags might be frequently repeated between multiple images. This raises the question as to if it should be possible to copy tags from one image to another. If not directly implemented, a string containing all tags, in a similar vein to the SESSION_TAGS option can be copy-and-pasted. - Implemented by SESSION_TAGS_IMPORTER; consider other options.
+* Many settings pertaining to the operation of this software can be set in the configuration file before starting. Consider allowing more configuration while running the software, and the possibility of editing the configuration file from the software.
+
+* Consider integrating the software with reverse image search services, to more efficiently identify sources.
+
+* Consider allowing the software to parse and write to different output formats than JSON. Perhaps SQLite?
+
+* Consider adding metadata to the output files, which allow the software to more precisely recreate the state that it was in when those files were written. For instance, in ENTRY_QUESTION, tags can be added, however, the software does not know which tags to put in that entry question, when starting.
+
+### Open
 
 * I've considered adding more features to the image-viewer itself, such as the ability to zoom, and the ability to display animation. - Zooming implemented. Animation would likely involve complicated integration with ffmpeg libraries. wx animation support is too inconsistent between platforms. Specifically, the necessary methods are not supported for GTK.
 
@@ -194,3 +202,5 @@ There are a number of features and changes which I consider for this software. T
 * The 'sashes' which are dragged to resize the window panes are also a bit poorly defined. I can probably change that. There also appears to be an issue with selections being entirely hidden, rather than highlighted in the uneditable fields (7 and 9). - Sizing modified to make the 'sashes' more distinct.
 
 * Normally, the software periodically updates its output files, in case it suddenly crashes before its normal closing procedure would be done. Currently, this process runs in the background without any feedback to the user. I consider adding some kind of indication for it. - Flush timer and button added.
+
+* Especially in the case of imagesets, I consider that the same sequence of tags might be frequently repeated between multiple images. This raises the question as to if it should be possible to copy tags from one image to another. If not directly implemented, a string containing all tags, in a similar vein to the SESSION_TAGS option can be copy-and-pasted. - Implemented by SESSION_TAGS_IMPORTER, and BULK_TAGGER
