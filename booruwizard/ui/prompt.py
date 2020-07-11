@@ -52,7 +52,7 @@ class QuestionSearch(wx.Panel):
 		end = ""
 		if len(q.text) > LenDiff:
 			end = "..."
-		trimmed = q.text[:LenDiff - len(end)]
+		trimmed = q.text[:LenDiff - len(end)].replace('\r\n', ' ').replace('\n', ' ')
 		return ''.join( (IndexText, divider, trimmed, end) )
 	def _UpdateQuestionsMenu(self):
 		"Update the questions menu, based on which question descriptions match the search terms."
