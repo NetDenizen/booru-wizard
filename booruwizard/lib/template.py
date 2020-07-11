@@ -53,6 +53,7 @@ class PairKey(Enum):
 	ADDED_TAGS_ENTRY			  = 34
 	IMAGE_CONDITION_CONDITION     = 35
 	IMAGE_CONDITION_TAGS          = 36
+	CUSTOM_TAGS                   = 37
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 
 PAIR_KEY_NAMES = {}
@@ -181,16 +182,17 @@ class lexer:
 
 # Defining parser question information
 class QuestionType(Enum):
-	ENTRY_QUESTION        = 0 # Marks the beginning of a new prompt consisting of a textbox. Here, tags are entered separated by spaces.
-	SESSION_TAGS          = 1 # Displays a CHECK_QUESTION, containing all of the tags used for the current session.
-	NAME_QUESTION         = 2 # Displays an ENTRY_QUESTION that sets the name/title of the post. In most boorus other than Gelbooru 0.1, this is ignored.
-	SOURCE_QUESTION       = 3 # Displays an ENTRY_QUESTION that sets the original source of the work.
-	SAFETY_QUESTION       = 4 # Displays a RADIO_QUESTION that sets the content rating to 'Safe', 'Questionable', or 'Explicit'.
-	IMAGE_TAGS_ENTRY      = 5 # Displays an ENTRY_QUESTION with the current tags of the image.
-	SESSION_TAGS_IMPORTER = 6 # Displays a pane split between controls to select an image and commit its tags to the current one, check boxes to select which tags to move, and SESSION_TAGS for the current file on the right side.
-	BULK_TAGGER           = 7 # Displays a path entry which adds to a list of potentially dash-separated numbers to specify ranges. These specify the images to be targeted with remove, replace, and add operations of the tags specified in entry boxes.
-	ADDED_TAGS            = 8 # Displays a special SESSION_TAGS which only displays tags not present in the configuration file.
-	ADDED_TAGS_ENTRY      = 9 # Displays a pane split between an ENTRY_QUESTION and an ADDED_TAGS.
+	ENTRY_QUESTION        = 0  # Marks the beginning of a new prompt consisting of a textbox. Here, tags are entered separated by spaces.
+	SESSION_TAGS          = 1  # Displays a CHECK_QUESTION, containing all of the tags used for the current session.
+	NAME_QUESTION         = 2  # Displays an ENTRY_QUESTION that sets the name/title of the post. In most boorus other than Gelbooru 0.1, this is ignored.
+	SOURCE_QUESTION       = 3  # Displays an ENTRY_QUESTION that sets the original source of the work.
+	SAFETY_QUESTION       = 4  # Displays a RADIO_QUESTION that sets the content rating to 'Safe', 'Questionable', or 'Explicit'.
+	IMAGE_TAGS_ENTRY      = 5  # Displays an ENTRY_QUESTION with the current tags of the image.
+	SESSION_TAGS_IMPORTER = 6  # Displays a pane split between controls to select an image and commit its tags to the current one, check boxes to select which tags to move, and SESSION_TAGS for the current file on the right side.
+	BULK_TAGGER           = 7  # Displays a path entry which adds to a list of potentially dash-separated numbers to specify ranges. These specify the images to be targeted with remove, replace, and add operations of the tags specified in entry boxes.
+	ADDED_TAGS            = 8  # Displays a special SESSION_TAGS which only displays tags not present in the configuration file.
+	ADDED_TAGS_ENTRY      = 9  # Displays a pane split between an ENTRY_QUESTION and an ADDED_TAGS.
+	CUSTOM_TAGS           = 10 # Displays a pane split between an entry field, and a checklist containing the tags in that field.
 
 QuestionTypeLookup = {
 	PairKey.ENTRY_QUESTION        : QuestionType.ENTRY_QUESTION,
@@ -202,7 +204,8 @@ QuestionTypeLookup = {
 	PairKey.SESSION_TAGS_IMPORTER : QuestionType.SESSION_TAGS_IMPORTER,
 	PairKey.BULK_TAGGER           : QuestionType.BULK_TAGGER,
 	PairKey.ADDED_TAGS            : QuestionType.ADDED_TAGS,
-	PairKey.ADDED_TAGS_ENTRY      : QuestionType.ADDED_TAGS_ENTRY
+	PairKey.ADDED_TAGS_ENTRY      : QuestionType.ADDED_TAGS_ENTRY,
+	PairKey.CUSTOM_TAGS           : QuestionType.CUSTOM_TAGS
 }
 
 class OptionQuestionType(Enum):
@@ -519,7 +522,8 @@ class parser:
 			 token.key == PairKey.SESSION_TAGS_IMPORTER or\
 			 token.key == PairKey.BULK_TAGGER           or\
 			 token.key == PairKey.ADDED_TAGS            or\
-			 token.key == PairKey.ADDED_TAGS_ENTRY:
+			 token.key == PairKey.ADDED_TAGS_ENTRY      or\
+			 token.key == PairKey.CUSTOM_TAGS:
 			self._AddQuestion(question, token)
 		elif token.key == PairKey.OPTION_NAME:
 			self._AddOptionName(token)

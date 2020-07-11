@@ -101,14 +101,6 @@ class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		self.SetupScrolling()
 
 class CheckQuestion(TagChoiceQuestion):
-	def _OnSelect(self, e):
-		"Bound to EVT_CHECKLISTBOX; set selected tags and remove the previously selected ones."
-		self._UpdateChoice( e.GetInt() )
-		self._UpdateChecks()
-		e.Skip()
-	def disp(self):
-		"Display the updated check question for the given case."
-		self._UpdateChecks()
 	def __init__(self, parent, TagsTracker, PanelQuestion):
 		TagChoiceQuestion.__init__(self, parent)
 
@@ -124,6 +116,21 @@ class CheckQuestion(TagChoiceQuestion):
 		self.SetSizer(self.sizer)
 
 		self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
+
+class CustomTags(SplitterBase):
+	def _OnEntryChange(self, e):
+		self.second.SetChoices( self.first.entry.GetValue().split() )
+		e.Skip()
+	def __init__(self, parent, TagsTracker):
+		wx.SplitterWindow.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
+
+		self.first = StoragelessEntry(self)
+		self.second = ArbitraryCheckQuestion(self, TagsTracker)
+
+		self.SetMinimumPaneSize(1)
+		self.SplitVertically(self.first, self.second) # FIXME: For some reason, this does not want to split in the center, by default.
+
+		self.Bind( wx.EVT_TEXT, self._OnEntryChange, id=self.first.entry.GetId() )
 
 class EntryQuestion(EntryBase):
 	def _UpdateEntryText(self):
@@ -927,6 +934,8 @@ class QuestionsContainer(wx.Panel):
 				self.QuestionWidgets.append( AddedTags(self, TagsTracker) )
 			elif q.type == QuestionType.ADDED_TAGS_ENTRY:
 				self.QuestionWidgets.append( AddedTagsEntry(self, NumImages, OutputFiles, TagsTracker) )
+			elif q.type == QuestionType.CUSTOM_TAGS:
+				self.QuestionWidgets.append( CustomTags(self, TagsTracker) )
 			else:
 				#TODO: Rewrite?
 				raise ValueError() # We should never get this.

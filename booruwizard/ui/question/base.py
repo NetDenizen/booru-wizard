@@ -70,19 +70,55 @@ class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 			else:
 				self.choices.Check(i, False)
 		self.OutputFile.unlock()
+	def _OnSelect(self, e):
+		"Bound to EVT_CHECKLISTBOX; set selected tags and remove the previously selected ones."
+		self._UpdateChoice( e.GetInt() )
+		self._UpdateChecks()
+		e.Skip()
 	def load(self, OutputFile):
 		"Initialize the question for a certain case."
 		self.OutputFile = OutputFile
 	def clear(self):
 		"Clear the question for the given case."
 		pass
+	def disp(self):
+		"Display the updated check question for the given case."
+		self._UpdateChecks()
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent=parent)
+
+class ArbitraryCheckQuestion(TagChoiceQuestion):  # This class should never be used on its own
+	def SetChoices(self, names):
+		self.TagNames = names
+		self.ChoiceNames = self.TagNames # Names of each selection
+		if self.choices is not None:
+			self.Unbind( wx.EVT_CHECKLISTBOX, id=self.choices.GetId() )
+			self.sizer.Remove(0)
+			self.choices.Destroy()
+		self.choices = wx.CheckListBox(self, choices= self.ChoiceNames)
+		self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
+		self.sizer.Add(self.choices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
+		self.sizer.Layout()
+		if self.OutputFile is not None:
+			self._UpdateChecks()
+	def __init__(self, parent, TagsTracker):
+		TagChoiceQuestion.__init__(self, parent)
+
+		self.TagsTracker = TagsTracker # Global record of the number of tags in use
+		self.OutputFile = None # File data object
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+		self.SetSizer(self.sizer)
+		self.choices = None
+		self.SetChoices([])
+		self.CurrentChoices = [] # Currently selected checkboxes
+
 
 class EntryBase(wx.Panel):  # This class should never be used on its own
 	def load(self, OutputFile):
 		"Initialize the entry question for a certain case."
 		self.OutputFile = OutputFile
+	def _UpdateTags(self):
+		pass
 	def clear(self):
 		"Clear the entry question for the given case."
 		self._UpdateTags()
@@ -90,8 +126,8 @@ class EntryBase(wx.Panel):  # This class should never be used on its own
 		"Generic event handler, to update tags based on the contents of the field."
 		self._UpdateTags()
 		e.Skip()
-	def _OnRomanize(self, e):
-		"Replace Kana characters of selected parts of the string with their Romaji equivalents, using kanji_to_romaj, and update the tags accordingly."
+	def _DoRomanize(self):
+		"Replace Kana characters of selected parts of the string with their Romaji equivalents, using kanji_to_romaj."
 		text = self.entry.GetValue()
 		indices = list( self.entry.GetSelection() )
 		if indices[0] == indices[1]:
@@ -127,11 +163,40 @@ class EntryBase(wx.Panel):  # This class should never be used on its own
 			OutputStrings.append(middle)
 			OutputStrings.append(right)
 		OutputStrings.append(EndText)
-		self.entry.ChangeValue( ''.join(OutputStrings) )
+		return ''.join(OutputStrings)
+	def _OnRomanize(self, e):
+		"Replace Kana characters of selected parts of the string with their Romaji equivalents, using kanji_to_romaj, and update the tags accordingly."
+		self.entry.ChangeValue( self._DoRomanize() )
 		self._UpdateTags()
 		e.Skip()
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent=parent)
+
+class StoragelessEntry(EntryBase):
+	def load(self, OutputFile):
+		pass
+	def disp(self):
+		pass
+	def _OnRomanize(self, e):
+		"Replace Kana characters of selected parts of the string with their Romaji equivalents, using kanji_to_romaj, and update the tags accordingly."
+		self.entry.SetValue( self._DoRomanize() )
+		e.Skip()
+	def __init__(self, parent):
+		EntryBase.__init__(self, parent=parent)
+
+		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL | wx.TE_MULTILINE)
+		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
+		self.RomanizeButtonTip = wx.ToolTip('Convert selected (or all) Kana characters to their Romaji equivalents.')
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
+
+		self.sizer.Add(self.entry, 55, wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(2)
+		self.sizer.Add(self.RomanizeButton, 0, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
+		self.SetSizer(self.sizer)
+
+		self.Bind( wx.EVT_BUTTON, self._OnRomanize, id=self.RomanizeButton.GetId() )
 
 class SplitterBase(wx.SplitterWindow): # This class should never be used on its own
 	def load(self, OutputFile):
