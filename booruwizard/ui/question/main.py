@@ -127,8 +127,8 @@ class CustomTags(SplitterBase):
 		self.first = StoragelessEntry(self)
 		self.second = ArbitraryCheckQuestion(self, TagsTracker)
 
-		self.SetMinimumPaneSize(1)
-		self.SplitVertically(self.first, self.second) # FIXME: For some reason, this does not want to split in the center, by default.
+		self.SetMinimumPaneSize( self.GetSize().GetWidth() )
+		self.SplitVertically(self.first, self.second)
 
 		self.Bind( wx.EVT_TEXT, self._OnEntryChange, id=self.first.entry.GetId() )
 
@@ -371,8 +371,8 @@ class AddedTagsEntry(SplitterBase):
 		self.first = EntryQuestion(self, NumImages, TagsTracker)
 		self.second = AddedTags(self, TagsTracker)
 
-		self.SetMinimumPaneSize(1)
-		self.SplitVertically(self.first, self.second) # FIXME: For some reason, this does not want to split in the center, by default.
+		self.SetMinimumPaneSize( self.GetSize().GetWidth() )
+		self.SplitVertically(self.first, self.second)
 
 class SessionTagsImporter(SplitterBase):
 	def __init__(self, parent, OutputFiles, TagsTracker):
@@ -382,8 +382,8 @@ class SessionTagsImporter(SplitterBase):
 		self.second = SessionTags(self, TagsTracker)
 		self.OwnTags = self.second
 
-		self.SetMinimumPaneSize(1)
-		self.SplitVertically(self.first, self.second) # FIXME: For some reason, this does not want to split in the center, by default.
+		self.SetMinimumPaneSize( self.GetSize().GetWidth() )
+		self.SplitVertically(self.first, self.second)
 
 class BulkTagger(wx.Panel):
 	def clear(self):
