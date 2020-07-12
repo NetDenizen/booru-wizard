@@ -119,6 +119,8 @@ class TagsContainer:
 			if self.has(s):
 				return True
 		return False
+	def HasAnyOfString(self, string):
+		return self.HasAnyOfStringList( string.split() )
 	def HasAllOfStringList(self, strings):
 		for s in strings:
 			if not self.has(s):

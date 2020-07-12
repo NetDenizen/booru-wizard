@@ -191,10 +191,11 @@ def main():
 		for c in config.ImageConditions:
 			if images.load(i).CheckImageCondition(c.condition):
 				f.PrepareChange()
+				if not f.tags.HasAnyOfString(c.TagString):
+					TagsTracker.AddString(c.TagString, 1)
 				f.tags.SetString(c.TagString, 1)
 				f.SetConditionalTags(c.TagString)
 				f.SetTaglessTags()
-				TagsTracker.AddString(c.TagString, 1)
 				f.FinishChange()
 	OutputFiles.FilesLock.release()
 
