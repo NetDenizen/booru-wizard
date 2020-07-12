@@ -20,7 +20,7 @@ from booruwizard.lib.imagereader import ImageReader
 from booruwizard.ui.main import FileDialogFrame, MainFrame
 
 APPNAME = 'booru-wizard'
-APPVERSION = '1.1'
+APPVERSION = '2.0'
 APPTITLE = ''.join( (APPNAME, ' (', APPVERSION, ')') )
 
 #TODO: Better accept dialog?
