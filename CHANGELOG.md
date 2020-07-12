@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* Report parser errors with line and column numbers starting at 1.
+
 * Include image indexes in image path search.
 
 * Remove pointless "Use this..." checkboxes from NAME_QUESTION and SOURCE_QUESTION.
