@@ -112,7 +112,7 @@ class CheckQuestion(TagChoiceQuestion):
 		self.TagNames = PanelQuestion.GetChoiceTags() # Names of tags corresponding to each selection name
 		self.ChoiceNames = PanelQuestion.GetChoiceNames() # Names of each selection
 		self.choices = wx.CheckListBox(self, choices= self.ChoiceNames)
-		self.ChoicesTipText = "Select tags here."
+		self.ChoicesTipText = "Select tags to be written, here."
 		self.CurrentChoices = [] # Currently selected checkboxes
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -226,7 +226,7 @@ class EntryQuestion(EntryBase):
 		self.pos = CircularCounter(NumImages - 1) # Position in entry strings
 		self.EntryStrings = [""] * NumImages # The contents of the entry boxes must be saved between images.
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL | wx.TE_MULTILINE)
-		self.EntryTip = wx.ToolTip("Enter tags here.")
+		self.EntryTip = wx.ToolTip("Enter tags to be written, here.")
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
 		self.RomanizeButtonTip = wx.ToolTip('Convert selected (or all) Kana characters to their Romaji equivalents.')
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
