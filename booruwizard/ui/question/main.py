@@ -763,6 +763,7 @@ class SourceQuestion(SingleStringEntry):
 		self.PathFormatWithText = wx.StaticText(self, label=' with')
 		self.PathFormatReplaceEntry = wx.SearchCtrl(self, style= wx.TE_NOHIDESEL)
 		self.PathFormatReplaceMenu = wx.Menu()
+		#TODO: Autocomplete for these fields?
 		self.PathFormatButtonTip = wx.ToolTip('Replace all Python regex backreferences in the source field with the corresponding groups.')
 		self.PathFormatPatternEntryTip = wx.ToolTip('Enter the Python regex which will be matched against the path of the current image. If this cannot be matched against the string, replacement will be disabled.')
 		self.PathFormatReplaceEntryTip = wx.ToolTip('Enter the Python regex backreferences that will replace the pattern.')
