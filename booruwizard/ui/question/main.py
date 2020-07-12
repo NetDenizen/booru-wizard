@@ -126,6 +126,7 @@ class CheckQuestion(TagChoiceQuestion):
 class CustomTags(SplitterBase):
 	def _OnEntryChange(self, e):
 		self.second.SetChoices( self.first.entry.GetValue().split() )
+		self.first.SetRomanizeButtonState() # TODO: Handle this in a callback local to the class?
 		e.Skip()
 	def __init__(self, parent, TagsTracker):
 		wx.SplitterWindow.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
@@ -203,6 +204,7 @@ class EntryQuestion(EntryBase):
 		if self.CurrentTags is None:
 			self.CurrentTags = TagsContainer()
 		self._UpdateEntryText()
+		self.SetRomanizeButtonState()
 	def _OnIndexImage(self, message, arg2=None):
 		"Change the index index to the one specified in the message, if possible."
 		self._UpdateTags()
@@ -270,6 +272,7 @@ class ImageTagsEntry(EntryBase):
 	def disp(self):
 		"Display the updated entry question for the given case."
 		self._UpdateEntryText()
+		self.SetRomanizeButtonState()
 	def __init__(self, parent, TagsTracker):
 		EntryBase.__init__(self, parent=parent)
 

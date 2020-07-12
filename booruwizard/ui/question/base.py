@@ -126,9 +126,15 @@ class EntryBase(wx.Panel):  # This class should never be used on its own
 	def clear(self):
 		"Clear the entry question for the given case."
 		self._UpdateTags()
+	def SetRomanizeButtonState(self):
+		if self.entry.GetValue():
+			self.RomanizeButton.Enable()
+		else:
+			self.RomanizeButton.Disable()
 	def _OnUpdateEvent(self, e):
 		"Generic event handler, to update tags based on the contents of the field."
 		self._UpdateTags()
+		self.SetRomanizeButtonState()
 		e.Skip()
 	def _DoRomanize(self):
 		"Replace Kana characters of selected parts of the string with their Romaji equivalents, using kanji_to_romaj."
@@ -180,7 +186,7 @@ class StoragelessEntry(EntryBase):
 	def load(self, OutputFile):
 		pass
 	def disp(self):
-		pass
+		self.SetRomanizeButtonState()
 	def _OnRomanize(self, e):
 		"Replace Kana characters of selected parts of the string with their Romaji equivalents, using kanji_to_romaj, and update the tags accordingly."
 		self.entry.SetValue( self._DoRomanize() )
@@ -406,9 +412,15 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 		self.OutputFile.PrepareChange()
 		self._ValueSetter(value)
 		self.OutputFile.FinishChange()
+	def SetRomanizeButtonState(self):
+		if self.entry.GetValue():
+			self.RomanizeButton.Enable()
+		else:
+			self.RomanizeButton.Disable()
 	def _OnChange(self, e):
 		"Set the value."
 		self._SetValue()
+		self.SetRomanizeButtonState()
 		e.Skip()
 	def _OnRomanize(self, e):
 		"Replace Kana characters of selected parts of the string with their Romaji equivalents, using kanji_to_romaj, and update the tags accordingly."
@@ -436,5 +448,6 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 	def disp(self):
 		"Display the updated check question for the given case."
 		self.entry.ChangeValue( self._GetValue() )
+		self.SetRomanizeButtonState()
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent=parent)
