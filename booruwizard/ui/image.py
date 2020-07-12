@@ -84,11 +84,13 @@ class ImageDisplay(wx.Panel):
 		self.MouseStartX = e.GetX()
 		self.MouseStartY = e.GetY()
 		self.MouseDown = True
+		self.SetCursor( wx.Cursor(wx.CURSOR_CROSS) )
 		e.Skip()
 	def _OnMouseUp(self, e):
 		self.MouseStartX = e.GetX()
 		self.MouseStartY = e.GetY()
 		self.MouseDown = False
+		self.SetCursor( wx.Cursor(wx.CURSOR_ARROW) )
 		e.Skip()
 	def _OnMouseMotion(self, e):
 		if not self.MouseDown:
