@@ -142,7 +142,7 @@ class ImageDisplay(wx.Panel):
 		self.MouseStartX = None
 		self.MouseStartY = None
 
-		self.tip = wx.ToolTip("The currently loaded image.")
+		self.tip = wx.ToolTip("The currently loaded image. Click and drag in this field to move around.")
 		self.SetToolTip(self.tip)
 
 		self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
