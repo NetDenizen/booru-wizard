@@ -324,6 +324,10 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
 		self._UpdateChecks()
 		self.CurrentChoices = list( self.choices.GetCheckedItems() ) # Currently selected checkboxes
+		if not self.CurrentChoices:
+			self.commit.Disable()
+		else:
+			self.commit.Enable()
 		self._SetIndex()
 		self.Layout()
 	def __init__(self, parent, OutputFiles, TagsTracker):
