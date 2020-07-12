@@ -388,6 +388,9 @@ class AddedTags(SessionTags):
 		return self._MakeNamesFrom(self._FilterStringList)
 
 class AddedTagsEntry(SplitterBase):
+	def _OnEntryQuestionChange(self, e):
+		self.second.disp()
+		e.Skip()
 	def __init__(self, parent, NumImages, OutputFiles, TagsTracker):
 		wx.SplitterWindow.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
 
@@ -396,6 +399,9 @@ class AddedTagsEntry(SplitterBase):
 
 		self.SetMinimumPaneSize( self.GetSize().GetWidth() )
 		self.SplitVertically(self.first, self.second)
+
+		self.Bind( wx.EVT_BUTTON, self._OnEntryQuestionChange, id=self.first.RomanizeButton.GetId() )
+		self.Bind( wx.EVT_TEXT, self._OnEntryQuestionChange, id=self.first.entry.GetId() )
 
 class SessionTagsImporter(SplitterBase):
 	def __init__(self, parent, OutputFiles, TagsTracker):
