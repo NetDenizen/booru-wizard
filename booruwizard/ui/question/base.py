@@ -403,12 +403,7 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 		return self._GetValueTemplate(self._ValueGetter)
 	def _SetValue(self): # This determines where the field puts its value; define it in child classes
 		"Set value controlled by this field."
-		if self.checkbox.GetValue():
-			value = self.entry.GetValue()
-		elif self.entry.GetValue() != self.OrigValue:
-			value = self.OrigValue
-		else:
-			return
+		value = self.entry.GetValue()
 		self.OutputFile.PrepareChange()
 		self._ValueSetter(value)
 		self.OutputFile.FinishChange()

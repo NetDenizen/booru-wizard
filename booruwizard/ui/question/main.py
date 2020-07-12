@@ -647,28 +647,22 @@ class NameQuestion(SingleStringEntry):
 		self.OutputFile = OutputFile
 		self._ValueGetter = self.OutputFile.GetName
 		self._ValueSetter = self.OutputFile.SetName
-		self.OrigValue = self._GetValue()
 	def __init__(self, parent):
 		SingleStringEntry.__init__(self, parent)
 
 		self.OutputFile = None # File data object
 		self._ValueSetter = None
 		self._ValueGetter = None
-		self.OrigValue = None # The original value of source
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
 		self.EntryTip = wx.ToolTip("Set name to use here.")
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
 		self.RomanizeButtonTip = wx.ToolTip('Convert selected (or all) Kana characters to their Romaji equivalents.')
-		self.checkbox = wx.CheckBox(self, label= 'Use this name')
-		self.CheckboxTip = wx.ToolTip("The entered name will only be used if this is selected.")
 		self.EntrySizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
-		self.checkbox.SetToolTip(self.CheckboxTip)
 		self.entry.SetToolTip(self.EntryTip)
 
-		self.EntrySizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
 		self.EntrySizer.AddStretchSpacer(1)
 		self.EntrySizer.Add(self.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
 
@@ -679,7 +673,6 @@ class NameQuestion(SingleStringEntry):
 
 		self.Bind( wx.EVT_BUTTON, self._OnRomanize, id=self.RomanizeButton.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnChange, id=self.entry.GetId() )
-		self.Bind( wx.EVT_CHECKBOX, self._OnChange, id=self.checkbox.GetId() )
 
 class SourceQuestion(SingleStringEntry):
 	def _SetPathFormatReplacement(self):
@@ -720,7 +713,6 @@ class SourceQuestion(SingleStringEntry):
 		self.OutputFile = OutputFile
 		self._ValueGetter = self.OutputFile.GetSource
 		self._ValueSetter = self.OutputFile.SetSource
-		self.OrigValue = self._GetValue()
 		self._SetPathFormatReplacement()
 	def _OnPathFormatButton(self, e):
 		self.entry.ChangeValue(self.PathFormatReplacement)
@@ -749,13 +741,10 @@ class SourceQuestion(SingleStringEntry):
 		self.OutputFile = None # File data object
 		self._ValueSetter = None
 		self._ValueGetter = None
-		self.OrigValue = None # The original value of source
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
 		self.EntryTip = wx.ToolTip("Enter source here.")
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
 		self.RomanizeButtonTip = wx.ToolTip('Convert selected (or all) Kana characters to their Romaji equivalents.')
-		self.checkbox = wx.CheckBox(self, label= 'Use this source')
-		self.CheckboxTip = wx.ToolTip("The entered source will only be used if this is selected.")
 		self.PathFormatButton = wx.Button(self, label='->')
 		self.PathFormatReplaceText = wx.StaticText(self, label='Replace')
 		self.PathFormatPatternEntry = wx.SearchCtrl(self, style= wx.TE_NOHIDESEL)
@@ -785,13 +774,11 @@ class SourceQuestion(SingleStringEntry):
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.entry.SetToolTip(self.EntryTip)
-		self.checkbox.SetToolTip(self.CheckboxTip)
 		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
 		self.PathFormatPatternEntry.SetToolTip(self.PathFormatPatternEntryTip)
 		self.PathFormatReplaceEntry.SetToolTip(self.PathFormatReplaceEntryTip)
 		self.PathFormatButton.SetToolTip(self.PathFormatButtonTip)
 
-		self.EntrySizer.Add(self.checkbox, 0, wx.ALIGN_CENTER)
 		self.EntrySizer.AddStretchSpacer(1)
 		self.EntrySizer.Add(self.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
 
@@ -814,7 +801,6 @@ class SourceQuestion(SingleStringEntry):
 
 		self.Bind( wx.EVT_BUTTON, self._OnRomanize, id=self.RomanizeButton.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnChange, id=self.entry.GetId() )
-		self.Bind( wx.EVT_CHECKBOX, self._OnChange, id=self.checkbox.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnPathFormatButton, id=self.PathFormatButton.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnPathFormatEntry, id=self.PathFormatPatternEntry.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnPathFormatEntry, id=self.PathFormatReplaceEntry.GetId() )
