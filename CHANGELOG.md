@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* Fix crash when opening an image path autocomplete menu with a keybind.
+
 * Load longest matching path in the image autocomplete menus, instead of the shortest.
 
 * List all paths in image path selection menus, if the current contents are an exact match.

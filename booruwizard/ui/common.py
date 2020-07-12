@@ -99,8 +99,8 @@ class PathEntry:
 	def FocusEntry(self):
 		self.entry.SetFocus()
 	def FocusMenu(self):
-		self._UpdatePathMenu()
-		self.entry.PopupMenu(self.PathMenu)
+		self.UpdateMenu()
+		self.entry.PopupMenu(self._menu)
 	def GetPathsLen(self):
 		return self._PathsLen
 	def SearchPath(self, query):
