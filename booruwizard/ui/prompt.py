@@ -202,7 +202,7 @@ class PositionButtons(wx.Panel):
 		self.RightQuestion.SetFocus()
 	def _OnRightImageReceived(self, message, arg2=None):
 		self.RightImage.SetFocus()
-	def __init__(self, parent):
+	def __init__(self, parent, NumImages, NumQuestions):
 		wx.Panel.__init__(self, parent=parent)
 
 		self.LeftImage = wx.Button(self, label = '<<', style=wx.BU_EXACTFIT)
@@ -214,6 +214,13 @@ class PositionButtons(wx.Panel):
 		self.RightImageTip = wx.ToolTip('Next image')
 		self.RightQuestionTip = wx.ToolTip('Next question')
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+		if NumImages <= 1:
+			self.LeftImage.Disable()
+			self.RightImage.Disable()
+		if NumQuestions <= 1:
+			self.LeftQuestion.Disable()
+			self.RightQuestion.Disable()
 
 		self.LeftImage.SetToolTip(self.LeftImageTip)
 		self.LeftQuestion.SetToolTip(self.LeftQuestionTip)
@@ -245,7 +252,7 @@ class PromptControls(wx.Panel):
 
 		self.search = QuestionSearch(self, questions)
 		self.label = QuestionLabel(self, NumImages, questions)
-		self.buttons = PositionButtons(self)
+		self.buttons = PositionButtons( self, NumImages, len(questions) )
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.sizer.Add(self.search, 3, wx.ALIGN_CENTER | wx.EXPAND)
