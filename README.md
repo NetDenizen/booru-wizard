@@ -58,7 +58,7 @@ These basic steps may be followed to get both the wizard software, and the uploa
 
 ## Interface Overview
 
-![screenshot](https://imgur.com/1vQWVwu)
+![screenshot](https://i.imgur.com/1vQWVwu.png)
 
 The image is divided into 3 panes, which can be resized within the window, by click-and-dragging the divider between them. Most elements should be marked with a tooltip (which is displayed when the element is hovered over with the mouse cursor).
 
