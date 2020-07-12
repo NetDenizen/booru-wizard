@@ -112,7 +112,7 @@ class PathEntry:
 		self._MenuLookup = {}
 		self._menu = wx.Menu()
 		self.entry = wx.SearchCtrl(parent, style= wx.TE_LEFT | wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Search box containing path of current image
-		self._EntryTip = wx.ToolTip("Image path entry; if the path doesn't exist, then autocomplete.")
+		self._EntryTip = wx.ToolTip("Image path entry; if the path doesn't exist, then press enter autocomplete.")
 
 		self.entry.SetToolTip(self._EntryTip)
 

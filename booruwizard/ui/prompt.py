@@ -142,9 +142,9 @@ class QuestionLabel(QuestionDisplayComponent):
 		self.LockCheck = wx.CheckBox(self, label= "Lock ")
 		self.IndexEntry = wx.TextCtrl(self, style= wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Editable display for current image index
 		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER) # Static part of image index display
-		self.IndexEntryTip = wx.ToolTip('Question index entry')
-		self.IndexLabelTip = wx.ToolTip('Total number of questions')
-		self.LockCheckTip = wx.ToolTip('Lock all images to use the current question')
+		self.IndexEntryTip = wx.ToolTip('Question index entry. Press enter to select the question index.')
+		self.IndexLabelTip = wx.ToolTip('Total number of questions.')
+		self.LockCheckTip = wx.ToolTip('Lock all images to use the current question.')
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
 		self.LockCheck.SetToolTip(self.LockCheckTip)

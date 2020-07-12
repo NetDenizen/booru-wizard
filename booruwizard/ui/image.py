@@ -553,8 +553,8 @@ class ImageLabel(wx.Panel):
 		self.pos = CircularCounter(self.PathEntry.GetPathsLen() - 1) # Position in paths
 		self.IndexEntry = wx.TextCtrl(self, style= wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Editable display for current image index
 		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER) # Static part of image index display
-		self.IndexEntryTip = wx.ToolTip('Image index entry')
-		self.IndexLabelTip = wx.ToolTip('Total number of images')
+		self.IndexEntryTip = wx.ToolTip('Image index entry. Press enter to select the image index.')
+		self.IndexLabelTip = wx.ToolTip('Total number of images.')
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
 		self.IndexEntry.SetToolTip(self.IndexEntryTip)
