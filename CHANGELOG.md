@@ -1,5 +1,43 @@
 # Changelog
 
+## TODO-TO-DO 2.0
+
+* Include image indexes in image path search.
+
+* Remove pointless "Use this..." checkboxes from NAME_QUESTION and SOURCE_QUESTION.
+
+* More interactivity from the user interface. Buttons are grayed out more when their function does no purpose. The cursor changes when clicking and dragging in the image display.
+
+* Tooltips are now used extensively to document the software, instead of a marked screenshot.
+
+* Implement CUSTOM_TAGS.
+
+* Implement IMAGE_CONDITION_CONDITION and IMAGE_CONDITION_TAGS.
+
+* Implement ADDED_TAGS and ADDED_TAGS_ENTRY
+
+* Refine contents of imgbrd-grabber_log_template.json to use %sources% for the source field, instead of %url_page%.
+
+* We not preview the contents of the question in the question search menu.
+
+* Implement SOURCE_QUESTION_PATTERN and SOURCE_QUESTION_REPLACEMENT.
+
+* Implement path format replacement for SOURCE_QUESTION.
+
+* Implement BULK_TAGGER.
+
+* The DEFAULT_SAFETY setting is case-insensitive.
+
+* Implement path searching for SESSION_TAGS_IMPORTER.
+
+* Allow locking a question so it is used in the next image that's changed to.
+
+* Massive overhaul of default_config.cfg
+
+* Significant refactoring to reduce redundant code, and simplify addition of new features.
+
+* Fix many, many bugs.
+
 ## 2019-08-22 1.1
 
 * Search results for question prompts should now contain all choices, by if empty.
