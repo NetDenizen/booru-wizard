@@ -381,6 +381,10 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		for i in self.PathEntry.GetMenuItemIds():
 			self.Bind(wx.EVT_MENU, self._OnMenuPathChosen, id=i)
 
+		if len(OutputFiles) <= 1:
+			self.LeftSource.Disable()
+			self.RightSource.Disable()
+
 		self.Bind( wx.EVT_BUTTON, self._OnLeft, id=self.LeftSource.GetId() )
 		self.Bind( wx.EVT_TEXT_ENTER, self._OnIndexEntry, id=self.IndexEntry.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnRight, id=self.RightSource.GetId() )
