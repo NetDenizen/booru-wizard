@@ -129,6 +129,10 @@ There are a number of features and changes which I consider for this software. T
 
 * Consider adding metadata to the output files, which allow the software to more precisely recreate the state that it was in when those files were written. For instance, in ENTRY_QUESTION, tags can be added, however, the software does not know which tags to put in that entry question, when starting.
 
+* Consider a system for adding keybinds to specific question fields (which do not normally have them).
+
+* Consider replacing the tab navigation functionality with tab completion for autocomplete fields. The navigation could still be achieved with a modifier key.
+
 ### Open
 
 * I've considered adding more features to the image-viewer itself, such as the ability to zoom, and the ability to display animation. - Zooming implemented. Animation would likely involve complicated integration with ffmpeg libraries. wx animation support is too inconsistent between platforms. Specifically, the necessary methods are not supported for GTK.
