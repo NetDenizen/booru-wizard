@@ -435,6 +435,25 @@ class BulkTagger(wx.Panel):
 		self._SetActionButtons(False, False, False)
 	def _AddNumber(self, value):
 		self.NumberEntry.write( ''.join( ( str(value), ' ' ) ) )
+	def _CalculateTagCoverage(self):
+		"Compute the valid actions based on which tags are selected for which indices."
+		RemoveTags = ( e.strip() for e in self.RemoveEntry.GetValue().split() )
+		AddTags = ( e.strip() for e in self.AddEntry.GetValue().split() )
+		EnableRemove = False
+		EnableReplace = False
+		EnableAdd = False
+		for i in self.indices:
+			f = self.OutputFiles[i]
+			f.lock()
+			if f.tags.HasAnyOfStringList(RemoveTags):
+				EnableRemove = True
+			if not f.tags.HasAllOfStringList(AddTags):
+				EnableAdd = True
+			f.unlock()
+			if EnableRemove and EnableAdd:
+				EnableReplace = True
+				break
+		self._SetActionButtons(EnableRemove, EnableReplace, EnableAdd)
 	def _ProcessNumbers(self):
 		"Get list of indices from the NumberEntry, or disable actions on failure."
 		output = []
@@ -471,27 +490,8 @@ class BulkTagger(wx.Panel):
 					except ValueError:
 						self._DisableButtons()
 						return
-		self._CalculateTagCoverage()
 		self.indices = output
-	def _CalculateTagCoverage(self):
-		"Compute the valid actions based on which tags are selected for which indices."
-		RemoveTags = ( e.strip() for e in self.RemoveEntry.GetValue().split() )
-		AddTags = ( e.strip() for e in self.AddEntry.GetValue().split() )
-		EnableRemove = False
-		EnableReplace = False
-		EnableAdd = False
-		for i in self.indices:
-			f = self.OutputFiles[i]
-			f.lock()
-			if f.tags.HasAnyOfStringList(RemoveTags):
-				EnableRemove = True
-			if not f.tags.HasAllOfStringList(AddTags):
-				EnableAdd = True
-			f.unlock()
-			if EnableRemove and EnableAdd:
-				EnableReplace = True
-				break
-		self._SetActionButtons(EnableRemove, EnableReplace, EnableAdd)
+		self._CalculateTagCoverage()
 	def _OnPathSearch(self, e):
 		"Update the search menu, based on matches found in the paths array."
 		self.PathEntry.UpdateMenu()
