@@ -338,7 +338,7 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		self.ChoiceNames = self.TagNames # Names of each selection
 		self.choices = None
 		self.CurrentChoices = [] # Currently selected checkboxes
-		self.PathEntry = PathEntry( self, tuple( (f.path for f in self.OutputFiles) ) )
+		self.PathEntry = PathEntry( self, tuple( (f.FullPath for f in self.OutputFiles) ) )
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 		self.ButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
 
