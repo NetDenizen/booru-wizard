@@ -267,7 +267,7 @@ class QuestionPanel(QuestionDisplayComponent):
 		self.pos = CircularCounter(NumImages - 1) # The position in positions
 		self.positions = [CircularCounter(len(self.questions) - 1) for i in range(NumImages)] # The position in questions corresponding to each image
 		self.body = wx.TextCtrl(self, style= wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH | wx.TE_NOHIDESEL | wx.TE_AUTO_URL) # The body of the question #TODO: Will poor, poor Mac users get URL highlighting? Set background color?
-		self.BodyTip = wx.ToolTip('Question prompt')
+		self.BodyTip = wx.ToolTip('Question prompt. Not editable.')
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.body.SetToolTip(self.BodyTip)
