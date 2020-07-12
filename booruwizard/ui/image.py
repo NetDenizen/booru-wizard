@@ -84,7 +84,8 @@ class ImageDisplay(wx.Panel):
 		self.MouseStartX = e.GetX()
 		self.MouseStartY = e.GetY()
 		self.MouseDown = True
-		self.SetCursor( wx.Cursor(wx.CURSOR_CROSS) )
+		if self.viewport.ZoomLevel != 1.0:
+			self.SetCursor( wx.Cursor(wx.CURSOR_CROSS) )
 		e.Skip()
 	def _OnMouseUp(self, e):
 		self.MouseStartX = e.GetX()
@@ -144,7 +145,7 @@ class ImageDisplay(wx.Panel):
 		self.MouseStartX = None
 		self.MouseStartY = None
 
-		self.tip = wx.ToolTip("The currently loaded image. Click and drag in this field to move around.")
+		self.tip = wx.ToolTip("The currently loaded image. Click and drag in this field to move the view if the whole image isn't displayed at once.")
 		self.SetToolTip(self.tip)
 
 		self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
