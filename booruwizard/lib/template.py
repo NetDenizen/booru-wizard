@@ -12,7 +12,7 @@ from booruwizard.lib.viewport import DEFAULT_ZOOM_INTERVAL, DEFAULT_ZOOM_ACCEL, 
 # Generic template error definition
 class TemplateError(Exception):
 	def __init__(self, message, line, col):
-		super().__init__( ''.join( ( message, ' Line: ', str(line), ' Col: ', str(col) ) ) )
+		super().__init__( ''.join( ( message, ' Line: ', str(line + 1), ' Col: ', str(col + 1) ) ) )
 
 # Key-value pair definition
 class PairKey(Enum):
