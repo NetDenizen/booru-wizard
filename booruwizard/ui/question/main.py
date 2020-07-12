@@ -694,9 +694,10 @@ class SourceQuestion(SingleStringEntry):
 		ReplaceValue = self.PathFormatReplaceEntry.GetValue()
 		if PatternValue and ReplaceValue:
 			try:
-				self.PathFormatReplacement = re.sub(PatternValue,
-													ReplaceValue,
-													FullPath)
+				if re.search(PatternValue, FullPath) is not None:
+					self.PathFormatReplacement = re.sub(PatternValue,
+														ReplaceValue,
+														FullPath)
 			except:
 				pass
 	def _SetPathFormatButtonState(self):
