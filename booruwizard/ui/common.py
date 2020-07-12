@@ -4,6 +4,16 @@ from os.path import commonprefix
 
 import wx
 
+def GetPreviewText(i, v):
+	IndexText = str(i + 1)
+	divider = " : "
+	LenDiff = 80 - len(IndexText) - len(divider)
+	end = ""
+	if len(v) > LenDiff:
+		end = "..."
+	trimmed = v[:LenDiff - len(end)].replace('\r\n', ' ').replace('\n', ' ')
+	return ''.join( (IndexText, divider, trimmed, end) )
+
 class CircularCounter:
 	def set(self, value):
 		"Change the value to the one specified, if possible."
@@ -103,9 +113,10 @@ class PathEntry:
 
 		self.entry.SetToolTip(self._EntryTip)
 
-		for p in self._paths:
+		for i, p in enumerate(self._paths):
 			ItemId = wx.NewId()
-			item = wx.MenuItem(self._menu, ItemId, p, p)
+			PreviewText = GetPreviewText(i, p)
+			item = wx.MenuItem(self._menu, ItemId, PreviewText, PreviewText)
 			self._MenuItems.append(item)
 			self._MenuLookup[ItemId] = p
 		self.entry.SetMenu(self._menu)

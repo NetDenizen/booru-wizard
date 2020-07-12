@@ -3,7 +3,7 @@
 import wx
 from pubsub import pub
 
-from booruwizard.ui.common import CircularCounter
+from booruwizard.ui.common import CircularCounter, GetPreviewText
 
 class QuestionDisplayComponent(wx.Panel):  # This class should never be used on its own
 	def _ShiftImage(self, func):
@@ -45,15 +45,6 @@ class QuestionDisplayComponent(wx.Panel):  # This class should never be used on 
 		wx.Panel.__init__(self, parent=parent)
 
 class QuestionSearch(wx.Panel):
-	def _GetPreviewText(self, i, q):
-		IndexText = str(i + 1)
-		divider = " : "
-		LenDiff = 80 - len(IndexText) - len(divider)
-		end = ""
-		if len(q.text) > LenDiff:
-			end = "..."
-		trimmed = q.text[:LenDiff - len(end)].replace('\r\n', ' ').replace('\n', ' ')
-		return ''.join( (IndexText, divider, trimmed, end) )
 	def _UpdateQuestionsMenu(self):
 		"Update the questions menu, based on which question descriptions match the search terms."
 		Remove = self.FieldMenu.Remove
@@ -103,7 +94,7 @@ class QuestionSearch(wx.Panel):
 
 		for i, q in enumerate(questions):
 			ItemId = wx.NewId()
-			PreviewText = self._GetPreviewText(i, q)
+			PreviewText = GetPreviewText(i, q.text)
 			item = wx.MenuItem(self.FieldMenu, ItemId, PreviewText, PreviewText)
 			self.FieldMenuItems.append(item)
 			self.FieldMenuLookup[ItemId] = i
