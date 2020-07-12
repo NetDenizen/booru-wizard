@@ -390,6 +390,7 @@ class AddedTags(SessionTags):
 class AddedTagsEntry(SplitterBase):
 	def _OnEntryQuestionChange(self, e):
 		self.second.disp()
+		self.second.Layout()
 		e.Skip()
 	def __init__(self, parent, NumImages, OutputFiles, TagsTracker):
 		wx.SplitterWindow.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
