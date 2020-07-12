@@ -377,9 +377,12 @@ class SessionTags(TagChoiceQuestion):
 class AddedTags(SessionTags):
 	def _FilterStringList(self):
 		output = []
+		self.OutputFile.lock()
 		for n in self.TagsTracker.ReturnStringList():
-			if not self.TagsTracker.HasConfigTag(n):
+			if self.OutputFile.tags.ReturnStringOccurrences(n) == 2 and\
+			   not self.TagsTracker.HasConfigTag(n):
 				output.append(n)
+		self.OutputFile.unlock()
 		return output
 	def _MakeNames(self):
 		return self._MakeNamesFrom(self._FilterStringList)
