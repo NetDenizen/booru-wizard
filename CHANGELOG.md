@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* List all paths in image path selection menus, if the current contents are an exact match.
+
 * Report parser errors with line and column numbers starting at 1.
 
 * Include image indexes in image path search.

@@ -66,8 +66,11 @@ class PathEntry:
 		for i in _menu.GetMenuItems():
 			Remove(i)
 		EntryValue = self.entry.GetValue()
+		AddAll = False
+		if EntryValue in self._paths:
+			AddAll = True
 		for i, s in enumerate(self._paths):
-			if EntryValue in s:
+			if AddAll or EntryValue in s:
 				Append(_MenuItems[i])
 	def UpdateAutocomplete(self):
 		"Try to autocomplete the contents of the path entry to a complete string."
