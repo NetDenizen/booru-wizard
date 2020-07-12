@@ -91,7 +91,7 @@ class PathEntry:
 			val = ContainsOrig[0]
 		else:
 			prefixes = tuple( (p for p in prefixes if p) )
-			val = min(prefixes, key=len)
+			val = max(prefixes, key=len)
 		self.entry.SetValue(val)
 	def ChooseMenuItem(self, ItemId):
 		"Set the path entry to the chosen menu value."

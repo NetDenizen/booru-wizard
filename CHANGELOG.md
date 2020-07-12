@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* Load longest matching path in the image autocomplete menus, instead of the shortest.
+
 * List all paths in image path selection menus, if the current contents are an exact match.
 
 * Report parser errors with line and column numbers starting at 1.
