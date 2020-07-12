@@ -411,8 +411,13 @@ class BulkTagger(wx.Panel):
 		pass
 	def load(self, OutputFile):
 		pass
+	def _SetSwapEntryButtonState(self):
+		if self.RemoveEntry.GetValue() or self.AddEntry.GetValue():
+			self.SwapEntryButton.Enable()
+		else:
+			self.SwapEntryButton.Disable()
 	def disp(self):
-		pass
+		self._SetSwapEntryButtonState()
 	def _SetActionButtons(self, EnableRemove, EnableReplace, EnableAdd):
 		self.RemoveButton.Enable(EnableRemove)
 		self.ReplaceButton.Enable(EnableReplace)
@@ -498,6 +503,7 @@ class BulkTagger(wx.Panel):
 		e.Skip()
 	def _OnUpdate(self, e):
 		self._CalculateTagCoverage()
+		self._SetSwapEntryButtonState()
 		e.Skip()
 	def _OnSwapEntryButton(self, e):
 		tmp = self.RemoveEntry.GetValue()
