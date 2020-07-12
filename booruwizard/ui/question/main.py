@@ -712,6 +712,7 @@ class SourceQuestion(SingleStringEntry):
 		self._ValueGetter = self.OutputFile.GetSource
 		self._ValueSetter = self.OutputFile.SetSource
 		self.OrigValue = self._GetValue()
+		self._SetPathFormatReplacement()
 	def _OnPathFormatButton(self, e):
 		self.entry.ChangeValue(self.PathFormatReplacement)
 		self._UpdatePathFormatMenuItems()
