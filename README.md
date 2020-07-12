@@ -133,6 +133,8 @@ There are a number of features and changes which I consider for this software. T
 
 * Consider replacing the tab navigation functionality with tab completion for autocomplete fields. The navigation could still be achieved with a modifier key.
 
+* It may greatly improve memorization of keybinds by listing them in the tooltips for the relevant field.
+
 ### Open
 
 * I've considered adding more features to the image-viewer itself, such as the ability to zoom, and the ability to display animation. - Zooming implemented. Animation would likely involve complicated integration with ffmpeg libraries. wx animation support is too inconsistent between platforms. Specifically, the necessary methods are not supported for GTK.
