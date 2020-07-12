@@ -56,11 +56,9 @@ These basic steps may be followed to get both the wizard software, and the uploa
 
 4. The page should be largely self-documenting, but a quick overview is that '.JSON files:' serves a similar role to the input JSON files option for the booru-wizard, and 'Image files:' a similarly equivalent roles. The images you wish to upload should be selected by 'Image files:', while the corresponding JSON files should be selected by '.JSON files:'.
 
-## Interface Guide
+## Interface Overview
 
-The basic interface of the software is as follows; each element is annotated with a green number:
-
-![screenshot](https://i.imgur.com/Oooqv90.png)
+![screenshot](https://imgur.com/1vQWVwu)
 
 The image is divided into 3 panes, which can be resized within the window, by click-and-dragging the divider between them. Most elements should be marked with a tooltip (which is displayed when the element is hovered over with the mouse cursor).
 
