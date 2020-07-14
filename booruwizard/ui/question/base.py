@@ -243,12 +243,33 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		output.extend(UserNames)
 		output.extend(AutoNames)
 		return output
+	def _SetCommitButtonState(self):
+		if not self.CurrentChoices:
+			self.commit.Disable()
+		else:
+			self.commit.Enable()
 	def _OnSelect(self, e):
 		"Bound to EVT_CHECKLISTBOX; add or remove the selected or unselected choice to or from CurrentChoices."
 		if e.GetInt() in self.CurrentChoices:
 			self.CurrentChoices.remove( e.GetInt() )
 		else:
 			self.CurrentChoices.append( e.GetInt() )
+		self._SetCommitButtonState()
+		e.Skip()
+	def _ToggleChecks(self):
+		"Loop through all choices. If the checkbox is selected, deselect it, and vice-versa."
+		# TODO: Should the choices be chosen in a different procedure?
+		self.CurrentChoices = []
+		for i, n in enumerate(self.TagNames):
+			if self.choices.IsChecked(i):
+				self.choices.Check(i, False)
+			else:
+				self.CurrentChoices.append(i)
+				self.choices.Check(i)
+			self._UpdateName(i)
+			self._SetCommitButtonState()
+	def _OnToggleAll(self, e):
+		self._ToggleChecks()
 		e.Skip()
 	def _OnIndexEntry(self, e):
 		"Switch the OutputFile selected by the value of the index entry, or reset to the last valid one."
@@ -321,11 +342,9 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		self.sizer.Add(self.choices, 100, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
 		self.Bind( wx.EVT_CHECKLISTBOX, self._OnSelect, id=self.choices.GetId() )
 		self._UpdateChecks()
+		self._ToggleChecks() #TODO: Fix this ugliness
 		self.CurrentChoices = list( self.choices.GetCheckedItems() ) # Currently selected checkboxes
-		if not self.CurrentChoices:
-			self.commit.Disable()
-		else:
-			self.commit.Enable()
+		self._SetCommitButtonState()
 		self._SetIndex()
 		self.Layout()
 	def __init__(self, parent, OutputFiles, TagsTracker):
@@ -344,18 +363,21 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 		self.ButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
 
+		self.ToggleAll = wx.Button(self, label = 'Toggle v')
 		self.LeftSource = wx.Button(self, label = '<', style=wx.BU_EXACTFIT)
 		self.IndexEntry = wx.TextCtrl(self, style= wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Editable display for current image index
 		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER) # Static part of image index display
 		self.RightSource = wx.Button(self, label = '>', style=wx.BU_EXACTFIT)
 		self.commit = wx.Button(self, label = 'Copy >')
 
+		self.ToggleAllTip = wx.ToolTip('Toggle all checks.')
 		self.LeftSourceTip = wx.ToolTip('Previous Image')
 		self.IndexEntryTip = wx.ToolTip('Source image entry')
 		self.IndexLabelTip = wx.ToolTip('Total number of images')
 		self.RightSourceTip = wx.ToolTip('Next Image')
 		self.CommitTip = wx.ToolTip('Copy Selected Tags')
 
+		self.ToggleAll.SetToolTip(self.ToggleAllTip)
 		self.LeftSource.SetToolTip(self.LeftSourceTip)
 		self.IndexEntry.SetToolTip(self.IndexEntryTip)
 		self.IndexLabel.SetToolTip(self.IndexLabelTip)
@@ -363,6 +385,8 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		self.commit.SetToolTip(self.CommitTip)
 
 		self.ButtonSizer.AddStretchSpacer(10)
+		self.ButtonSizer.Add(self.ToggleAll, 0, wx.ALIGN_CENTER_VERTICAL)
+		self.ButtonSizer.AddStretchSpacer(1)
 		self.ButtonSizer.Add(self.LeftSource, 0, wx.ALIGN_CENTER_VERTICAL)
 		self.ButtonSizer.AddStretchSpacer(1)
 		self.ButtonSizer.Add(self.IndexEntry, 0, wx.ALIGN_CENTER)
@@ -387,6 +411,7 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 			self.LeftSource.Disable()
 			self.RightSource.Disable()
 
+		self.Bind( wx.EVT_BUTTON, self._OnToggleAll, id=self.ToggleAll.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnLeft, id=self.LeftSource.GetId() )
 		self.Bind( wx.EVT_TEXT_ENTER, self._OnIndexEntry, id=self.IndexEntry.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnRight, id=self.RightSource.GetId() )

@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* SESSION_TAG_IMPORTER now starts will all options unchecked, and with a button to toggle all checks.
+
 * SESSION_TAG_IMPORTER now sets imported tags to 'user' set.
 
 * The program will now preserve arbitrary values associated with each file in the JSON output format, instead of overwriting them to rigorously match the specification.
