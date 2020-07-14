@@ -135,6 +135,10 @@ There are a number of features and changes which I consider for this software. T
 
 * It may greatly improve memorization of keybinds by listing them in the tooltips for the relevant field.
 
+* Consider a setting to clean the output files to rigorously conform to the specification.
+
+* Consider a setting to make output directories, if they don't already exist. The file dialog is crippled in this regard on Linux
+
 ### Open
 
 * I've considered adding more features to the image-viewer itself, such as the ability to zoom, and the ability to display animation. - Zooming implemented. Animation would likely involve complicated integration with ffmpeg libraries. wx animation support is too inconsistent between platforms. Specifically, the necessary methods are not supported for GTK.
