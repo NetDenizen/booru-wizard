@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* The current path is no longer redundantly listed in path selection menus.
+
 * Fix crash when opening an image path autocomplete menu with a keybind.
 
 * Load longest matching path in the image autocomplete menus, instead of the shortest.
