@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* The valid options for 'rating' in the output data files are 'safe', 'questionable', and 'explicit'. Their single-letter equivalents of 's', 'q', and 'e' are no longer supported.
+
 * The current path is no longer redundantly listed in path selection menus.
 
 * Fix crash when opening an image path autocomplete menu with a keybind.

@@ -43,15 +43,12 @@ SAFETY_NAMES_LOOKUP = {
 	'safe'         : safety.SAFE,
 	'questionable' : safety.QUESTIONABLE,
 	'explicit'     : safety.EXPLICIT,
-	's'            : safety.SAFE,
-	'q'            : safety.QUESTIONABLE,
-	'e'            : safety.EXPLICIT
 }
 
 SAFETY_VALUES_LOOKUP = {
-	safety.SAFE         : 's',
-	safety.QUESTIONABLE : 'q',
-	safety.EXPLICIT     : 'e'
+	safety.SAFE         : 'safe',
+	safety.QUESTIONABLE : 'questionable',
+	safety.EXPLICIT     : 'explicit'
 }
 
 # A single managed file and its exception
@@ -243,10 +240,10 @@ class FileData:
 		if isinstance(rating, str):
 			found = SAFETY_NAMES_LOOKUP.get(rating, None)
 			if found is None:
-				raise ControlFileError( ''.join( ("Invalid safety name '", rating, "'. Valid choices are: 's' (safe), 'q' (questionable), 'e' (explicit).") ) )
+				raise ControlFileError( ''.join( ("Invalid safety name '", rating, "'. Valid choices are: safe, questionable, explicit.") ) )
 			self.rating = found
 		else:
-			raise ControlFileError( ''.join( ("'rating' field is '", self._GetJSONTypeName(rating), "' but must be included as a string. Valid choices are: 's', 'q', 'e', 'safe', 'questionable', 'explicit', 'Safe', 'Questionable', 'Explicit'") ) )
+			raise ControlFileError( ''.join( ("'rating' field is '", self._GetJSONTypeName(rating), "' but must be included as a string. Valid choices are: 'safe', 'questionable', 'explicit'") ) )
 	def _LoadJSONTags(self, obj):
 		"Load the tags field from the JSON object."
 		tags = obj.get( 'tags', unfound() )

@@ -19,9 +19,9 @@
           "type": ["string", "null"]
         },
         "rating": {
-          "description": "Rating of work as 's' (safe), 'q' (questionable), or 'e' (explicit).",
+          "description": "Rating of work as safe, questionable, or explicit.",
           "type": "string",
-          "enum": ["s", "q", "e"]
+          "enum": ["safe", "questionable", "explicit"]
         },
         "tags": {
           "description": "Array of space-separated strings each representing a tag. The index of each string represents the internal level of those tags. '1' is automatically set, and '2' is manually set. Manual settings cannot be overridden by automatic ones.",
