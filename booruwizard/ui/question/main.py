@@ -521,7 +521,7 @@ class BulkTagger(wx.Panel):
 		self.AddEntry.SetValue(tmp)
 		e.Skip()
 	def _OnRemoveButton(self, e):
-		RemoveTags = ( en.strip() for en in self.RemoveEntry.GetValue().split() )
+		RemoveTags = tuple( en.strip() for en in self.RemoveEntry.GetValue().split() )
 		for i in self.indices:
 			f = self.OutputFiles[i]
 			f.PrepareChange()
@@ -532,8 +532,8 @@ class BulkTagger(wx.Panel):
 		self._CalculateTagCoverage()
 		e.Skip()
 	def _OnReplaceButton(self, e):
-		RemoveTags = ( en.strip() for en in self.RemoveEntry.GetValue().split() )
-		AddTags = ( en.strip() for en in self.AddEntry.GetValue().split() )
+		RemoveTags = tuple( en.strip() for en in self.RemoveEntry.GetValue().split() )
+		AddTags = tuple( en.strip() for en in self.AddEntry.GetValue().split() )
 		for i in self.indices:
 			f = self.OutputFiles[i]
 			f.PrepareChange()
@@ -546,7 +546,7 @@ class BulkTagger(wx.Panel):
 		self._CalculateTagCoverage()
 		e.Skip()
 	def _OnAddButton(self, e):
-		AddTags = ( en.strip() for en in self.AddEntry.GetValue().split() )
+		AddTags = tuple( en.strip() for en in self.AddEntry.GetValue().split() )
 		for i in self.indices:
 			f = self.OutputFiles[i]
 			f.PrepareChange()
