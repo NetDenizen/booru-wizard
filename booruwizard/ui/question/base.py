@@ -280,9 +280,7 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		for c in self.CurrentChoices:
 			self.parent.OwnTags.OutputFile.PrepareChange()
 			self.TagsTracker.SubStringList(self.parent.OwnTags.OutputFile.tags.ReturnStringList(), 1)
-			self.parent.OwnTags.OutputFile.tags.set( self.TagNames[c],
-													 self.OutputFile.tags.ReturnStringOccurrences(self.TagNames[c])
-												   )
+			self.parent.OwnTags.OutputFile.tags.set(self.TagNames[c], 2)
 			self.TagsTracker.AddStringList(self.parent.OwnTags.OutputFile.tags.ReturnStringList(), 1)
 			self.parent.OwnTags.OutputFile.FinishChange()
 		self.parent.disp()

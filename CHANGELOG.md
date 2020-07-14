@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* SESSION_TAG_IMPORTER now sets imported tags to 'user' set.
+
 * The program will now preserve arbitrary values associated with each file in the JSON output format, instead of overwriting them to rigorously match the specification.
 
 * The valid options for 'rating' in the output data files are 'safe', 'questionable', and 'explicit'. Their single-letter equivalents of 's', 'q', and 'e' are no longer supported.
