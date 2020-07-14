@@ -39,16 +39,10 @@ class safety(Enum): #TODO: Change name to rating
 
 DEFAULT_SAFETY = safety.QUESTIONABLE
 
-CONFIG_SAFETY_NAMES_LOOKUP = {
+SAFETY_NAMES_LOOKUP = {
 	'safe'         : safety.SAFE,
 	'questionable' : safety.QUESTIONABLE,
 	'explicit'     : safety.EXPLICIT,
-	's'            : safety.SAFE,
-	'q'            : safety.QUESTIONABLE,
-	'e'            : safety.EXPLICIT
-}
-
-SAFETY_NAMES_LOOKUP = {
 	's'            : safety.SAFE,
 	'q'            : safety.QUESTIONABLE,
 	'e'            : safety.EXPLICIT
