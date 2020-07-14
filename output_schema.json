@@ -32,7 +32,7 @@
         }
       },
       "required": ["rating"],
-      "additionalProperties": false
+      "additionalProperties": true
     }
   },
   "additionalProperties": false

@@ -146,8 +146,11 @@ class FileData:
 		self.ConditionalTags.ClearTags(name, self.tags)
 	def _BuildData(self):
 		"Return the data fields formatted as a JSON string, and set the change status to false.."
-		output = {'rating' : SAFETY_VALUES_LOOKUP[self.rating]}
-		obj = {self.path : output}
+		if self._OriginalObj is not None:
+			output = self._OriginalObj.copy() #TODO: Make sure this shallow copy works.
+			output['rating'] = SAFETY_VALUES_LOOKUP[self.rating]
+		else:
+			output = {'rating' : SAFETY_VALUES_LOOKUP[self.rating]}
 		if self.name is not None:
 			output['name'] = self.name
 		if self.source is not None:
@@ -155,7 +158,7 @@ class FileData:
 		tags = self.tags.ReturnOccurrenceStrings()
 		if tags:
 			output['tags'] = tags
-		return json.dumps( obj, separators=(',',':') )
+		return json.dumps( {self.path : output}, separators=(',',':') )
 	def _GetJSONTypeName(self, item):
 		"Return a string containing the equivalent JSON type of the variable."
 		if isinstance(item, dict):
@@ -194,6 +197,7 @@ class FileData:
 		self.SetTaglessTags()
 
 		self._IsChanged = True
+		self._OriginalObj = None
 		self._DataState = self._BuildData() # The current output of the DataCallback, used to determine if _IsChanged should be set.
 		self._lock = None # A lock within the ManagedFile object, used to synchronize updates.
 		self._PushUpdate = None # A callback to push data to the associated ManagedFile object
@@ -268,6 +272,7 @@ class FileData:
 		self._LoadJSONSource(obj)
 		self._LoadJSONRating(obj)
 		self._LoadJSONTags(obj)
+		self._OriginalObj = obj
 		self._DataState = self._BuildData() # The current output of the DataCallback, used to determine if _IsChanged should be set.
 		self._IsChanged = True
 	def IsChangedCallback(self):
