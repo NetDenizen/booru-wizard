@@ -435,7 +435,8 @@ class BulkTagger(wx.Panel):
 	def _DisableButtons(self):
 		self._SetActionButtons(False, False, False)
 	def _AddNumber(self, value):
-		self.NumberEntry.write( ''.join( ( str(value), ' ' ) ) )
+		if value - 1 not in self.indices:
+			self.NumberEntry.write( ''.join( ( str(value), ' ' ) ) )
 	def _CalculateTagCoverage(self):
 		"Compute the valid actions based on which tags are selected for which indices."
 		RemoveTags = ( e.strip() for e in self.RemoveEntry.GetValue().split() )
