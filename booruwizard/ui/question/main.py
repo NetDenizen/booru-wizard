@@ -385,6 +385,9 @@ class AddedTags(SessionTags):
 		return output
 	def _MakeNames(self):
 		return self._MakeNamesFrom(self._FilterStringList)
+	def __init__(self, parent, TagsTracker):
+		SessionTags.__init__(self, parent, TagsTracker)
+		self.ChoicesTipText = "All tags in use and not automatically set by the software are displayed here, and can be edited freely."
 
 class AddedTagsEntry(SplitterBase):
 	def _OnEntryQuestionChange(self, e):
