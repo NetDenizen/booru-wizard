@@ -697,10 +697,13 @@ class SourceQuestion(SingleStringEntry):
 		ReplaceValue = self.PathFormatReplaceEntry.GetValue()
 		if PatternValue and ReplaceValue:
 			try:
+				PotentialReplacement = None
 				if re.search(PatternValue, FullPath) is not None:
-					self.PathFormatReplacement = re.sub(PatternValue,
-														ReplaceValue,
-														FullPath)
+					PotentialReplacement = re.sub(PatternValue,
+												  ReplaceValue,
+												  FullPath)
+				if PotentialReplacement != self.entry.GetValue():
+					self.PathFormatReplacement = PotentialReplacement
 			except:
 				pass
 	def _SetPathFormatButtonState(self):
@@ -728,10 +731,18 @@ class SourceQuestion(SingleStringEntry):
 		self._ValueGetter = self.OutputFile.GetSource
 		self._ValueSetter = self.OutputFile.SetSource
 		self._SetPathFormatReplacement()
+	def _OnChange(self, e):
+		"Set the value."
+		self._SetValue()
+		self.SetRomanizeButtonState()
+		self._SetPathFormatReplacement()
+		self._SetPathFormatButtonState()
+		e.Skip()
 	def _OnPathFormatButton(self, e):
 		self.entry.ChangeValue(self.PathFormatReplacement)
 		self._UpdatePathFormatMenuItems()
 		self._SetValue()
+		self.PathFormatButton.Disable()
 		e.Skip()
 	def _OnPathFormatEntry(self, e):
 		self._SetPathFormatReplacement()
