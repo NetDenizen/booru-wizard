@@ -129,6 +129,7 @@ def GetFileTypes(paths, extensions):
 
 def main():
 	"Main procedure."
+	#TODO: Tidy this the fuck up.
 
 	app = wx.App()
 	wx.Log.SetActiveTarget( wx.LogStderr() )
@@ -167,6 +168,17 @@ def main():
 			continue
 		for t in q.GetChoiceTags():
 			TagsTracker.RegisterConfig(t)
+	for t in config.NamelessTags.ReturnStringList():
+		TagsTracker.RegisterConfig(t)
+	for t in config.SourcelessTags.ReturnStringList():
+		TagsTracker.RegisterConfig(t)
+	for t in config.TaglessTags.ReturnStringList():
+		TagsTracker.RegisterConfig(t)
+	for c in config.ImageConditions:
+		for t in c.TagString.split():
+			TagsTracker.RegisterConfig(t)
+	for t in config.ConditionalTags.lookup.keys():
+		TagsTracker.RegisterConfig(t)
 
 	OutputFiles = FileManager(config.MaxOpenFiles, config.UpdateInterval)
 	OutputFiles.FilesLock.acquire()

@@ -379,8 +379,7 @@ class AddedTags(SessionTags):
 		output = []
 		self.OutputFile.lock()
 		for n in self.TagsTracker.ReturnStringList():
-			if self.OutputFile.tags.ReturnStringOccurrences(n) == 2 and\
-			   not self.TagsTracker.HasConfigTag(n):
+			if not self.TagsTracker.HasConfigTag(n):
 				output.append(n)
 		self.OutputFile.unlock()
 		return output
