@@ -368,7 +368,7 @@ class SessionTags(TagChoiceQuestion):
 		self.TagNames = [] # Names of tags corresponding to each selection name
 		self.ChoiceNames = self.TagNames # Names of each selection
 		self.choices = None
-		self.ChoicesTipText = "All tags present in the image are displayed here, and can be edited freely."
+		self.ChoicesTipText = "All tags in use are displayed here, and can be edited freely."
 		self.CurrentChoices = [] # Currently selected checkboxes
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
