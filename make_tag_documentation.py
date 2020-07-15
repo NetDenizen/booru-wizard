@@ -65,17 +65,17 @@ def WriteQuestionTags(AddedTags, config, writer, trim_desc):
 			WriteRow( AddedTags, writer, config, o.tag, GetTrimmedDesc(o.name, o.tag, trim_desc) )
 
 def WriteXTags(AddedTags, config, X, writer):
-	for t in X.ReturnStringList():
+	for t in X:
 		WriteRow(AddedTags, writer, config, t, '')
 
 def WriteNamelessTags(AddedTags, config, writer):
-	WriteXTags(AddedTags, config, config.NamelessTags, writer)
+	WriteXTags(AddedTags, config, config.NamelessTags.ReturnStringList(), writer)
 
 def WriteSourcelessTags(AddedTags, config, writer):
-	WriteXTags(AddedTags, config, config.SourcelessTags, writer)
+	WriteXTags(AddedTags, config, config.SourcelessTags.ReturnStringList(), writer)
 
 def WriteTaglessTags(AddedTags, config, writer):
-	WriteXTags(AddedTags, config, config.TaglessTags, writer)
+	WriteXTags(AddedTags, config, config.TaglessTags.ReturnStringList(), writer)
 
 def WriteImageConditionTags(AddedTags, config, writer):
 	for c in config.ImageConditions:
