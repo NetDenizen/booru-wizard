@@ -64,18 +64,18 @@ def WriteQuestionTags(AddedTags, config, writer, trim_desc):
 		for o in q.options:
 			WriteRow( AddedTags, writer, config, o.tag, GetTrimmedDesc(o.name, o.tag, trim_desc) )
 
-def WriteXlessTags(AddedTags, config, X, writer):
+def WriteXTags(AddedTags, config, X, writer):
 	for t in X.ReturnStringList():
 		WriteRow(AddedTags, writer, config, t, '')
 
 def WriteNamelessTags(AddedTags, config, writer):
-	WriteXlessTags(AddedTags, config, config.NamelessTags, writer)
+	WriteXTags(AddedTags, config, config.NamelessTags, writer)
 
 def WriteSourcelessTags(AddedTags, config, writer):
-	WriteXlessTags(AddedTags, config, config.SourcelessTags, writer)
+	WriteXTags(AddedTags, config, config.SourcelessTags, writer)
 
 def WriteTaglessTags(AddedTags, config, writer):
-	WriteXlessTags(AddedTags, config, config.TaglessTags, writer)
+	WriteXTags(AddedTags, config, config.TaglessTags, writer)
 
 def WriteImageConditionTags(AddedTags, config, writer):
 	for c in config.ImageConditions:
@@ -83,8 +83,7 @@ def WriteImageConditionTags(AddedTags, config, writer):
 			WriteRow(AddedTags, writer, config, t, '')
 
 def WriteAliasTags(AddedTags, config, writer):
-	for t in config.ConditionalTags.lookup.keys():
-		WriteRow(AddedTags, writer, config, t, '')
+	WriteXTags(AddedTags, config, config.ConditionalTags.lookup.keys(), writer)
 
 def main():
 	args = ParseCommandLine()
