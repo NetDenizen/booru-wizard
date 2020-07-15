@@ -3,7 +3,7 @@
 import wx
 from pubsub import pub
 
-from booruwizard.ui.common import CircularCounter, GetPreviewText
+from booruwizard.ui.common import CircularCounter, GetPreviewText, RenderThreeIfMid
 
 class QuestionDisplayComponent(wx.Panel):  # This class should never be used on its own
 	def _ShiftImage(self, func):
@@ -76,7 +76,7 @@ class QuestionSearch(wx.Panel):
 		self.field.SetFocus()
 	def _OnFocusQuestionSearchMenu(self, message, arg2=None):
 		self.field.PopupMenu(self.FieldMenu)
-	def __init__(self, parent, questions):
+	def __init__(self, parent, questions, keybinds):
 		wx.Panel.__init__(self, parent=parent)
 
 		self.questions = questions
@@ -84,7 +84,7 @@ class QuestionSearch(wx.Panel):
 		self.FieldMenuLookup = {}
 		self.field = wx.SearchCtrl(self, style= wx.TE_LEFT | wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL)
 		self.FieldMenu = wx.Menu()
-		self.FieldTip = wx.ToolTip("Search question descriptions by comma separated keywords; if only one match is found, then pressing enter loads it.")
+		self.FieldTip = wx.ToolTip( ''.join( ( 'Search question descriptions by comma separated keywords; if only one match is found, then pressing enter loads it.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_question_search'), ')'), RenderThreeIfMid(' (Open Menu: ', keybinds.get('select_question_search_menu'), ')') ) ) )
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
 		self.field.SetToolTip(self.FieldTip)
@@ -132,7 +132,7 @@ class QuestionLabel(QuestionDisplayComponent):
 			pub.sendMessage("LockQuestion", message=None)
 		else:
 			pub.sendMessage("UnlockQuestion", message=None)
-	def __init__(self, parent, NumImages, questions):
+	def __init__(self, parent, NumImages, questions, keybinds):
 		QuestionDisplayComponent.__init__(self, parent)
 
 		self.questions = questions # Question objects
@@ -142,9 +142,9 @@ class QuestionLabel(QuestionDisplayComponent):
 		self.LockCheck = wx.CheckBox(self, label= "Lock ")
 		self.IndexEntry = wx.TextCtrl(self, style= wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Editable display for current image index
 		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER) # Static part of image index display
-		self.IndexEntryTip = wx.ToolTip('Question index entry. Press enter to select the question index.')
+		self.LockCheckTip = wx.ToolTip( ''.join( ( 'Lock all images to use the current question.', RenderThreeIfMid(' (Unlock: ', keybinds.get('unlock_question'), ')'), RenderThreeIfMid(' (Lock: ', keybinds.get('lock_question'), ')'), RenderThreeIfMid(' (Toggle Question Lock: ', keybinds.get('toggle_question_lock'), ')') ) ) )
+		self.IndexEntryTip = wx.ToolTip( ''.join( ( 'Question index entry. Press enter to select the question index.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_question_index'), ')') ) ) )
 		self.IndexLabelTip = wx.ToolTip('Total number of questions.')
-		self.LockCheckTip = wx.ToolTip('Lock all images to use the current question.')
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
 		self.LockCheck.SetToolTip(self.LockCheckTip)
@@ -193,17 +193,17 @@ class PositionButtons(wx.Panel):
 		self.RightQuestion.SetFocus()
 	def _OnRightImageReceived(self, message, arg2=None):
 		self.RightImage.SetFocus()
-	def __init__(self, parent, NumImages, NumQuestions):
+	def __init__(self, parent, NumImages, NumQuestions, keybinds):
 		wx.Panel.__init__(self, parent=parent)
 
 		self.LeftImage = wx.Button(self, label = '<<', style=wx.BU_EXACTFIT)
 		self.LeftQuestion = wx.Button(self, label = '<', style=wx.BU_EXACTFIT)
 		self.RightQuestion = wx.Button(self, label = '>', style=wx.BU_EXACTFIT)
 		self.RightImage = wx.Button(self, label = '>>', style=wx.BU_EXACTFIT)
-		self.LeftImageTip = wx.ToolTip('Previous image')
-		self.LeftQuestionTip = wx.ToolTip('Previous question')
-		self.RightImageTip = wx.ToolTip('Next image')
-		self.RightQuestionTip = wx.ToolTip('Next question')
+		self.LeftImageTip = wx.ToolTip( ''.join( ( 'Previous image.', RenderThreeIfMid(' (', keybinds.get('left_image'), ')' ) ) ) )
+		self.LeftQuestionTip = wx.ToolTip( ''.join( ( 'Previous question.', RenderThreeIfMid(' (', keybinds.get('left_question'), ')' ) ) ) )
+		self.RightQuestionTip = wx.ToolTip( ''.join( ( 'Next question.', RenderThreeIfMid(' (', keybinds.get('right_question'), ')' ) ) ) )
+		self.RightImageTip = wx.ToolTip( ''.join( ( 'Next image.', RenderThreeIfMid(' (', keybinds.get('right_image'), ')' ) ) ) )
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
 		if NumImages <= 1:
@@ -238,12 +238,12 @@ class PositionButtons(wx.Panel):
 		pub.subscribe(self._OnRightImageReceived, "RightImage")
 
 class PromptControls(wx.Panel):
-	def __init__(self, parent, NumImages, questions):
+	def __init__(self, parent, NumImages, questions, keybinds):
 		wx.Panel.__init__(self, parent=parent)
 
-		self.search = QuestionSearch(self, questions)
-		self.label = QuestionLabel(self, NumImages, questions)
-		self.buttons = PositionButtons( self, NumImages, len(questions) )
+		self.search = QuestionSearch(self, questions, keybinds)
+		self.label = QuestionLabel(self, NumImages, questions, keybinds)
+		self.buttons = PositionButtons(self, NumImages, len(questions), keybinds)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.sizer.Add(self.search, 3, wx.ALIGN_CENTER | wx.EXPAND)
@@ -259,7 +259,7 @@ class QuestionPanel(QuestionDisplayComponent):
 		self.body.SetValue(self.questions[ self.positions[self.pos.get()].get() ].text)
 	def _OnFocusPromptBody(self, message, arg2=None):
 		self.body.SetFocus()
-	def __init__(self, parent, NumImages, questions):
+	def __init__(self, parent, NumImages, questions, keybinds):
 		QuestionDisplayComponent.__init__(self, parent)
 
 		self.questions = questions # Question objects
@@ -267,7 +267,7 @@ class QuestionPanel(QuestionDisplayComponent):
 		self.pos = CircularCounter(NumImages - 1) # The position in positions
 		self.positions = [CircularCounter(len(self.questions) - 1) for i in range(NumImages)] # The position in questions corresponding to each image
 		self.body = wx.TextCtrl(self, style= wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH | wx.TE_NOHIDESEL | wx.TE_AUTO_URL) # The body of the question #TODO: Will poor, poor Mac users get URL highlighting? Set background color?
-		self.BodyTip = wx.ToolTip('Question prompt. Not editable.')
+		self.BodyTip = wx.ToolTip( ''.join( ( 'Question prompt. Not editable.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_instructions'), ')') ) ) )
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.body.SetToolTip(self.BodyTip)
@@ -289,11 +289,11 @@ class QuestionPanel(QuestionDisplayComponent):
 		pub.subscribe(self._OnUnlockQuestion, "UnlockQuestion")
 
 class PromptContainer(wx.Panel):
-	def __init__(self, parent, NumImages, questions):
+	def __init__(self, parent, NumImages, questions, keybinds):
 		wx.Panel.__init__(self, parent=parent)
 
-		self.prompt = QuestionPanel(self, NumImages, questions)
-		self.buttons = PromptControls(self, NumImages, questions)
+		self.prompt = QuestionPanel(self, NumImages, questions, keybinds)
+		self.buttons = PromptControls(self, NumImages, questions, keybinds)
 		self.MainSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.WrapperSizer = wx.BoxSizer(wx.VERTICAL)
 

@@ -211,12 +211,13 @@ def main():
 				f.FinishChange()
 	OutputFiles.FilesLock.release()
 
-	wx.LogMessage('Main window opened.')
-	wizard = MainFrame(None, APPTITLE, images, config.DefaultImageQuality, config.output, OutputFiles, TagsTracker, viewport)
-	wizard.Bind(wx.EVT_CLOSE, OutputFiles.OnExit) #XXX: Windows for some reason prints log messages to popup windows, instead of stderr, after the main loop ends. We destroy OutputFiles
-
 	keybinds = KeyHandler()
 	keybinds.AddList(config.keybinds)
+
+	wx.LogMessage('Main window opened.')
+	wizard = MainFrame(None, APPTITLE, images, config.DefaultImageQuality, config.output, OutputFiles, TagsTracker, viewport, keybinds)
+	wizard.Bind(wx.EVT_CLOSE, OutputFiles.OnExit) #XXX: Windows for some reason prints log messages to popup windows, instead of stderr, after the main loop ends. We destroy OutputFiles
+
 	keybinds.RegisterObj(wizard)
 
 	wizard.Show()

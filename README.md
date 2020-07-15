@@ -133,8 +133,6 @@ There are a number of features and changes which I consider for this software. T
 
 * Consider replacing the tab navigation functionality with tab completion for autocomplete fields. The navigation could still be achieved with a modifier key.
 
-* It may greatly improve memorization of keybinds by listing them in the tooltips for the relevant field.
-
 * Consider a setting to clean the output files to rigorously conform to the specification.
 
 * Consider a setting to make output directories, if they don't already exist. The file dialog is crippled in this regard on Linux
@@ -154,3 +152,5 @@ There are a number of features and changes which I consider for this software. T
 * Normally, the software periodically updates its output files, in case it suddenly crashes before its normal closing procedure would be done. Currently, this process runs in the background without any feedback to the user. I consider adding some kind of indication for it. - Flush timer and button added.
 
 * Especially in the case of imagesets, I consider that the same sequence of tags might be frequently repeated between multiple images. This raises the question as to if it should be possible to copy tags from one image to another. If not directly implemented, a string containing all tags, in a similar vein to the SESSION_TAGS option can be copy-and-pasted. - Implemented by SESSION_TAGS_IMPORTER, and BULK_TAGGER
+
+* It may greatly improve memorization of keybinds by listing them in the tooltips for the relevant field.

@@ -14,6 +14,12 @@ def GetPreviewText(i, v):
 	trimmed = v[:LenDiff - len(end)].replace('\r\n', ' ').replace('\n', ' ')
 	return ''.join( (IndexText, divider, trimmed, end) )
 
+def RenderThreeIfMid(pre, mid, post):
+	if mid and isinstance(mid, str):
+		return ''.join( (pre, mid, post) )
+	else:
+		return ''
+
 class CircularCounter:
 	def set(self, value):
 		"Change the value to the one specified, if possible."
@@ -113,9 +119,9 @@ class PathEntry:
 		self._menu = wx.Menu()
 		self.entry = wx.SearchCtrl(parent, style= wx.TE_LEFT | wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Search box containing path of current image
 		#TODO: Tab completion for these fields?
-		self._EntryTip = wx.ToolTip("Image path entry; if the path doesn't exist, then press enter autocomplete.")
+		self.EntryTip = wx.ToolTip("Image path entry; if the path doesn't exist, then press enter autocomplete.")
 
-		self.entry.SetToolTip(self._EntryTip)
+		self.entry.SetToolTip(self.EntryTip)
 
 		for i, p in enumerate(self._paths):
 			ItemId = wx.NewId()

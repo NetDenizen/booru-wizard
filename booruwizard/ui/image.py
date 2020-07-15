@@ -7,7 +7,7 @@ from pubsub import pub
 
 from booruwizard.lib.imagereader import ImageReader
 from booruwizard.lib.viewport import ViewPortState
-from booruwizard.ui.common import PathEntry, CircularCounter
+from booruwizard.ui.common import PathEntry, CircularCounter, RenderThreeIfMid
 
 #TODO: Should we have a control to affect the scaling (maybe an alternate scrollbar setting), or to change the background color?
 class ImageDisplay(wx.Panel):
@@ -128,7 +128,7 @@ class ImageDisplay(wx.Panel):
 	def SetImage(self, image):
 		self.image = image
 		self.CalculateSize(True)
-	def __init__(self, parent, quality, viewport):
+	def __init__(self, parent, quality, viewport, keybinds):
 		wx.Panel.__init__(self, parent=parent)
 		self.parent = parent
 		self.image = None
@@ -145,7 +145,7 @@ class ImageDisplay(wx.Panel):
 		self.MouseStartX = None
 		self.MouseStartY = None
 
-		self.tip = wx.ToolTip("The currently loaded image. Click and drag in this field to move the view if the whole image isn't displayed at once.")
+		self.tip = wx.ToolTip( ''.join( ( "The currently loaded image. Click and drag in this field to move the view if the whole image isn't displayed at once.", RenderThreeIfMid(' (Pan Left: ', keybinds.get('pan_left'), ')'), RenderThreeIfMid(' (Pan Right: ', keybinds.get('pan_right'), ')'), RenderThreeIfMid(' (Pan Up: ', keybinds.get('pan_up'), ')'), RenderThreeIfMid(' (Pan Down: ', keybinds.get('pan_down'), ')') ) ) )
 		self.SetToolTip(self.tip)
 
 		self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
@@ -382,7 +382,7 @@ class ImagePanel(wx.Panel):
 	def _OnOutputUpdateButton(self, e):
 		pub.sendMessage("FileUpdateForce", message=None)
 		e.Skip()
-	def __init__(self, parent, images, ImageQuality, ViewPort):
+	def __init__(self, parent, images, ImageQuality, ViewPort, keybinds):
 		wx.Panel.__init__(self, parent=parent)
 
 		self.pos = None # Position in bitmaps
@@ -397,21 +397,22 @@ class ImagePanel(wx.Panel):
 											   choices= ('H2+1', 'H2', 'H1', 'M', 'L'),
 											   style= wx.RA_SPECIFY_COLS | wx.ALIGN_LEFT
 											  )
+		self.ImageQualityControlTip = wx.ToolTip( ''.join( ( 'Select the current quality of the image resizing algorithm.', RenderThreeIfMid(' (Cycle Left: ', keybinds.get('image_quality_left'), ')'), RenderThreeIfMid(' (Cycle Right: ', keybinds.get('image_quality_right'), ')') ) ) )
 		self.OutputUpdateTimer = wx.StaticText(self, label='Automatic Flushing Disabled', style= wx.ALIGN_LEFT)
 		self.OutputUpdateTimerTip = wx.ToolTip('Time until next automatic flush')
 		self.OutputUpdateButton = wx.Button(self, label='Flush Changes', style=wx.BU_EXACTFIT)
-		self.OutputUpdateButtonTip = wx.ToolTip('Immediately flush output files to hard drive, if changed.')
+		self.OutputUpdateButtonTip = wx.ToolTip( ''.join( ( 'Immediately flush output files to hard drive, if changed.', RenderThreeIfMid(' (', keybinds.get('flush_changes'), ')') ) ) )
 		self.ZoomDisplay = wx.StaticText(self)
 		self.ZoomDisplayTip = wx.ToolTip('Zoom ratio to actual size of image (Sample WidthxSample Height)')
 		self.ZoomInButton = wx.Button(self, label="+", style=wx.BU_EXACTFIT)
-		self.ZoomInButtonTip = wx.ToolTip('Zoom in to displayed image.')
+		self.ZoomInButtonTip = wx.ToolTip( ''.join( ( 'Zoom in to displayed image.', RenderThreeIfMid(' (', keybinds.get('zoom_in'), ')') ) ) )
 		self.ZoomOutButton = wx.Button(self, label="-", style=wx.BU_EXACTFIT)
-		self.ZoomOutButtonTip = wx.ToolTip('Zoom out from displayed image.')
+		self.ZoomOutButtonTip = wx.ToolTip( ''.join( ( 'Zoom out from displayed image.', RenderThreeIfMid(' (', keybinds.get('zoom_out'), ')') ) ) )
 		self.ZoomFitButton = wx.Button(self, label="FIT", style=wx.BU_EXACTFIT)
-		self.ZoomFitButtonTip = wx.ToolTip('Zoom to fit window.')
+		self.ZoomFitButtonTip = wx.ToolTip( ''.join( ( 'Zoom to fit window.', RenderThreeIfMid(' (', keybinds.get('zoom_fit'), ')') ) ) )
 		self.ZoomActualButton = wx.Button(self, label="1.0", style=wx.BU_EXACTFIT)
-		self.ZoomActualButtonTip = wx.ToolTip('Zoom to actual size (1.0 Zoom Ratio).')
-		self.image = ImageDisplay(self, ImageQuality, ViewPort)
+		self.ZoomActualButtonTip = wx.ToolTip( ''.join( ( 'Zoom to actual size (1.0 Zoom Ratio).', RenderThreeIfMid(' (', keybinds.get('zoom_actual_size'), ')') ) ) )
+		self.image = ImageDisplay(self, ImageQuality, ViewPort, keybinds)
 		self.ZoomControlSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.LeftPaneSizer = wx.BoxSizer(wx.VERTICAL)
 		self.MainSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -447,13 +448,14 @@ class ImagePanel(wx.Panel):
 		self.ResolutionDisplay.SetToolTip(self.ResolutionTip)
 		self.FileSizeDisplay.SetToolTip(self.FileSizeTip)
 		self.DataSizeDisplay.SetToolTip(self.DataSizeTip)
+		self.ImageQualityControl.SetToolTip(self.ImageQualityControlTip)
 		self.OutputUpdateTimer.SetToolTip(self.OutputUpdateTimerTip)
 		self.OutputUpdateButton.SetToolTip(self.OutputUpdateButtonTip)
-		self.ImageQualityControl.SetItemToolTip(0, 'Box Average Algorithm on Downscale, Bicubic Algorithm on Upscale')
-		self.ImageQualityControl.SetItemToolTip(1, 'Bicubic Algorithm')
-		self.ImageQualityControl.SetItemToolTip(2, 'Box Average Algorithm')
-		self.ImageQualityControl.SetItemToolTip(3, 'Bilinear Algorithm')
-		self.ImageQualityControl.SetItemToolTip(4, 'Nearest Neighbor Algorithm')
+		self.ImageQualityControl.SetItemToolTip(0, ''.join( ( 'Box Average Algorithm on Downscale, Bicubic Algorithm on Upscale', RenderThreeIfMid(' (', keybinds.get('image_quality_high_2_1'), ')') ) ) )
+		self.ImageQualityControl.SetItemToolTip(1, ''.join( ( 'Bicubic Algorithm', RenderThreeIfMid(' (', keybinds.get('image_quality_high_2'), ')') ) ) )
+		self.ImageQualityControl.SetItemToolTip(2, ''.join( ( 'Box Average Algorithm', RenderThreeIfMid(' (', keybinds.get('image_quality_high_1'), ')') ) ) )
+		self.ImageQualityControl.SetItemToolTip(3, ''.join( ( 'Bilinear Algorithm', RenderThreeIfMid(' (', keybinds.get('image_quality_medium'), ')') ) ) )
+		self.ImageQualityControl.SetItemToolTip(4, ''.join( ( 'Nearest Neighbor Algorithm', RenderThreeIfMid(' (', keybinds.get('image_quality_low'), ')') ) ) )
 		self.ZoomDisplay.SetToolTip(self.ZoomDisplayTip)
 		self.ZoomInButton.SetToolTip(self.ZoomInButtonTip)
 		self.ZoomOutButton.SetToolTip(self.ZoomOutButtonTip)
@@ -546,17 +548,19 @@ class ImageLabel(wx.Panel):
 		self.PathEntry.FocusEntry()
 	def _OnFocusPathNameMenu(self, message, arg2=None):
 		self.PathEntry.FocusMenu()
-	def __init__(self, parent, paths):
+	def __init__(self, parent, paths, keybinds):
 		wx.Panel.__init__(self, parent=parent)
 
 		self.PathEntry = PathEntry(self, paths)
 		self.pos = CircularCounter(self.PathEntry.GetPathsLen() - 1) # Position in paths
 		self.IndexEntry = wx.TextCtrl(self, style= wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Editable display for current image index
 		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER) # Static part of image index display
-		self.IndexEntryTip = wx.ToolTip('Image index entry. Press enter to select the image index.')
+		self.PathEntry.EntryTip = wx.ToolTip( ''.join( ( 'Image path entry; if the path doesn\'t exist, then press enter autocomplete.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_image_path'), ')'), RenderThreeIfMid(' (Open Menu: ', keybinds.get('select_image_path_menu'), ')') ) ) )
+		self.IndexEntryTip = wx.ToolTip( ''.join( ( 'Image index entry. Press enter to select the image index.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_image_index'), ')') ) ) )
 		self.IndexLabelTip = wx.ToolTip('Total number of images.')
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
+		self.PathEntry.entry.SetToolTip(self.PathEntry.EntryTip)
 		self.IndexEntry.SetToolTip(self.IndexEntryTip)
 		self.IndexLabel.SetToolTip(self.IndexLabelTip)
 
@@ -581,11 +585,11 @@ class ImageLabel(wx.Panel):
 		pub.subscribe(self._OnFocusPathNameMenu, "FocusPathNameMenu")
 
 class ImageContainer(wx.Panel):
-	def __init__(self, parent, images, ImageQuality, paths, viewport):
+	def __init__(self, parent, images, ImageQuality, paths, viewport, keybinds):
 		wx.Panel.__init__(self, parent=parent)
 
-		self.image = ImagePanel(self, images, ImageQuality, viewport)
-		self.label = ImageLabel(self, paths)
+		self.image = ImagePanel(self, images, ImageQuality, viewport, keybinds)
+		self.label = ImageLabel(self, paths, keybinds)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.sizer.Add(self.image, 1, wx.ALIGN_CENTER | wx.EXPAND)

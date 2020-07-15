@@ -9,7 +9,7 @@ from pubsub import pub
 from booruwizard.ui.image import ImageContainer
 from booruwizard.ui.prompt import PromptContainer
 from booruwizard.ui.question.main import QuestionsContainer
-from booruwizard.ui.common import CircularCounter
+from booruwizard.ui.common import CircularCounter, RenderThreeIfMid
 
 class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 	def _SetSashes(self):
@@ -43,14 +43,17 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 		if reset:
 			self._SetSashes()
 		e.Skip()
-	def __init__(self, parent, images, ImageQuality, questions, OutputFiles, TagsTracker, ViewPort):
+	def __init__(self, parent, images, ImageQuality, questions, OutputFiles, TagsTracker, ViewPort, keybinds):
 		wx.lib.splitter.MultiSplitterWindow.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
 
 		self.Sash0Pos = 0.4
 		self.Sash1Pos = 0.2
-		self.top = ImageContainer(self, images, ImageQuality, OutputFiles.InputPaths, ViewPort)
-		self.middle = PromptContainer(self, len(OutputFiles.InputPaths), questions)
+		self.top = ImageContainer(self, images, ImageQuality, OutputFiles.InputPaths, ViewPort, keybinds)
+		self.middle = PromptContainer(self, len(OutputFiles.InputPaths), questions, keybinds)
 		self.bottom = QuestionsContainer(self, TagsTracker, questions, OutputFiles)
+
+		self.BottomTip = wx.ToolTip( ''.join( ( 'The currently loaded question', RenderThreeIfMid(' (Focus: ', keybinds.get('select_question'), ')') ) ) )
+		self.bottom.SetToolTip(self.BottomTip)
 
 		self.SetOrientation(wx.VERTICAL)
 		self.AppendWindow(self.top)
@@ -122,7 +125,7 @@ class MainFrame(wx.Frame):
 			self.Close()
 		except:
 			pass
-	def __init__(self, parent, BaseTitle, images, ImageQuality, questions, OutputFiles, TagsTracker, ViewPort):
+	def __init__(self, parent, BaseTitle, images, ImageQuality, questions, OutputFiles, TagsTracker, ViewPort, keybinds):
 		wx.Frame.__init__(self, parent=parent)
 
 		self.BaseTitle = BaseTitle # Base window title
@@ -131,7 +134,7 @@ class MainFrame(wx.Frame):
 		self.LockQuestion = False
 		self.pos = CircularCounter(len(OutputFiles.InputPaths) - 1) # The position in positions
 		self.positions = [CircularCounter(self.NumQuestions - 1) for p in OutputFiles.InputPaths] # The position in questions corresponding to each image
-		self.main = MainContainer(self, images, ImageQuality, questions, OutputFiles, TagsTracker, ViewPort)
+		self.main = MainContainer(self, images, ImageQuality, questions, OutputFiles, TagsTracker, ViewPort, keybinds)
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 		self.WrapperSizer = wx.BoxSizer(wx.HORIZONTAL)
 
