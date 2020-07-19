@@ -182,6 +182,7 @@ class ConditionalTagger:
 		self.ReverseLookup = {} # A dictionary of containers to correspond to tag names; reverse of self.lookup.
 	def AddString(self, keys, tags):
 		"Keys and tags are space separated lists of tags. Make it so that each key will retrieve a list of its associated tags, and vice-versa."
+		#TODO: Add strings until no more added
 		if not keys or not tags:
 			return
 		KeysList = keys.lower().split()
