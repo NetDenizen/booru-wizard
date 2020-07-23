@@ -176,53 +176,93 @@ class TagsContainer:
 			OutputLists[t.occurrences - 1].append(t.name)
 		return [' '.join(l) for l in OutputLists]
 
+class ConditionalTaggerNode:
+	def __init__(self, name):
+		self.name = name
+		self.nodes = []
+		self.NodesLookup = {}
+	def GetNode(self, name):
+		return self.NodesLookup.get(name, None)
+	def HasNode(self, name):
+		found = self.GetNode(name)
+		if found is not None:
+			return True
+		else:
+			return False
+	def AddNodeName(self, name):
+		NewNode = self.GetNode(name)
+		if NewNode is None:
+			NewNode = ConditionalTaggerNode(name)
+			self.nodes.append(NewNode)
+			self.NodesLookup[name] = NewNode
+		return NewNode
+	def AddExistingNode(self, node):
+		if node is not None:
+			FoundNode = self.GetNode(node.name)
+			if FoundNode is None:
+				self.nodes.append(node)
+				self.NodesLookup[node.name] = node
+	def GetChildNames(self, AlreadyTaken):
+		names = []
+		if self.name in AlreadyTaken:
+			return names
+		else:
+			AlreadyTaken.append(self.name)
+		for n in self.nodes:
+			if n.name not in names:
+				names.append(n.name)
+			ChildNames = n.GetChildNames(AlreadyTaken)
+			for cn in ChildNames:
+				if cn not in names:
+					names.append(cn)
+		return names
+	def GetNodesWithChild(self, name):
+		nodes = []
+		for n in self.nodes:
+			if n.HasNode(name):
+				nodes.append(n)
+		return nodes
+
 class ConditionalTagger:
 	def __init__(self):
-		self.lookup = {} # A dictionary of tag names to correspond to containers of tags.
-		self.ReverseLookup = {} # A dictionary of containers to correspond to tag names; reverse of self.lookup.
+		self.AllNodes = ConditionalTaggerNode(None)
 	def AddString(self, keys, tags):
 		"Keys and tags are space separated lists of tags. Make it so that each key will retrieve a list of its associated tags, and vice-versa."
-		#TODO: Add strings until no more added
-		if not keys or not tags:
-			return
 		KeysList = keys.lower().split()
 		TagsList = tags.lower().split()
 		for k in KeysList:
-			found = self.lookup.get(k, None)
-			if found is None:
-				self.lookup[k] = TagsList
-			else:
-				self.lookup[k].extend(t for t in TagsList if t not in self.lookup[k])
+			self.AllNodes.AddNodeName(k)
 		for t in TagsList:
-			found = self.ReverseLookup.get(t, None)
-			if found is None:
-				self.ReverseLookup[t] = KeysList
-			else:
-				self.ReverseLookup[t].extend(k for k in KeysList if k not in self.ReverseLookup[t])
+			self.AllNodes.AddNodeName(t)
+		for k in KeysList:
+			KeyNode = self.AllNodes.GetNode(k)
+			for t in TagsList:
+				KeyNode.AddExistingNode( self.AllNodes.GetNode(t) )
 	def SetTags(self, name, target):
 		"Search for the name in lookup, and if it is found, then set the target container with the found one."
-		if not name:
+		NameNode = self.AllNodes.GetNode(name)
+		if NameNode is None:
 			return
-		found = self.lookup.get(name.lower(), None)
-		if found is not None:
-			target.SetStringList(found, 1)
+		NameNodeChildNames = NameNode.GetChildNames([])
+		if NameNodeChildNames:
+			target.SetStringList(NameNodeChildNames, 1)
 	def ClearTags(self, name, target):
 		"Search for the name in lookup, and if it (or any other name controlling the associated tags) is found, then clear them."
-		if not name:
+		NameNode = self.AllNodes.GetNode(name)
+		if NameNode is None:
 			return
-		found = self.lookup.get(name.lower(), None)
-		if found is None:
-			return
-		for t in found:
+		NameNodeChildNames = NameNode.GetChildNames([])
+		if NameNodeChildNames:
+			target.SetStringList(NameNodeChildNames, 1)
+		for n in NameNodeChildNames:
+			parents = self.AllNodes.GetNodesWithChild(n)
 			DoClear = True
-			for k in self.ReverseLookup[t]:
-				if name not in self.lookup[k]:
+			for  p in parents:
+				if p.name != name and target.ReturnStringOccurrences(p.name) > 0:
 					break
-				if target.ReturnStringOccurrences(k) > 0 and k != name:
 					DoClear = False
-					break
 			if DoClear:
-				target.clear(t, 1)
+				target.clear(n, 1)
 	def SetTagsInit(self, obj, target):
 		"Set tags using each entry from a dictionary."
 		for k, v in obj.items():

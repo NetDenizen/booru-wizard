@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* Recursive aliasing system. Now aliased tags will trigger other aliases. Circular aliases will also be handled without errors.
+
 * SESSION_TAG_IMPORTER now starts will all options unchecked, and with a button to toggle all checks.
 
 * SESSION_TAG_IMPORTER now sets imported tags to 'user' set.

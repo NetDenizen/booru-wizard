@@ -26,9 +26,9 @@ def ParseInputFile(path):
 	return config
 
 def GetConditionalTags(config, name):
-	found = config.ConditionalTags.lookup.get(name.lower(), None)
+	found = config.ConditionalTags.AllNodes.GetNode( name.lower() )
 	if found:
-		return ' '.join(found)
+		return ' '.join( found.GetChildNames([]) )
 	else:
 		return ''
 
@@ -83,7 +83,7 @@ def WriteImageConditionTags(AddedTags, config, writer):
 			WriteRow(AddedTags, writer, config, t, '')
 
 def WriteAliasTags(AddedTags, config, writer):
-	WriteXTags(AddedTags, config, config.ConditionalTags.lookup.keys(), writer)
+	WriteXTags(AddedTags, config, config.ConditionalTags.AllNodes.GetChildNames([]), writer)
 
 def main():
 	args = ParseCommandLine()

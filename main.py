@@ -177,7 +177,7 @@ def main():
 	for c in config.ImageConditions:
 		for t in c.TagString.split():
 			TagsTracker.RegisterConfig(t)
-	for t in config.ConditionalTags.lookup.keys():
+	for t in config.ConditionalTags.AllNodes.GetChildNames([]):
 		TagsTracker.RegisterConfig(t)
 
 	OutputFiles = FileManager(config.MaxOpenFiles, config.UpdateInterval)
