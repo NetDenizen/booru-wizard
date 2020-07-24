@@ -880,6 +880,30 @@ class SafetyQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 		self.SetOwnBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW) )
 		self.SetupScrolling()
 
+class BlankQuestion(wx.Panel):
+	def load(self, OutputFile):
+		"Initialize the question for a certain case."
+		pass
+	def clear(self):
+		pass
+	def disp(self):
+		pass
+	def __init__(self, parent):
+		wx.Panel.__init__(self, parent=parent)
+
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+		self.MsgSizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.msg = wx.StaticText(self, label='This question is blank.')
+
+		self.MsgSizer.AddStretchSpacer(1)
+		self.MsgSizer.Add(self.msg, 0, wx.ALIGN_CENTER)
+		self.MsgSizer.AddStretchSpacer(1)
+		self.sizer.Add(self.MsgSizer, 1, wx.ALIGN_CENTER | wx.EXPAND)
+		self.SetSizer(self.sizer)
+
+		#self.tooltip = wx.ToolTip("This question is blank.")
+		#self.SetToolTip(self.tooltip)
+
 class QuestionsContainer(wx.Panel):
 	def _CurrentWidget(self):
 		"Return the current widget."
@@ -989,6 +1013,8 @@ class QuestionsContainer(wx.Panel):
 				self.QuestionWidgets.append( AddedTagsEntry(self, NumImages, OutputFiles, TagsTracker) )
 			elif q.type == QuestionType.CUSTOM_TAGS:
 				self.QuestionWidgets.append( CustomTags(self, TagsTracker) )
+			elif q.type == QuestionType.BLANK_QUESTION:
+				self.QuestionWidgets.append( BlankQuestion(self) )
 			else:
 				#TODO: Rewrite?
 				raise ValueError() # We should never get this.

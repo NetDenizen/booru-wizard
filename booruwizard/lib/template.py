@@ -54,6 +54,7 @@ class PairKey(Enum):
 	IMAGE_CONDITION_CONDITION     = 35
 	IMAGE_CONDITION_TAGS          = 36
 	CUSTOM_TAGS                   = 37
+	BLANK_QUESTION                = 38
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 
 PAIR_KEY_NAMES = {}
@@ -193,6 +194,7 @@ class QuestionType(Enum):
 	ADDED_TAGS            = 8  # Displays a special SESSION_TAGS which only displays tags not present in the configuration file.
 	ADDED_TAGS_ENTRY      = 9  # Displays a pane split between an ENTRY_QUESTION and an ADDED_TAGS.
 	CUSTOM_TAGS           = 10 # Displays a pane split between an entry field, and a checklist containing the tags in that field.
+	BLANK_QUESTION        = 11 # Displays an empty pane. Use these as dividers, marked by the given prompt.
 
 QuestionTypeLookup = {
 	PairKey.ENTRY_QUESTION        : QuestionType.ENTRY_QUESTION,
@@ -205,7 +207,8 @@ QuestionTypeLookup = {
 	PairKey.BULK_TAGGER           : QuestionType.BULK_TAGGER,
 	PairKey.ADDED_TAGS            : QuestionType.ADDED_TAGS,
 	PairKey.ADDED_TAGS_ENTRY      : QuestionType.ADDED_TAGS_ENTRY,
-	PairKey.CUSTOM_TAGS           : QuestionType.CUSTOM_TAGS
+	PairKey.CUSTOM_TAGS           : QuestionType.CUSTOM_TAGS,
+	PairKey.BLANK_QUESTION        : QuestionType.BLANK_QUESTION
 }
 
 class OptionQuestionType(Enum):
@@ -523,7 +526,8 @@ class parser:
 			 token.key == PairKey.BULK_TAGGER           or\
 			 token.key == PairKey.ADDED_TAGS            or\
 			 token.key == PairKey.ADDED_TAGS_ENTRY      or\
-			 token.key == PairKey.CUSTOM_TAGS:
+			 token.key == PairKey.CUSTOM_TAGS           or\
+			 token.key == PairKey.BLANK_QUESTION:
 			self._AddQuestion(question, token)
 		elif token.key == PairKey.OPTION_NAME:
 			self._AddOptionName(token)

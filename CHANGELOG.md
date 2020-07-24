@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* Add a BLANK_QUESTION to use as an organizational tool.
+
 * Recursive aliasing system. Now aliased tags will trigger other aliases. Circular aliases will also be handled without errors.
 
 * SESSION_TAG_IMPORTER now starts will all options unchecked, and with a button to toggle all checks.
