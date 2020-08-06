@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* Add a '--json-compact' or '-C' option, and a complementary opening dialog box to allow the user to choose between pretty-printed and compact JSON output.
+
 * Add a BLANK_QUESTION to use as an organizational tool.
 
 * Recursive aliasing system. Now aliased tags will trigger other aliases. Circular aliases will also be handled without errors.

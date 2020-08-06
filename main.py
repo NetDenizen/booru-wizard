@@ -49,12 +49,13 @@ class MainError(Exception):
 	pass
 
 class DialogSettings:
-	def __init__(self, ConfigFile, ImageInputDir, JSONInputDir, JSONOutputDir):
+	def __init__(self, ConfigFile, ImageInputDir, JSONInputDir, JSONOutputDir, JSONCompact):
 		self.EarlyExit = True
 		self.ConfigFile = ConfigFile
 		self.ImageInputDir = ImageInputDir
 		self.JSONInputDir = JSONInputDir
 		self.JSONOutputDir = JSONOutputDir
+		self.JSONCompact = JSONCompact
 	def validate(self):
 		if not os.path.exists(self.ConfigFile):
 			raise MainError( ''.join( ('Config file path: "', self.ConfigFile, '" does not exist.') ) )
@@ -82,6 +83,7 @@ def ParseCommandLine():
 	ArgParser.add_argument('--image-input', '-i', action='store', default='', help='Path to the image input directory.')
 	ArgParser.add_argument('--json-input', '-j', action='store', default='', help='Path to the JSON input directory. If none, then it will be copied from "--image-input".')
 	ArgParser.add_argument('--json-output', '-o', action='store', default='', help='Path to the JSON output directory. If none, then copy it will be copied from "--json-input".')
+	ArgParser.add_argument('--json-compact', '-C', action='store_true', help='Print the JSON output in a compacted format to conserve size. If this is not set, it will be pretty-printed, which maximizes readability at the expense of size.')
 	return ArgParser.parse_args()
 
 def ReadTextFile(path):
@@ -137,7 +139,7 @@ def main():
 	if args.verbose:
 		wx.Log.SetVerbose()
 
-	settings = DialogSettings(args.config, args.image_input, args.json_input, args.json_output)
+	settings = DialogSettings(args.config, args.image_input, args.json_input, args.json_output, args.json_compact)
 	if not args.no_dialog:
 		dialog = FileDialogFrame(None, APPTITLE, settings)
 		dialog.Show()
@@ -183,12 +185,12 @@ def main():
 	OutputFiles = FileManager(config.MaxOpenFiles, config.UpdateInterval)
 	OutputFiles.FilesLock.acquire()
 	for p in ImagePaths:
-		OutputFiles.AddFile(settings.JSONOutputDir, p,
+		OutputFiles.AddFile(settings.JSONOutputDir, p, settings.JSONCompact,
 							config.DefaultName, config.DefaultSource, config.DefaultSafety,
 							config.ConditionalTags, config.NamelessTags, config.SourcelessTags, config.TaglessTags)
 	for p in JSONPaths:
 		obj = ParseJSONFile( os.path.join(settings.JSONInputDir, p) )
-		OutputFiles.AddJSON(settings.ImageInputDir, settings.JSONOutputDir, obj,
+		OutputFiles.AddJSON(settings.ImageInputDir, settings.JSONOutputDir, obj, settings.JSONCompact,
 							config.DefaultName, config.DefaultSource, config.DefaultSafety,
 							config.ConditionalTags, config.NamelessTags, config.SourcelessTags, config.TaglessTags)
 

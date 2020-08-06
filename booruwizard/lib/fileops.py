@@ -158,7 +158,7 @@ class FileData:
 		tags = self.tags.ReturnOccurrenceStrings()
 		if tags:
 			output['tags'] = tags
-		return json.dumps( {self.path : output}, separators=(',',':') )
+		return json.dumps({self.path : output}, separators=self.separators, indent=self.indent)
 	def _GetJSONTypeName(self, item):
 		"Return a string containing the equivalent JSON type of the variable."
 		if isinstance(item, dict):
@@ -177,12 +177,19 @@ class FileData:
 			return 'unfound'
 		else: # item is None:
 			return 'null'
-	def __init__(self, path, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
+	def __init__(self, path, compact, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
 		# The data fields
 		self.FullPath = path #TODO: Can we stuff this somewhere else?
 		self.path = os.path.basename(path)
 		self.rating = DefaultSafety
 		self.tags = TagsContainer()
+
+		if compact:
+			self.separators = (',',':')
+			self.indent = None
+		else:
+			self.separators=(', ',': ')
+			self.indent = 4
 
 		self.name = None
 		self.NamelessTags = NamelessTags
@@ -437,20 +444,20 @@ class FileManager:
 								)
 							  )
 					 )
-	def AddFile(self, OutputDir, path, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
+	def AddFile(self, OutputDir, path, compact, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
 		"Add a FileData object and its associated MangedFile object, with all the proper callbacks set."
 		wx.LogVerbose( ''.join( ("Registering file at path '", path.replace('%', '%%'), "'") ) )
 		if path not in self.InputPaths:
 			PushUpdate = None
 			if self._UpdateInterval == 0.0:
 				PushUpdate = self._UpdateTimerDelay.set
-			self.ControlFiles.append( FileData(path, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags) )
+			self.ControlFiles.append( FileData(path, compact, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags) )
 			self.InputPaths.append(path)
 			self._files.append( self.ControlFiles[-1].GetManagedFile(OutputDir, self.ReserveOpenFileSlot, PushUpdate) )
-	def AddJSON(self, InputDir, OutputDir, obj, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
+	def AddJSON(self, InputDir, OutputDir, obj, compact, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
 		"Loop through a .json object and load the settings to the FileData object associated with the respective path. If it does not exist, then create it first."
 		for k, v in obj.items():
-			self.AddFile(OutputDir, os.path.join(InputDir, k), DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags)
+			self.AddFile(OutputDir, os.path.join(InputDir, k), compact, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags)
 			ControlFile = self.ControlFiles[self.InputPaths.index( os.path.join(InputDir, k) )]
 			ControlFile.PrepareChange()
 			ControlFile.LoadJSON(v)

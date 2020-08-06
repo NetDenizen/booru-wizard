@@ -212,6 +212,7 @@ class FileDialogFrame(wx.Frame):
 		self.settings.ImageInputDir = self.ImageInputDirChooser.GetPath()
 		self.settings.JSONInputDir = self.JSONInputDirChooser.GetPath()
 		self.settings.JSONOutputDir = self.JSONOutputDirChooser.GetPath()
+		self.settings.JSONCompact = self.JSONCompactCheckBox.IsChecked()
 		self.settings.EarlyExit = False
 		self.Close()
 		e.Skip()
@@ -228,15 +229,20 @@ class FileDialogFrame(wx.Frame):
 		self.ImageInputDirChooser = DirPicker(self, 'Pick the image directory.', settings.ImageInputDir)
 		self.JSONInputDirChooser = DirPicker(self, 'Pick the JSON input directory. The image directory is used if this is blank.', settings.JSONInputDir)
 		self.JSONOutputDirChooser = DirPicker(self, 'Pick the JSON output directory. The JSON input directory used if this is blank.', settings.JSONOutputDir)
+		self.JSONCompactCheckBox = wx.CheckBox(self, label='Compact JSON output to conserve size at expense of readability: ', style=wx.ALIGN_RIGHT)
 		self.OKButton = wx.Button(self, label='OK')
 		self.WrapperSizer  = wx.BoxSizer(wx.HORIZONTAL)
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.JSONCompactCheckBox.SetValue(settings.JSONCompact)
 
 		self.MainSizer.AddStretchSpacer(1)
 		self.MainSizer.Add(self.ConfigFileChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
 		self.MainSizer.Add(self.ImageInputDirChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
 		self.MainSizer.Add(self.JSONInputDirChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
 		self.MainSizer.Add(self.JSONOutputDirChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.Add(self.JSONCompactCheckBox, 0, wx.ALIGN_CENTER)
+		self.MainSizer.AddStretchSpacer(3)
 		self.MainSizer.Add(self.OKButton, 0, wx.ALIGN_CENTER | wx.SHAPED)
 		self.MainSizer.AddStretchSpacer(7)
 
