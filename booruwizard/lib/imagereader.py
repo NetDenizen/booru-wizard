@@ -45,6 +45,8 @@ class ManagedImage:
 		self.DataSize = 0
 		self.FileSize = 0
 	def CheckImageCondition(self, s):
+		if self.image is None:
+			return False
 		ErrorMessage = ''.join( ("Failed to parse condition string of '", s, "' for image at path'", self.path.replace('%', '%%'), "'.") )
 		tokens = s.split()
 		if len(tokens) != 3:
