@@ -13,11 +13,14 @@ class ImageConditionError(ImageReaderError):
 		super().__init__(message)
 
 class ManagedImage:
-	def __init__(self, path):
+	def __init__(self, parent, idx, path):
+		self.parent = parent
+		self.idx = idx
 		self.path = path # Path to image
 		self.image = None # WX image object
 		self.DataSize = 0
 		self.FileSize = 0
+		self.ImageConditionsHandled = False
 	def open(self):
 		"Open the image path and set the WX image object."
 		if self.image is not None:
@@ -32,6 +35,18 @@ class ManagedImage:
 			# TODO: What was this for again?
 			#if not self.image.IsOk():
 			#	raise Exception()
+			if not self.ImageConditionsHandled:
+				f = self.parent.OutputFiles.ControlFiles[self.idx]
+				for c in self.parent.ImageConditions:
+					if self.CheckImageCondition(c.condition):
+						f.PrepareChange()
+						self.parent.TagsTracker.SubStringList(f.tags.ReturnStringList(), 1)
+						f.tags.SetString(c.TagString, 1)
+						f.SetConditionalTags(c.TagString)
+						f.SetTaglessTags()
+						self.parent.TagsTracker.AddStringList(f.tags.ReturnStringList(), 1)
+						f.FinishChange()
+				self.ImageConditionsHandled = True
 		except: # TODO: Should this be more specific?
 			self.image = None
 			self.DataSize = 0
@@ -83,11 +98,14 @@ class ManagedImage:
 		return result
 
 class ImageReader:
-	def __init__(self, MaxBufSize):
+	def __init__(self, MaxBufSize, TagsTracker, OutputFiles, ImageConditions):
 		self._MaxBufSize = MaxBufSize # Maximum size of WX image data
 		self._CurrentBufSize = 0 # Current size of WX image data
 		self.images = [] # Array of all ManagedImage's
 		self._OpenImages = [] # Array of ManagedImage's for which a WX image object exists
+		self.TagsTracker = TagsTracker
+		self.OutputFiles = OutputFiles
+		self.ImageConditions = ImageConditions
 	def _activate(self, image):
 		"Add the image object's WX Image object to the open images array if it is not None."
 		if image.image is None:
@@ -101,7 +119,7 @@ class ImageReader:
 		self._CurrentBufSize += image.DataSize
 	def _add(self, path):
 		"Add path to images array and open it if there is any space remaining."
-		image = ManagedImage(path)
+		image = ManagedImage(self, len(self.images), path)
 		image.open()
 		if image.DataSize != 0 and (self._CurrentBufSize + image.DataSize <= self._MaxBufSize or len(self._OpenImages) == 0):
 			self._activate(image)
@@ -141,3 +159,8 @@ class ImageReader:
 		return len(self._OpenImages)
 	def GetCacheIndex(self, image):
 		return self._OpenImages.index(image)
+	def FinishImageConditions(self):
+		for i in self.images:
+			if not i.ImageConditionsHandled:
+				i.open()
+				i.close()

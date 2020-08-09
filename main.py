@@ -159,8 +159,6 @@ def main():
 	config = parser()
 	config.parse( ReadTextFile(settings.ConfigFile) )
 
-	images = ImageReader(config.MaxImageBufSize)
-
 	viewport = ViewPort(config.BackgroundColor1, config.BackgroundColor2, config.BackgroundSquareWidth,
 						config.StartZoomInterval, config.ZoomAccel, config.ZoomAccelSteps, config.PanInterval)
 
@@ -199,19 +197,10 @@ def main():
 
 	for f in OutputFiles.ControlFiles:
 		TagsTracker.AddStringList(f.tags.ReturnStringList(), 1)
-
-	images.AddPathsList(OutputFiles.InputPaths)
-	for i, f in reversed( list( enumerate(OutputFiles.ControlFiles) ) ):
-		for c in config.ImageConditions:
-			if images.load(i).CheckImageCondition(c.condition):
-				f.PrepareChange()
-				TagsTracker.SubStringList(f.tags.ReturnStringList(), 1)
-				f.tags.SetString(c.TagString, 1)
-				f.SetConditionalTags(c.TagString)
-				f.SetTaglessTags()
-				TagsTracker.AddStringList(f.tags.ReturnStringList(), 1)
-				f.FinishChange()
 	OutputFiles.FilesLock.release()
+
+	images = ImageReader(config.MaxImageBufSize, TagsTracker, OutputFiles, config.ImageConditions)
+	images.AddPathsList(OutputFiles.InputPaths)
 
 	keybinds = KeyHandler()
 	keybinds.AddList(config.keybinds)
@@ -225,6 +214,8 @@ def main():
 	wizard.Show()
 	app.MainLoop()
 	wx.LogMessage('Main window closed.')
+
+	images.FinishImageConditions()
 
 	sys.exit(0)
 
