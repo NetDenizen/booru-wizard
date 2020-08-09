@@ -250,15 +250,13 @@ class ConditionalTagger:
 		if NameNode is None:
 			return
 		NameNodeChildNames = NameNode.GetChildNames([])
-		if NameNodeChildNames:
-			target.SetStringList(NameNodeChildNames, 1)
 		for n in NameNodeChildNames:
 			parents = self.AllNodes.GetNodesWithChild(n)
 			DoClear = True
-			for  p in parents:
+			for p in parents:
 				if p.name != name and target.ReturnStringOccurrences(p.name) > 0:
-					break
 					DoClear = False
+					break
 			if DoClear:
 				target.clear(n, 1)
 	def SetTagsInit(self, obj, target):
