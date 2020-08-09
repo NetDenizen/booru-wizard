@@ -81,7 +81,8 @@ class PathEntry:
 	def UpdateAutocomplete(self):
 		"Try to autocomplete the contents of the path entry to a complete string."
 		val = self.entry.GetValue()
-		orig = val.lower()
+		TrueOrig = val
+		orig = TrueOrig.lower()
 		ContainsOrig = []
 		prefixes = []
 		for s in self._paths:
@@ -97,7 +98,10 @@ class PathEntry:
 			val = ContainsOrig[0]
 		else:
 			prefixes = tuple( (p for p in prefixes if p) )
-			val = max(prefixes, key=len)
+			if len(prefixes) > 0:
+				val = max(prefixes, key=len)
+			else:
+				val = TrueOrig
 		self.entry.SetValue(val)
 	def ChooseMenuItem(self, ItemId):
 		"Set the path entry to the chosen menu value."
