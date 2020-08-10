@@ -406,6 +406,13 @@ class AddedTagsEntry(SplitterBase):
 		self.Bind( wx.EVT_BUTTON, self._OnEntryQuestionChange, id=self.first.RomanizeButton.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnEntryQuestionChange, id=self.first.entry.GetId() )
 
+class NativeTags(AddedTags):
+	def _FilterStringList(self):
+		self.OutputFile.lock()
+		output = self.TagsTracker.ReturnConfigTagList()
+		self.OutputFile.unlock()
+		return output
+
 class SessionTagsImporter(SplitterBase):
 	def __init__(self, parent, OutputFiles, TagsTracker):
 		wx.SplitterWindow.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
@@ -1015,6 +1022,8 @@ class QuestionsContainer(wx.Panel):
 				self.QuestionWidgets.append( CustomTags(self, TagsTracker) )
 			elif q.type == QuestionType.BLANK_QUESTION:
 				self.QuestionWidgets.append( BlankQuestion(self) )
+			elif q.type == QuestionType.NATIVE_TAGS:
+				self.QuestionWidgets.append( NativeTags(self, TagsTracker) )
 			else:
 				#TODO: Rewrite?
 				raise ValueError() # We should never get this.

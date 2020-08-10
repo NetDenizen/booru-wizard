@@ -140,6 +140,13 @@ class TagsContainer:
 			if s.occurrences > 0:
 				output.append(s.name)
 		return output
+	def ReturnConfigTagList(self):
+		"Return the list of tag objects with 1 or more occurrences as a list of strings."
+		output = []
+		for s in self.tags:
+			if s.ConfigTag:
+				output.append(s.name)
+		return output
 	def ReturnString(self):
 		"Return the list of tag objects with 1 or more occurrences as a space separated list of strings."
 		return ' '.join( self.ReturnStringList() )

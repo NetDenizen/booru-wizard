@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* Implement NATIVE_TAGS.
+
 * Add a '--json-compact' or '-C' option, and a complementary opening dialog box to allow the user to choose between pretty-printed and compact JSON output.
 
 * Add a BLANK_QUESTION to use as an organizational tool.
