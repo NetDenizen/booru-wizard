@@ -5,12 +5,14 @@ import os
 import wx
 
 class ImageReaderError(Exception):
+	pass
+
+class ImageOpenError(ImageReaderError):
 	def __init__(self, message, errno, strerror):
 		super().__init__( ''.join( (message, ' [errno ', errno, ']: ', strerror) ) )
 
 class ImageConditionError(ImageReaderError):
-	def __init__(self, message):
-		super().__init__(message)
+	pass
 
 class ManagedImage:
 	def __init__(self, parent, idx, path):
@@ -47,7 +49,7 @@ class ManagedImage:
 						self.parent.TagsTracker.AddStringList(f.tags.ReturnStringList(), 1)
 						f.FinishChange()
 				self.ImageConditionsHandled = True
-		except: # TODO: Should this be more specific?
+		except ImageOpenError:
 			self.image = None
 			self.DataSize = 0
 			self.FileSize = 0

@@ -129,10 +129,7 @@ class TagsContainer:
 		if not name:
 			return False
 		registered = self.register(name)
-		if registered.occurrences > 0 and registered.ConfigTag:
-			return True
-		else:
-			return False
+		return bool(registered.occurrences > 0 and registered.ConfigTag)
 	def ReturnStringList(self):
 		"Return the list of tag objects with 1 or more occurrences as a list of strings."
 		output = []
@@ -189,11 +186,7 @@ class ConditionalTaggerNode:
 	def GetNode(self, name):
 		return self.NodesLookup.get(name, None)
 	def HasNode(self, name):
-		found = self.GetNode(name)
-		if found is not None:
-			return True
-		else:
-			return False
+		return bool(self.GetNode(name) is not None)
 	def AddNodeName(self, name):
 		NewNode = self.GetNode(name)
 		if NewNode is None:

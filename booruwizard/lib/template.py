@@ -331,8 +331,8 @@ class ParserError(TemplateError):
 	pass
 
 class ParserConversionError(ParserError):
-	def __init__(self, message, line, col):
-		super().__init__( ''.join( ( message, ' [', err, '] Line: ', str(line), ' Col: ', str(col) ) ) )
+	def __init__(self, message, err, line, col):
+		super().__init__(''.join( (message, ' [', str(err), ']') ), line, col)
 
 class ParserState(Enum):
 	NORMAL          = 0 # The default parsing state.
@@ -456,7 +456,7 @@ class parser:
 		else:
 			raise ParserError("Option added when not in a question.", token.line, token.col)
 	def _AddAliasTagFrom(self, token):
-		if self._IsOptionQuestionPrepared:
+		if self._IsOptionQuestionPrepared():
 			self._AliasFromString = token.value
 			self._state = ParserState.ALIAS_FROM
 		elif self._state == ParserState.ALIAS_FROM:

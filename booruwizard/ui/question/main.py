@@ -151,7 +151,7 @@ class EntryQuestion(EntryBase):
 		OldStrings = []
 		OldTags = []
 		SpaceStart = 0
-		while(True):
+		while True:
 			found = RE_NOT_WHITESPACE.search(self.EntryStrings[self.pos.get()][SpaceStart:])
 			if found is None:
 				break

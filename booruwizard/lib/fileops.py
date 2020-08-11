@@ -173,11 +173,11 @@ class FileData:
 		"Return a string containing the equivalent JSON type of the variable."
 		if isinstance(item, dict):
 			return 'object'
-		elif isinstance(item, list) or isinstance(item, tuple):
+		elif isinstance( item, (list, tuple) ):
 			return 'array'
 		elif isinstance(item, str):
 			return 'string'
-		elif isinstance(item, int) or isinstance(item, float):
+		elif isinstance( item, (int, float) ):
 			return 'number'
 		elif item is True:
 			return 'true'
@@ -240,7 +240,7 @@ class FileData:
 	def _LoadJSONName(self, obj):
 		"Load the name field from the JSON object."
 		name = obj.get( 'name', unfound() )
-		if isinstance(name, str) or isinstance(name, unfound) or name is None:
+		if isinstance( name, (str, unfound) ) or name is None:
 			self.SetName(name)
 		else:
 			raise ControlFileError( ''.join( ("'name' field is '", self._GetJSONTypeName(name), "' but must be a string or null, or not included.") ) )
