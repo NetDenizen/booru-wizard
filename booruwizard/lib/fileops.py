@@ -120,11 +120,12 @@ class FileData:
 					self.tags.SetObj(t)
 	def SetName(self, name):
 		"Set the name setting to the specified value. Set or unset the nameless tags, if it is or is not None, respectively."
-		self.name = name
-		if name is None:
+		if not name:
 			self.tags.SetContainer(self.NamelessTags)
+			self.name = None
 		else:
 			self.tags.ClearContainer(self.NamelessTags)
+			self.name = name
 	def GetName(self):
 		return self.name
 	def SetSource(self, source):
@@ -238,10 +239,8 @@ class FileData:
 	def _LoadJSONName(self, obj):
 		"Load the name field from the JSON object."
 		name = obj.get( 'name', unfound() )
-		if isinstance(name, str):
-			self.name = name
-		elif isinstance(name, unfound) or name is None:
-			pass
+		if isinstance(name, str) or isinstance(name, unfound) or name is None:
+			self.SetName(name)
 		else:
 			raise ControlFileError( ''.join( ("'name' field is '", self._GetJSONTypeName(name), "' but must be a string or null, or not included.") ) )
 	def _LoadJSONSource(self, obj):
