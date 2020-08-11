@@ -49,7 +49,7 @@ class ManagedImage:
 						self.parent.TagsTracker.AddStringList(f.tags.ReturnStringList(), 1)
 						f.FinishChange()
 				self.ImageConditionsHandled = True
-		except ImageOpenError:
+		except (OSError, ImageOpenError):
 			self.image = None
 			self.DataSize = 0
 			self.FileSize = 0
@@ -82,7 +82,7 @@ class ManagedImage:
 		CompareTo = tokens[2]
 		try:
 			CompareTo = int(tokens[2])
-		except:
+		except (ValueError, TypeError):
 			raise ImageConditionError( ''.join( (ErrorMessage, "(Third token must be an integer. We found '", CompareTo, "'.)") ) )
 		result = None
 		if tokens[1] == '<':

@@ -711,7 +711,7 @@ class SourceQuestion(SingleStringEntry):
 												  FullPath)
 				if PotentialReplacement != self.entry.GetValue():
 					self.PathFormatReplacement = PotentialReplacement
-			except:
+			except (re.error, IndexError):
 				pass
 	def _SetPathFormatButtonState(self):
 		if self.PathFormatReplacement is not None:
