@@ -54,8 +54,6 @@ class ImageDisplay(wx.Panel):
 	def _UpdateMove(self):
 		self.viewport.UpdateBackground(self.viewport.DisplayWidth, self.viewport.DisplayHeight)
 		self.viewport.UpdateImage(self.image, self.quality)
-		self.Update()
-		self.Refresh()
 	def _OnPanLeft(self, message, arg2=None):
 		self.viewport.ApplyMove(self.viewport.PanInterval * -1.0, 0.0)
 		self._UpdateMove()
@@ -109,8 +107,6 @@ class ImageDisplay(wx.Panel):
 		self.viewport.ApplyZoomSteps(OldSteps)
 		self.parent.UpdateZoomControls()
 		self.viewport.UpdateImage(self.image, self.quality)
-		self.Update()
-		self.Refresh()
 		e.Skip()
 	def _OnPaint(self, e):
 		"Load the image at pos in the bitmap at array and scale it to fit the panel. If the image has alpha, overlay it with an image from the background manager."
@@ -124,6 +120,8 @@ class ImageDisplay(wx.Panel):
 			self.viewport.UpdateImage(self.image, self.quality)
 		dc.DrawBitmap(self.viewport.BackgroundBitmap, 0, self.DiffHeight, True)
 		dc.DrawBitmap(self.viewport.ImageBitmap, 0, self.DiffHeight, True)
+		self.Update()
+		self.Refresh()
 		e.Skip()
 	def SetImage(self, image):
 		self.image = image
@@ -243,13 +241,7 @@ class ImagePanel(wx.Panel):
 		self._UpdateImage()
 		self._UpdateImageData()
 		self.UpdateZoomControls()
-	def _ImageUpdateRefresh(self):
-		self.image.Update()
-		self.image.Refresh()
-	def _ImageUpdateLayoutRefresh(self):
-		self.image.Update()
-		self.image.Layout()
-		self.image.Refresh()
+		self.Layout()
 	def _OnFileUpdatePending(self, message, arg2=None):
 		wx.CallAfter(self.OutputUpdateButton.Enable)
 	def _OnFileUpdateClear(self, message, arg2=None):
@@ -266,27 +258,22 @@ class ImagePanel(wx.Panel):
 		"Set image quality to high 2+1 (box average on downscale, bicubic on upscale), update the radio button, and repaint the image."
 		self.ImageQualityControl.SetSelection(0)
 		self.image.quality = wx.IMAGE_QUALITY_HIGH
-		self._ImageUpdateRefresh()
 	def _OnImageQualityHigh2(self, message, arg2=None):
 		"Set image quality to high 2 (bicubic), update the radio button, and repaint the image."
 		self.ImageQualityControl.SetSelection(1)
 		self.image.quality = wx.IMAGE_QUALITY_BICUBIC
-		self._ImageUpdateRefresh()
 	def _OnImageQualityHigh1(self, message, arg2=None):
 		"Set image quality to high 1 (box average), update the radio button, and repaint the image."
 		self.ImageQualityControl.SetSelection(2)
 		self.image.quality = wx.IMAGE_QUALITY_BOX_AVERAGE
-		self._ImageUpdateRefresh()
 	def _OnImageQualityMedium(self, message, arg2=None):
 		"Set image quality to medium (bilinear), update the radio button, and repaint the image."
 		self.ImageQualityControl.SetSelection(3)
 		self.image.quality = wx.IMAGE_QUALITY_BILINEAR
-		self._ImageUpdateRefresh()
 	def _OnImageQualityLow(self, message, arg2=None):
 		"Set image quality to low (nearest neighbor), update the radio button, and repaint the image."
 		self.ImageQualityControl.SetSelection(4)
 		self.image.quality = wx.IMAGE_QUALITY_NEAREST
-		self._ImageUpdateRefresh()
 	def _OnImageQualityLeft(self, message, arg2=None):
 		"Cycle through 'L', 'M', 'H1', 'H2', and 'H2+1' image quality radio button settings."
 		if self.image.quality == wx.IMAGE_QUALITY_HIGH:
@@ -315,35 +302,27 @@ class ImagePanel(wx.Panel):
 		"Change the index to the one specified in the event, if possible."
 		self.pos.set(message)
 		self._update()
-		self._ImageUpdateLayoutRefresh()
 	def _OnLeft(self, message, arg2=None):
 		"Shift to the left (-1) image to the current position in the bitmap array if the position is greater than 0. Otherwise, loop around to the last item."
 		self.pos.dec()
 		self._update()
-		self._ImageUpdateLayoutRefresh()
 	def _OnRight(self, message, arg2=None):
 		"Shift to the right (+1) image to the current position in the bitmap array if the position is less than the length of the bitmap array. Otherwise, loop around to the last item."
 		self.pos.inc()
 		self._update()
-		self._ImageUpdateLayoutRefresh()
 	def _OnImageQualitySelect(self, e):
 		"Bound to EVT_RADIOBOX; update image quality from the relevant radio box."
 		selection = self.ImageQualityControl.GetSelection()
 		if selection == 0 and self.image.quality != wx.IMAGE_QUALITY_HIGH:
 			self.image.quality = wx.IMAGE_QUALITY_HIGH
-			self._ImageUpdateRefresh()
 		elif selection == 1 and self.image.quality != wx.IMAGE_QUALITY_BICUBIC:
 			self.image.quality = wx.IMAGE_QUALITY_BICUBIC
-			self._ImageUpdateRefresh()
 		elif selection == 2 and self.image.quality != wx.IMAGE_QUALITY_BOX_AVERAGE:
 			self.image.quality = wx.IMAGE_QUALITY_BOX_AVERAGE
-			self._ImageUpdateRefresh()
 		elif selection == 3 and self.image.quality != wx.IMAGE_QUALITY_BILINEAR:
 			self.image.quality = wx.IMAGE_QUALITY_BILINEAR
-			self._ImageUpdateRefresh()
 		elif selection == 4 and self.image.quality != wx.IMAGE_QUALITY_NEAREST:
 			self.image.quality = wx.IMAGE_QUALITY_NEAREST
-			self._ImageUpdateRefresh()
 		e.Skip()
 	def _OnZoomIn(self, e):
 		pub.sendMessage("ZoomIn", message=None)
@@ -360,25 +339,21 @@ class ImagePanel(wx.Panel):
 	def _OnZoomInReceived(self, message, arg2=None):
 		self.UpdateZoomControls()
 		self.ZoomInButton.SetFocus()
-		self._ImageUpdateLayoutRefresh()
 	def _OnZoomOutReceived(self, message, arg2=None):
 		self.UpdateZoomControls()
 		if self.ZoomOutButton.IsEnabled():
 			self.ZoomOutButton.SetFocus()
 		else:
 			self.ZoomInButton.SetFocus()
-		self._ImageUpdateLayoutRefresh()
 	def _OnZoomFitReceived(self, message, arg2=None):
 		self.UpdateZoomControls()
 		self.ZoomInButton.SetFocus()
-		self._ImageUpdateLayoutRefresh()
 	def _OnZoomActualReceived(self, message, arg2=None):
 		self.UpdateZoomControls()
 		if self.ZoomOutButton.IsEnabled():
 			self.ZoomOutButton.SetFocus()
 		else:
 			self.ZoomInButton.SetFocus()
-		self._ImageUpdateLayoutRefresh()
 	def _OnOutputUpdateButton(self, e):
 		pub.sendMessage("FileUpdateForce", message=None)
 		e.Skip()
@@ -500,7 +475,6 @@ class ImagePanel(wx.Panel):
 		pub.subscribe(self._OnRight, "RightImage")
 
 		self._update()
-		self._ImageUpdateLayoutRefresh()
 
 class ImageLabel(wx.Panel):
 	def _SetLabels(self):
