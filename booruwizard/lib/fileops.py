@@ -118,24 +118,25 @@ class FileData:
 			for t in self.TaglessTags.tags:
 				if t.name not in exclusions:
 					self.tags.SetObj(t)
+	def _SetNameField(self, value):
+		self.name = value
+	def _SetSourceField(self, value):
+		self.source = value
+	def _SetSingleField(self, value, LessTags, setter):
+		if not value:
+			self.tags.SetContainer(LessTags)
+			setter(None)
+		else:
+			self.tags.ClearContainer(LessTags)
+			setter(value)
 	def SetName(self, name):
 		"Set the name setting to the specified value. Set or unset the nameless tags, if it is or is not None, respectively."
-		if not name:
-			self.tags.SetContainer(self.NamelessTags)
-			self.name = None
-		else:
-			self.tags.ClearContainer(self.NamelessTags)
-			self.name = name
+		self._SetSingleField(name, self.NamelessTags, self._SetNameField)
 	def GetName(self):
 		return self.name
 	def SetSource(self, source):
 		"Set the source setting to the specified value. Set or unset the sourceless tags, if it is or is not None, respectively."
-		if not source:
-			self.tags.SetContainer(self.SourcelessTags)
-			self.source = None
-		else:
-			self.tags.ClearContainer(self.SourcelessTags)
-			self.source = source
+		self._SetSingleField(source, self.SourcelessTags, self._SetSourceField)
 	def GetSource(self):
 		return self.source
 	def SetConditionalTags(self, name):
@@ -147,17 +148,17 @@ class FileData:
 	def ClearConditionalTags(self, name):
 		"Clear the conditional tags for a certain name."
 		self.ConditionalTags.ClearTags(name, self.tags)
+	def _DeleteKeyIfExists(self, record, key):
+		if key in record:
+			del record[key]
 	def _BuildData(self):
 		"Return the data fields formatted as a JSON string, and set the change status to false.."
 		if self._OriginalObj is not None:
 			output = self._OriginalObj.copy() #TODO: Make sure this shallow copy works.
 			output['rating'] = SAFETY_VALUES_LOOKUP[self.rating]
-			if 'name' in output:
-				del output['name']
-			if 'source' in output:
-				del output['source']
-			if 'tags' in output:
-				del output['tags']
+			self._DeleteKeyIfExists(output, 'name')
+			self._DeleteKeyIfExists(output, 'source')
+			self._DeleteKeyIfExists(output, 'tags')
 		else:
 			output = {'rating' : SAFETY_VALUES_LOOKUP[self.rating]}
 		if self.name is not None:
