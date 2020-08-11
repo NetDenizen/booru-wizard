@@ -8,8 +8,7 @@ class ImageReaderError(Exception):
 	pass
 
 class ImageOpenError(ImageReaderError):
-	def __init__(self, message, errno, strerror):
-		super().__init__( ''.join( (message, ' [errno ', errno, ']: ', strerror) ) )
+	pass
 
 class ImageConditionError(ImageReaderError):
 	pass
@@ -33,10 +32,9 @@ class ManagedImage:
 			self.image = wx.Image(stream)
 			self.FileSize = os.fstat( stream.fileno() ).st_size
 			stream.close()
+			if not self.image.IsOk():
+				raise ImageOpenError()
 			self.DataSize = len( self.image.GetDataBuffer() )
-			# TODO: What was this for again?
-			#if not self.image.IsOk():
-			#	raise Exception()
 			if not self.ImageConditionsHandled:
 				f = self.parent.OutputFiles.ControlFiles[self.idx]
 				for c in self.parent.ImageConditions:
