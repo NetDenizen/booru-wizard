@@ -103,7 +103,8 @@ class ManagedFile:
 
 # FileData object and exception definition
 class unfound: # A type to differentiate from null (translated to None) when searching inside a JSON-derived object.
-	pass
+	def __bool__(self):
+		return False
 
 class ControlFileError(Exception):
 	pass
@@ -128,11 +129,12 @@ class FileData:
 		return self.name
 	def SetSource(self, source):
 		"Set the source setting to the specified value. Set or unset the sourceless tags, if it is or is not None, respectively."
-		self.source = source
-		if source is None:
+		if not source:
 			self.tags.SetContainer(self.SourcelessTags)
+			self.source = None
 		else:
 			self.tags.ClearContainer(self.SourcelessTags)
+			self.source = source
 	def GetSource(self):
 		return self.source
 	def SetConditionalTags(self, name):
@@ -149,6 +151,12 @@ class FileData:
 		if self._OriginalObj is not None:
 			output = self._OriginalObj.copy() #TODO: Make sure this shallow copy works.
 			output['rating'] = SAFETY_VALUES_LOOKUP[self.rating]
+			if 'name' in output:
+				del output['name']
+			if 'source' in output:
+				del output['source']
+			if 'tags' in output:
+				del output['tags']
 		else:
 			output = {'rating' : SAFETY_VALUES_LOOKUP[self.rating]}
 		if self.name is not None:
@@ -239,10 +247,8 @@ class FileData:
 	def _LoadJSONSource(self, obj):
 		"Load the source field from the JSON object."
 		source = obj.get( 'source', unfound() )
-		if isinstance(source, str):
+		if isinstance(source, str) or isinstance(source, unfound) or source is None:
 			self.SetSource(source)
-		elif isinstance(source, unfound) or source is None:
-			pass
 		else:
 			raise ControlFileError( ''.join( ("'source' field is '", self._GetJSONTypeName(source), "' but must be a string or null, or not included.") ) )
 	def _LoadJSONRating(self, obj):
@@ -275,10 +281,10 @@ class FileData:
 			raise ControlFileError( ''.join ( ("'tags' field is '", self._GetJSONTypeName(tags), "' but must be an array, or not included. If an array, it must be 0 to 2 string elements in length.") ) )
 	def LoadJSON(self, obj):
 		"Load the settings field from a JSON object."
+		self._LoadJSONTags(obj)
 		self._LoadJSONName(obj)
 		self._LoadJSONSource(obj)
 		self._LoadJSONRating(obj)
-		self._LoadJSONTags(obj)
 		self._OriginalObj = obj
 		self._DataState = self._BuildData() # The current output of the DataCallback, used to determine if _IsChanged should be set.
 		self._IsChanged = True

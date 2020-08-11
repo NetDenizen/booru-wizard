@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* SOURCELESS_TAGS are now added on an empty source, as well as an unset one.
+
 * Implement NATIVE_TAGS.
 
 * Add a '--json-compact' or '-C' option, and a complementary opening dialog box to allow the user to choose between pretty-printed and compact JSON output.
