@@ -118,6 +118,26 @@ class PathEntry(SearchEntry):
 		return self._PathsLen
 	def SearchPath(self, query):
 		return self._paths.index(query)
+	def _OnMenuPathChosen(self, e):
+		"Set the path entry to the chosen menu value."
+		self.ChooseMenuItem( e.GetId() )
+		e.Skip()
+	def _OnPathSearch(self, e):
+		"Update the search menu, based on matches found in the paths array."
+		self.UpdateMenu()
+		e.Skip()
+	def SelfBinds(self):
+		for i in self.GetMenuItemIds():
+			self.parent.Bind(wx.EVT_MENU, self._OnMenuPathChosen, id=i)
+
+		self.parent.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self._OnPathSearch, id=self.entry.GetId() )
+	def _OnFocusPathName(self, message, arg2=None):
+		self.FocusEntry()
+	def _OnFocusPathNameMenu(self, message, arg2=None):
+		self.FocusMenu()
+	def SelfPubSub(self):
+		pub.subscribe(self._OnFocusPathName, "FocusPathName")
+		pub.subscribe(self._OnFocusPathNameMenu, "FocusPathNameMenu")
 	def __init__(self, parent, paths):
 		self._paths = paths
 		self._PathsLen = len(self._paths)

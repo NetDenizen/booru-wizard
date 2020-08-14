@@ -306,10 +306,6 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 			self.parent.OwnTags.OutputFile.FinishChange()
 		self.parent.disp()
 		e.Skip()
-	def _OnPathSearch(self, e):
-		"Update the search menu, based on matches found in the paths array."
-		self.PathEntry.UpdateMenu()
-		e.Skip()
 	def _OnPathEntry(self, e):
 		"Send an IndexImage message, if the index of PathEntry contents can be found in paths; otherwise, try to autocomplete the contents."
 		try:
@@ -319,10 +315,6 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 			self.disp()
 		except ValueError: # TODO: Should this work with any exception?
 			self.PathEntry.UpdateAutocomplete()
-		e.Skip()
-	def _OnMenuPathChosen(self, e):
-		"Set the path entry to the chosen menu value."
-		self.PathEntry.ChooseMenuItem(e.GetId())
 		e.Skip()
 	def load(self, OutputFile):
 		"Initialize the question for a certain case."
@@ -404,19 +396,17 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		self.sizer.AddStretchSpacer(1)
 		self.SetSizer(self.sizer)
 
-		for i in self.PathEntry.GetMenuItemIds():
-			self.Bind(wx.EVT_MENU, self._OnMenuPathChosen, id=i)
-
 		if len(OutputFiles) <= 1:
 			self.LeftSource.Disable()
 			self.RightSource.Disable()
+
+		self.PathEntry.SelfBinds()
 
 		self.Bind( wx.EVT_BUTTON, self._OnToggleAll, id=self.ToggleAll.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnLeft, id=self.LeftSource.GetId() )
 		self.Bind( wx.EVT_TEXT_ENTER, self._OnIndexEntry, id=self.IndexEntry.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnRight, id=self.RightSource.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnCommit, id=self.commit.GetId() )
-		self.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self._OnPathSearch, id=self.PathEntry.entry.GetId() )
 		self.Bind( wx.EVT_TEXT_ENTER, self._OnPathEntry, id=self.PathEntry.entry.GetId() )
 
 class SingleStringEntry(wx.Panel): # This class should never be used on its own

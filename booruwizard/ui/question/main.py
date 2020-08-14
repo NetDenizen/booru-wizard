@@ -503,14 +503,6 @@ class BulkTagger(wx.Panel):
 						return
 		self.indices = output
 		self._CalculateTagCoverage()
-	def _OnPathSearch(self, e):
-		"Update the search menu, based on matches found in the paths array."
-		self.PathEntry.UpdateMenu()
-		e.Skip()
-	def _OnMenuPathChosen(self, e):
-		"Set the path entry to the chosen menu value."
-		self.PathEntry.ChooseMenuItem(e.GetId())
-		e.Skip()
 	def _OnPathEntry(self, e):
 		"Send an IndexImage message, if the index of PathEntry contents can be found in paths; otherwise, try to autocomplete the contents."
 		try:
@@ -611,10 +603,7 @@ class BulkTagger(wx.Panel):
 		self.AddButton.SetToolTip(self.AddButtonTip)
 
 		# Event binding
-		for i in self.PathEntry.GetMenuItemIds():
-			self.Bind(wx.EVT_MENU, self._OnMenuPathChosen, id=i)
-
-		self.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self._OnPathSearch, id=self.PathEntry.entry.GetId() )
+		self.PathEntry.SelfBinds()
 		self.Bind( wx.EVT_TEXT_ENTER, self._OnPathEntry, id=self.PathEntry.entry.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnSwapEntryButton, id=self.SwapEntryButton.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnNumberEntry, id=self.NumberEntry.GetId() )

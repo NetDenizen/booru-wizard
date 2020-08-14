@@ -497,21 +497,6 @@ class ImageLabel(wx.Panel):
 		except ValueError: # TODO: Should this work with any exception?
 			self._SetLabels()
 		e.Skip()
-	def _OnPathSearch(self, e):
-		"Update the search menu, based on matches found in the paths array."
-		self.PathEntry.UpdateMenu()
-		e.Skip()
-	def _OnPathEntry(self, e):
-		"Send an IndexImage message, if the index of PathEntry contents can be found in paths; otherwise, try to autocomplete the contents."
-		try:
-			pub.sendMessage( "IndexImage", message=self.PathEntry.SearchPath( self.PathEntry.GetPath() ) )
-		except ValueError: # TODO: Should this work with any exception?
-			self.PathEntry.UpdateAutocomplete()
-		e.Skip()
-	def _OnMenuPathChosen(self, e):
-		"Set the path entry to the chosen menu value."
-		self.PathEntry.ChooseMenuItem(e.GetId())
-		e.Skip()
 	def _OnIndex(self, message, arg2=None):
 		"Change the index to the one specified in the event, if possible."
 		self.pos.set(message)
@@ -526,10 +511,13 @@ class ImageLabel(wx.Panel):
 		self._SetLabels()
 	def _OnFocusImageIndex(self, message, arg2=None):
 		self.IndexEntry.SetFocus()
-	def _OnFocusPathName(self, message, arg2=None):
-		self.PathEntry.FocusEntry()
-	def _OnFocusPathNameMenu(self, message, arg2=None):
-		self.PathEntry.FocusMenu()
+	def _OnPathEntry(self, e):
+		"Send an IndexImage message, if the index of PathEntry contents can be found in paths; otherwise, try to autocomplete the contents."
+		try:
+			pub.sendMessage( "IndexImage", message=self.PathEntry.SearchPath( self.PathEntry.GetPath() ) )
+		except ValueError: # TODO: Should this work with any exception?
+			self.PathEntry.UpdateAutocomplete()
+		e.Skip()
 	def __init__(self, parent, paths, keybinds):
 		wx.Panel.__init__(self, parent=parent)
 
@@ -552,19 +540,16 @@ class ImageLabel(wx.Panel):
 		self.sizer.Add(self.PathEntry.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
 		self.SetSizer(self.sizer)
 
-		for i in self.PathEntry.GetMenuItemIds():
-			self.Bind(wx.EVT_MENU, self._OnMenuPathChosen, id=i)
+		self.PathEntry.SelfBinds()
+		self.PathEntry.SelfPubSub()
 		self._SetLabels()
 
 		self.Bind( wx.EVT_TEXT_ENTER, self._OnIndexEntry, id=self.IndexEntry.GetId() )
-		self.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self._OnPathSearch, id=self.PathEntry.entry.GetId() )
 		self.Bind( wx.EVT_TEXT_ENTER, self._OnPathEntry, id=self.PathEntry.entry.GetId() )
 		pub.subscribe(self._OnIndex, "IndexImage")
 		pub.subscribe(self._OnLeft, "LeftImage")
 		pub.subscribe(self._OnRight, "RightImage")
 		pub.subscribe(self._OnFocusImageIndex, "FocusImageIndex")
-		pub.subscribe(self._OnFocusPathName, "FocusPathName")
-		pub.subscribe(self._OnFocusPathNameMenu, "FocusPathNameMenu")
 
 class ImageContainer(wx.Panel):
 	def __init__(self, parent, images, ImageQuality, OutputFiles, viewport, keybinds):
