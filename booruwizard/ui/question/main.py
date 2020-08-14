@@ -568,7 +568,7 @@ class BulkTagger(wx.Panel):
 
 		# Index selection controls
 		self.PathEntryLabel = wx.StaticText(self, label='Path Select')
-		self.PathEntry = PathEntry( self, tuple( (f.path for f in self.OutputFiles) ) )
+		self.PathEntry = PathEntry( self, tuple( (f.FullPath for f in self.OutputFiles) ) )
 		self.NumberEntryLabel = wx.StaticText(self, label='to image indices')
 		self.NumberEntry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
 
