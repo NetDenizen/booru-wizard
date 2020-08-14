@@ -48,7 +48,7 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 
 		self.Sash0Pos = 0.4
 		self.Sash1Pos = 0.2
-		self.top = ImageContainer(self, images, ImageQuality, OutputFiles.InputPaths, ViewPort, keybinds)
+		self.top = ImageContainer(self, images, ImageQuality, OutputFiles, ViewPort, keybinds)
 		self.middle = PromptContainer(self, len(OutputFiles.InputPaths), questions, keybinds)
 		self.bottom = QuestionsContainer(self, TagsTracker, questions, OutputFiles)
 
@@ -149,7 +149,7 @@ class MainFrame(wx.Frame):
 
 		self.SetBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_FRAMEBK) )
 		size = self.GetEffectiveMinSize()
-		size.SetHeight( int(float( size.GetHeight() ) * 1.0) )
+		size.SetHeight( int(float( size.GetHeight() ) * 0.95) )
 		size.SetWidth( int(float( size.GetWidth() ) * 1.25) )
 		self.SetMinSize(size)
 		self.SetSize( self.GetSize() ) # XXX: Windows does not automatically update the size when the minimum is set.

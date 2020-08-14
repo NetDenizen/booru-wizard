@@ -3,6 +3,7 @@
 from os.path import commonprefix
 
 import wx
+from pubsub import pub
 
 def GetPreviewText(i, v):
 	IndexText = str(i + 1)
@@ -50,19 +51,26 @@ class CircularCounter:
 		self._MaxValue = MaxValue
 		self._value = 0
 
-class PathEntry:
-	def SetPath(self, pos):
-		"Set the path label to show the path at pos in the paths array, and the index label to show pos + 1 out of length of paths array."
-		self.entry.SetValue(self._paths[pos])
-	def GetPath(self):
-		"Get the current value of the entry."
-		return self.entry.GetValue()
+class SearchEntry:
 	def GetMenuItemIds(self):
 		"Return a list of IDs for each menu item."
 		output = []
 		for i in self._MenuItems:
 			output.append( i.GetId() )
 		return output
+	def FocusEntry(self):
+		self.entry.SetFocus()
+	def FocusMenu(self):
+		self.UpdateMenu()
+		self.entry.PopupMenu(self._menu)
+
+class PathEntry(SearchEntry):
+	def SetPath(self, pos):
+		"Set the path label to show the path at pos in the paths array, and the index label to show pos + 1 out of length of paths array."
+		self.entry.SetValue(self._paths[pos])
+	def GetPath(self):
+		"Get the current value of the entry."
+		return self.entry.GetValue()
 	def UpdateMenu(self):
 		"Set the contents of PathMenu based on the contents of PathEntry."
 		_menu = self._menu
@@ -106,11 +114,6 @@ class PathEntry:
 	def ChooseMenuItem(self, ItemId):
 		"Set the path entry to the chosen menu value."
 		self.entry.SetValue(self._MenuLookup[ItemId])
-	def FocusEntry(self):
-		self.entry.SetFocus()
-	def FocusMenu(self):
-		self.UpdateMenu()
-		self.entry.PopupMenu(self._menu)
 	def GetPathsLen(self):
 		return self._PathsLen
 	def SearchPath(self, query):
@@ -121,6 +124,7 @@ class PathEntry:
 		self._MenuItems = []
 		self._MenuLookup = {}
 		self._menu = wx.Menu()
+		self.parent = parent
 		self.entry = wx.SearchCtrl(parent, style= wx.TE_LEFT | wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Search box containing path of current image
 		#TODO: Tab completion for these fields?
 		self.EntryTip = wx.ToolTip("Image path entry; if the path doesn't exist, then press enter autocomplete.")
@@ -136,3 +140,62 @@ class PathEntry:
 		self.entry.SetMenu(self._menu)
 		self.entry.ShowSearchButton(False)
 		self.SetPath(0)
+
+class TagSearch(SearchEntry):
+	def UpdateMenu(self):
+		"Set the contents of PathMenu based on the contents of PathEntry."
+		_menu = self._menu
+		_MenuItems = self._MenuItems
+		Remove = _menu.Remove
+		Append = _menu.Append
+		for i in _menu.GetMenuItems():
+			Remove(i)
+		EntryValues = self.entry.GetValue().lower().split()
+		AddAll = False
+		if not EntryValues:
+			AddAll = True
+		for i, f in enumerate(self._OutputFiles.ControlFiles):
+			f.lock()
+			if AddAll or f.tags.HasAnyOfStringList(EntryValues):
+				Append(_MenuItems[i])
+			f.unlock()
+	def ChooseMenuItem(self, i):
+		pub.sendMessage("IndexImage", message=self._MenuLookup[i])
+	def _OnMenuItemChosen(self, e):
+		self.ChooseMenuItem( e.GetId() )
+		e.Skip()
+	def _OnSearch(self, e):
+		"Update the search menu, based on matches found in the paths array."
+		self.UpdateMenu()
+		e.Skip()
+	def SelfBinds(self):
+		for i in self.GetMenuItemIds():
+			self.parent.Bind(wx.EVT_MENU, self._OnMenuItemChosen, id=i)
+
+		self.parent.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self._OnSearch, id=self.entry.GetId() )
+	def _OnFocusEntry(self, message, arg2=None):
+		self.FocusEntry()
+	def _OnFocusMenu(self, message, arg2=None):
+		self.FocusMenu()
+	def SelfPubSub(self):
+		pub.subscribe(self._OnFocusEntry, "FocusTagSearch")
+		pub.subscribe(self._OnFocusMenu, "FocusTagSearchMenu")
+	def __init__(self, parent, OutputFiles):
+		self._OutputFiles = OutputFiles
+		self._MenuItems = []
+		self._MenuLookup = {}
+		self._menu = wx.Menu()
+		self.parent = parent
+		self.entry = wx.SearchCtrl(parent, style= wx.TE_NOHIDESEL) # Search box containing space-separated tags to search for.
+		self.EntryTip = wx.ToolTip("Tag search field. Enter space-separated tags to update menu. Menu items will switch to the associated image.")
+
+		self.entry.SetToolTip(self.EntryTip)
+
+		for i, p in enumerate(OutputFiles.InputPaths):
+			ItemId = wx.NewId()
+			PreviewText = GetPreviewText(i, p)
+			item = wx.MenuItem(self._menu, ItemId, PreviewText, PreviewText)
+			self._MenuItems.append(item)
+			self._MenuLookup[ItemId] = i
+		self.entry.SetMenu(self._menu)
+		self.entry.ShowSearchButton(False)

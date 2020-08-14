@@ -35,6 +35,8 @@ ID_ZOOM_ACTUAL_SIZE = wx.NewId()
 ID_LOCK_QUESTION = wx.NewId()
 ID_UNLOCK_QUESTION = wx.NewId()
 ID_TOGGLE_LOCK_QUESTION = wx.NewId()
+ID_SELECT_TAG_SEARCH = wx.NewId()
+ID_SELECT_TAG_SEARCH_MENU = wx.NewId()
 KEYBIND_IDS = {
 	'exit'                        : ID_EMERGENCY_EXIT             ,
 	'flush_changes'               : ID_FILE_UPDATE_FORCE          ,
@@ -67,7 +69,9 @@ KEYBIND_IDS = {
 	'zoom_actual_size'            : ID_ZOOM_ACTUAL_SIZE           ,
 	'lock_question'               : ID_LOCK_QUESTION              ,
 	'unlock_question'             : ID_UNLOCK_QUESTION            ,
-	'toggle_question_lock'        : ID_TOGGLE_LOCK_QUESTION
+	'toggle_question_lock'        : ID_TOGGLE_LOCK_QUESTION       ,
+	'select_tag_search'           : ID_SELECT_TAG_SEARCH          ,
+	'select_tag_search_menu'      : ID_SELECT_TAG_SEARCH_MENU
 }
 KEYBIND_MESSAGES = {
 	ID_EMERGENCY_EXIT              : 'EmergencyExit'          ,
@@ -101,7 +105,9 @@ KEYBIND_MESSAGES = {
 	ID_ZOOM_ACTUAL_SIZE            : 'ZoomActualSize'         ,
 	ID_LOCK_QUESTION               : 'LockQuestion'           ,
 	ID_UNLOCK_QUESTION             : 'UnlockQuestion'         ,
-	ID_TOGGLE_LOCK_QUESTION        : 'ToggleLockQuestion'
+	ID_TOGGLE_LOCK_QUESTION        : 'ToggleLockQuestion'     ,
+	ID_SELECT_TAG_SEARCH           : 'FocusTagSearch'         ,
+	ID_SELECT_TAG_SEARCH_MENU      : 'FocusTagSearchMenu'
 }
 
 class KeyHandlerError(Exception):
@@ -141,6 +147,8 @@ class KeyHandler(wx.Object):
 		self.LockQuestionItem = wx.MenuItem(id=wx.NewId(), text="LockQuestion", helpString="Make the currently loaded question also load for the next image, regardless of whatever question that image might currently be set to load.")
 		self.UnlockQuestionItem = wx.MenuItem(id=wx.NewId(), text="UnlockQuestion", helpString="Disable the effect of 'lock_question'.")
 		self.ToggleLockQuestionItem = wx.MenuItem(id=wx.NewId(), text="ToggleLockQuestion", helpString="If 'lock_question' is in effect, disable it. If not, enable it.")
+		self.FocusTagSearchItem = wx.MenuItem(id=wx.NewId(), text="FocusTagSearch", helpString="Focus on the tag search entry.")
+		self.FocusTagSearchMenuItem = wx.MenuItem(id=wx.NewId(), text="FocusTagSearchMenu", helpString="Open and focus on the tag search menu.")
 		self.MenuItems = {'exit'                        : self.EmergencyExitItem                ,
 						  'flush_changes'               : self.FileUpdateForceItem              ,
 						  'left_image'                  : self.LeftImageItem                    ,
@@ -172,7 +180,9 @@ class KeyHandler(wx.Object):
 						  'zoom_actual_size'            : self.ZoomActualSizeItem               ,
 						  'lock_question'               : self.LockQuestionItem                 ,
 						  'unlock_question'             : self.UnlockQuestionItem               ,
-						  'toggle_question_lock'        : self.ToggleLockQuestionItem
+						  'toggle_question_lock'        : self.ToggleLockQuestionItem           ,
+						  'select_tag_search'      : self.FocusTagSearchItem                    ,
+						  'select_tag_search_menu' : self.FocusTagSearchMenuItem
 						 }
 		self.entries = []
 	def _OnEntry(self, e):
@@ -212,6 +222,8 @@ class KeyHandler(wx.Object):
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_LOCK_QUESTION)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_UNLOCK_QUESTION)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_TOGGLE_LOCK_QUESTION)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_SELECT_TAG_SEARCH)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_SELECT_TAG_SEARCH_MENU)
 	def add(self, text):
 		"Add a keybind to the handler."
 		values = text.split()

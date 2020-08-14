@@ -7,7 +7,7 @@ from pubsub import pub
 
 from booruwizard.lib.imagereader import ImageReader
 from booruwizard.lib.viewport import ViewPortState
-from booruwizard.ui.common import PathEntry, CircularCounter, RenderThreeIfMid
+from booruwizard.ui.common import PathEntry, CircularCounter, RenderThreeIfMid, TagSearch
 
 #TODO: Should we have a control to affect the scaling (maybe an alternate scrollbar setting), or to change the background color?
 class ImageDisplay(wx.Panel):
@@ -357,7 +357,7 @@ class ImagePanel(wx.Panel):
 	def _OnOutputUpdateButton(self, e):
 		pub.sendMessage("FileUpdateForce", message=None)
 		e.Skip()
-	def __init__(self, parent, images, ImageQuality, ViewPort, keybinds):
+	def __init__(self, parent, OutputFiles, images, ImageQuality, ViewPort, keybinds):
 		wx.Panel.__init__(self, parent=parent)
 
 		self.pos = None # Position in bitmaps
@@ -387,10 +387,15 @@ class ImagePanel(wx.Panel):
 		self.ZoomFitButtonTip = wx.ToolTip( ''.join( ( 'Zoom to fit window.', RenderThreeIfMid(' (', keybinds.get('zoom_fit'), ')') ) ) )
 		self.ZoomActualButton = wx.Button(self, label="1.0", style=wx.BU_EXACTFIT)
 		self.ZoomActualButtonTip = wx.ToolTip( ''.join( ( 'Zoom to actual size (1.0 Zoom Ratio).', RenderThreeIfMid(' (', keybinds.get('zoom_actual_size'), ')') ) ) )
+		self.ImageSearch = TagSearch(self, OutputFiles)
+		self.ImageSearch.EntryTip = wx.ToolTip( ''.join( ( 'Tag search field. Enter space-separated tags to update menu. Menu items will switch to the associated image.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_tag_search'), ')'), RenderThreeIfMid(' (Open Menu: ', keybinds.get('select_tag_search_menu'), ')') ) ) )
 		self.image = ImageDisplay(self, ImageQuality, ViewPort, keybinds)
 		self.ZoomControlSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.LeftPaneSizer = wx.BoxSizer(wx.VERTICAL)
 		self.MainSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+		self.ImageSearch.SelfBinds()
+		self.ImageSearch.SelfPubSub()
 
 		self.ZoomControlSizer.Add(self.ZoomInButton, 10, wx.ALIGN_CENTER_VERTICAL)
 		self.ZoomControlSizer.AddStretchSpacer(1)
@@ -413,7 +418,9 @@ class ImagePanel(wx.Panel):
 		self.LeftPaneSizer.Add(self.ZoomDisplay, 0, wx.ALIGN_CENTER_VERTICAL)
 		self.LeftPaneSizer.AddStretchSpacer(1)
 		self.LeftPaneSizer.Add(self.ZoomControlSizer, 0, wx.ALIGN_BOTTOM | wx.ALIGN_LEFT | wx.BOTTOM | wx.LEFT)
-		self.LeftPaneSizer.AddStretchSpacer(3)
+		self.LeftPaneSizer.AddStretchSpacer(4)
+		self.LeftPaneSizer.Add(self.ImageSearch.entry, 0, wx.ALIGN_BOTTOM | wx.ALIGN_LEFT | wx.BOTTOM | wx.LEFT | wx.EXPAND)
+		self.LeftPaneSizer.AddStretchSpacer(2)
 
 		self.MainSizer.Add(self.LeftPaneSizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.EXPAND)
 		self.MainSizer.AddStretchSpacer(1)
@@ -436,6 +443,7 @@ class ImagePanel(wx.Panel):
 		self.ZoomOutButton.SetToolTip(self.ZoomOutButtonTip)
 		self.ZoomFitButton.SetToolTip(self.ZoomFitButtonTip)
 		self.ZoomActualButton.SetToolTip(self.ZoomActualButtonTip)
+		self.ImageSearch.entry.SetToolTip(self.ImageSearch.EntryTip)
 
 		self.pos = CircularCounter(len(self.bitmaps.images) - 1)
 		if self.image.quality == wx.IMAGE_QUALITY_HIGH:
@@ -559,11 +567,11 @@ class ImageLabel(wx.Panel):
 		pub.subscribe(self._OnFocusPathNameMenu, "FocusPathNameMenu")
 
 class ImageContainer(wx.Panel):
-	def __init__(self, parent, images, ImageQuality, paths, viewport, keybinds):
+	def __init__(self, parent, images, ImageQuality, OutputFiles, viewport, keybinds):
 		wx.Panel.__init__(self, parent=parent)
 
-		self.image = ImagePanel(self, images, ImageQuality, viewport, keybinds)
-		self.label = ImageLabel(self, paths, keybinds)
+		self.image = ImagePanel(self, OutputFiles, images, ImageQuality, viewport, keybinds)
+		self.label = ImageLabel(self, OutputFiles.InputPaths, keybinds)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.sizer.Add(self.image, 1, wx.ALIGN_CENTER | wx.EXPAND)

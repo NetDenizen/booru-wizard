@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* Implement tag search field.
+
 * NAMELESS_TAGS are now added on an empty source, as well as an unset one.
 
 * SOURCELESS_TAGS are now added on an empty source, as well as an unset one.
