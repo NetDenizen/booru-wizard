@@ -124,9 +124,10 @@ class ViewPort:
 	def UpdateBackground(self, DisplayWidth, DisplayHeight):
 		self.DisplayWidth = DisplayWidth
 		self.DisplayHeight = DisplayHeight
-		if self.BackgroundBitmap is None or\
-		   self.DisplayWidth != self.BackgroundBitmap.GetWidth() or\
-		   self.DisplayHeight != self.BackgroundBitmap.GetHeight():
+		if self.DisplayWidth != 0 and self.DisplayHeight != 0 and\
+		   ( self.BackgroundBitmap is None or\
+		     self.DisplayWidth != self.BackgroundBitmap.GetWidth() or\
+		     self.DisplayHeight != self.BackgroundBitmap.GetHeight() ):
 			   self.BackgroundBitmap = wx.Bitmap.FromBuffer( self.DisplayWidth, self.DisplayHeight, self.BackgroundManager.get(self.DisplayWidth, self.DisplayHeight) )
 	def UpdateImage(self, image, quality):
 		"Return wx.Image, through the viewport."
@@ -150,10 +151,15 @@ class ViewPort:
 			NewImage.Rescale(self.DisplayWidth, self.DisplayHeight, quality)
 		elif ImageWidth == self.DisplayWidth and ImageHeight == self.DisplayHeight:
 			NewImage = image
-		else:
+		elif self.DisplayWidth != 0 and self.DisplayHeight != 0:
 			NewImage = image.Scale(self.DisplayWidth, self.DisplayHeight, quality)
+		else:
+			NewImage = None
 
-		self.ImageBitmap = wx.Bitmap(NewImage)
+		if NewImage is None:
+			self.ImageBitmap = None
+		else:
+			self.ImageBitmap = wx.Bitmap(NewImage)
 	def ApplyZoomSteps(self, OldSteps):
 		"Zoom in or out by OldSteps, according to the state of the viewport."
 		if self.TotalSteps != 0:
@@ -176,9 +182,12 @@ class ViewPort:
 		SampleWidth = self.SampleWidth * ImageWidth
 		SampleHeight = self.SampleHeight * ImageHeight
 		ImageSquare = ImageWidth * ImageHeight
-		return (sqrt( ImageSquare / (SampleWidth * SampleHeight) ) /\
-				sqrt( ImageSquare / (self.DisplayWidth * self.DisplayHeight) ),
-				SampleWidth, SampleHeight)
+		if self.DisplayWidth == 0 or self.DisplayHeight == 0:
+			ratio = 0
+		else:
+			ratio = sqrt( ImageSquare / (SampleWidth * SampleHeight) ) /\
+					sqrt( ImageSquare / (self.DisplayWidth * self.DisplayHeight) )
+		return (ratio, SampleWidth, SampleHeight)
 	def GetActualFitRatio(self):
 		"Return the zoom level necessary to fit the display, relative to the size of the image, rather than the display (1.0)."
 		ImageSize = self.image.GetSize()
