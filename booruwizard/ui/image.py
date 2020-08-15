@@ -79,6 +79,8 @@ class ImageDisplay(wx.Panel):
 		self.viewport.ApplyActualSize()
 		self._UpdateMove()
 	def _OnMouseDown(self, e):
+		if self.image is None:
+			return
 		self.MouseStartX = e.GetX()
 		self.MouseStartY = e.GetY()
 		self.MouseDown = True
@@ -86,6 +88,8 @@ class ImageDisplay(wx.Panel):
 			self.SetCursor( wx.Cursor(wx.CURSOR_CROSS) )
 		e.Skip()
 	def _OnMouseUp(self, e):
+		if self.image is None:
+			return
 		self.MouseStartX = e.GetX()
 		self.MouseStartY = e.GetY()
 		self.MouseDown = False
