@@ -176,7 +176,7 @@ class TagSearch(SearchEntry):
 			AddAll = True
 		for i, f in enumerate(self._OutputFiles.ControlFiles):
 			f.lock()
-			if AddAll or f.tags.HasAnyOfStringList(EntryValues):
+			if AddAll or f.tags.HasAllOfStringList(EntryValues):
 				Append(_MenuItems[i])
 			f.unlock()
 	def ChooseMenuItem(self, i):

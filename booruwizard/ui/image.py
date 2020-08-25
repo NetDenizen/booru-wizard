@@ -392,7 +392,7 @@ class ImagePanel(wx.Panel):
 		self.ZoomActualButton = wx.Button(self, label="1.0", style=wx.BU_EXACTFIT)
 		self.ZoomActualButtonTip = wx.ToolTip( ''.join( ( 'Zoom to actual size (1.0 Zoom Ratio).', RenderThreeIfMid(' (', keybinds.get('zoom_actual_size'), ')') ) ) )
 		self.ImageSearch = TagSearch(self, OutputFiles)
-		self.ImageSearch.EntryTip = wx.ToolTip( ''.join( ( 'Tag search field. Enter space-separated tags to update menu. Menu items will switch to the associated image.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_tag_search'), ')'), RenderThreeIfMid(' (Open Menu: ', keybinds.get('select_tag_search_menu'), ')') ) ) )
+		self.ImageSearch.EntryTip = wx.ToolTip( ''.join( ( 'Tag search field. Enter space-separated tags to update menu. The image must contain all of these. Menu items will switch to the associated image.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_tag_search'), ')'), RenderThreeIfMid(' (Open Menu: ', keybinds.get('select_tag_search_menu'), ')') ) ) )
 		self.image = ImageDisplay(self, ImageQuality, ViewPort, keybinds)
 		self.ZoomControlSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.LeftPaneSizer = wx.BoxSizer(wx.VERTICAL)
