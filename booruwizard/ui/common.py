@@ -176,7 +176,17 @@ class TagSearch(SearchEntry):
 			AddAll = True
 		for i, f in enumerate(self._OutputFiles.ControlFiles):
 			f.lock()
-			if AddAll or f.tags.HasAllOfStringList(EntryValues):
+			AddV = False
+			for v in EntryValues:
+				if AddAll:
+					break
+				elif f.tags.has(v) or\
+					 ( v.startswith('-') and not f.tags.has(v[1:]) ):
+					AddV = True
+				else:
+					AddV = False
+					break
+			if AddAll or AddV:
 				Append(_MenuItems[i])
 			f.unlock()
 	def ChooseMenuItem(self, i):
