@@ -37,6 +37,8 @@ ID_UNLOCK_QUESTION = wx.NewId()
 ID_TOGGLE_LOCK_QUESTION = wx.NewId()
 ID_SELECT_TAG_SEARCH = wx.NewId()
 ID_SELECT_TAG_SEARCH_MENU = wx.NewId()
+ID_LEFT_TAG_SEARCH_RESULT = wx.NewId()
+ID_RIGHT_TAG_SEARCH_RESULT = wx.NewId()
 KEYBIND_IDS = {
 	'exit'                        : ID_EMERGENCY_EXIT             ,
 	'flush_changes'               : ID_FILE_UPDATE_FORCE          ,
@@ -71,7 +73,9 @@ KEYBIND_IDS = {
 	'unlock_question'             : ID_UNLOCK_QUESTION            ,
 	'toggle_question_lock'        : ID_TOGGLE_LOCK_QUESTION       ,
 	'select_tag_search'           : ID_SELECT_TAG_SEARCH          ,
-	'select_tag_search_menu'      : ID_SELECT_TAG_SEARCH_MENU
+	'select_tag_search_menu'      : ID_SELECT_TAG_SEARCH_MENU     ,
+	'left_tag_search_result'      : ID_LEFT_TAG_SEARCH_RESULT     ,
+	'right_tag_search_result'     : ID_RIGHT_TAG_SEARCH_RESULT
 }
 KEYBIND_MESSAGES = {
 	ID_EMERGENCY_EXIT              : 'EmergencyExit'          ,
@@ -107,7 +111,9 @@ KEYBIND_MESSAGES = {
 	ID_UNLOCK_QUESTION             : 'UnlockQuestion'         ,
 	ID_TOGGLE_LOCK_QUESTION        : 'ToggleLockQuestion'     ,
 	ID_SELECT_TAG_SEARCH           : 'FocusTagSearch'         ,
-	ID_SELECT_TAG_SEARCH_MENU      : 'FocusTagSearchMenu'
+	ID_SELECT_TAG_SEARCH_MENU      : 'FocusTagSearchMenu'     ,
+	ID_LEFT_TAG_SEARCH_RESULT      : 'LeftTagSearchImage'     ,
+	ID_RIGHT_TAG_SEARCH_RESULT     : 'RightTagSearchImage'
 }
 
 class KeyHandlerError(Exception):
@@ -149,6 +155,8 @@ class KeyHandler(wx.Object):
 		self.ToggleLockQuestionItem = wx.MenuItem(id=wx.NewId(), text="ToggleLockQuestion", helpString="If 'lock_question' is in effect, disable it. If not, enable it.")
 		self.FocusTagSearchItem = wx.MenuItem(id=wx.NewId(), text="FocusTagSearch", helpString="Focus on the tag search entry.")
 		self.FocusTagSearchMenuItem = wx.MenuItem(id=wx.NewId(), text="FocusTagSearchMenu", helpString="Open and focus on the tag search menu.")
+		self.LeftTagSearchImageItem = wx.MenuItem(id=wx.NewId(), text="LeftTagSearchImage", helpString="Change to the previous tag search results image, relative to the currently loaded image.")
+		self.RightTagSearchImageItem = wx.MenuItem(id=wx.NewId(), text="RightTagSearchImage", helpString="Change to the next tag search results image, relative to the currently loaded image.")
 		self.MenuItems = {'exit'                        : self.EmergencyExitItem                ,
 						  'flush_changes'               : self.FileUpdateForceItem              ,
 						  'left_image'                  : self.LeftImageItem                    ,
@@ -181,8 +189,10 @@ class KeyHandler(wx.Object):
 						  'lock_question'               : self.LockQuestionItem                 ,
 						  'unlock_question'             : self.UnlockQuestionItem               ,
 						  'toggle_question_lock'        : self.ToggleLockQuestionItem           ,
-						  'select_tag_search'      : self.FocusTagSearchItem                    ,
-						  'select_tag_search_menu' : self.FocusTagSearchMenuItem
+						  'select_tag_search'           : self.FocusTagSearchItem               ,
+						  'select_tag_search_menu'      : self.FocusTagSearchMenuItem           ,
+						  'left_tag_search_result'      : self.LeftTagSearchImageItem           ,
+						  'right_tag_search_result'     : self.RightTagSearchImageItem
 						 }
 		self.entries = []
 	def _OnEntry(self, e):
@@ -224,6 +234,8 @@ class KeyHandler(wx.Object):
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_TOGGLE_LOCK_QUESTION)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_SELECT_TAG_SEARCH)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_SELECT_TAG_SEARCH_MENU)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_LEFT_TAG_SEARCH_RESULT)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_RIGHT_TAG_SEARCH_RESULT)
 	def add(self, text):
 		"Add a keybind to the handler."
 		values = text.split()

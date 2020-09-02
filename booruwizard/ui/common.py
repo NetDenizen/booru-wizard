@@ -164,6 +164,8 @@ class PathEntry(SearchEntry):
 class TagSearch(SearchEntry):
 	def UpdateMenu(self):
 		"Set the contents of PathMenu based on the contents of PathEntry."
+		if self._MenuUpdated:
+			return
 		_menu = self._menu
 		_MenuItems = self._MenuItems
 		Remove = _menu.Remove
@@ -189,6 +191,7 @@ class TagSearch(SearchEntry):
 			if AddAll or AddV:
 				Append(_MenuItems[i])
 			f.unlock()
+		self._MenuUpdated = True
 	def ChooseMenuItem(self, i):
 		pub.sendMessage("IndexImage", message=self._MenuLookup[i])
 	def _OnMenuItemChosen(self, e):
@@ -198,28 +201,99 @@ class TagSearch(SearchEntry):
 		"Update the search menu, based on matches found in the paths array."
 		self.UpdateMenu()
 		e.Skip()
+	def _OnLeftImageButton(self, e):
+		pub.sendMessage("LeftTagSearchImage", message=None)
+		e.Skip()
+	def _OnRightImageButton(self, e):
+		pub.sendMessage("RightTagSearchImage", message=None)
+		e.Skip()
+	def _OnEntry(self, e):
+		self._MenuUpdated = False
+		e.Skip()
 	def SelfBinds(self):
 		for i in self.GetMenuItemIds():
 			self.parent.Bind(wx.EVT_MENU, self._OnMenuItemChosen, id=i)
 
 		self.parent.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self._OnSearch, id=self.entry.GetId() )
+		self.parent.Bind( wx.EVT_BUTTON, self._OnLeftImageButton, id=self.LeftImage.GetId() )
+		self.parent.Bind( wx.EVT_BUTTON, self._OnRightImageButton, id=self.RightImage.GetId() )
+		self.parent.Bind( wx.EVT_TEXT, self._OnEntry, id=self.entry.GetId() )
 	def _OnFocusEntry(self, message, arg2=None):
 		self.FocusEntry()
 	def _OnFocusMenu(self, message, arg2=None):
 		self.FocusMenu()
+	def _OnIndexImage(self, message, arg2=None):
+		"Change the image index to the one specified in the event, if possible."
+		self.pos.set(message)
+	def _OnLeftImage(self, message, arg2=None):
+		"Shift to the left (-1) position to the current pos in the images array if the pos is greater than 0. Otherwise, loop around to the last item."
+		self.pos.dec()
+	def _OnRightImage(self, message, arg2=None):
+		"Shift to the right (+1) position to the current pos in the images array if the pos is less than the length of the positions array. Otherwise, loop around to the first item."
+		self.pos.inc()
+	def _OnLeftResult(self, message, arg2=None):
+		"Go to the left (previously) available search result, given the current image."
+		self.UpdateMenu()
+		pos = self.pos.get()
+		items = self._menu.GetMenuItems()
+		left = None
+		for i in items:
+			current = self._MenuLookup[i.GetId()]
+			if pos <= current:
+				break
+			left = current
+		if left is None and len(items) > 0:
+			left = self._MenuLookup[items[-1].GetId()]
+		if left is not None:
+			pub.sendMessage("IndexImage", message=left)
+			self.LeftImage.SetFocus()
+	def _OnRightResult(self, message, arg2=None):
+		"Go to the right (next) available search result, given the current image."
+		self.UpdateMenu()
+		pos = self.pos.get()
+		items = self._menu.GetMenuItems()
+		right = None
+		chosen = None
+		for i in items:
+			right = self._MenuLookup[i.GetId()]
+			if pos < right:
+				chosen = right
+				break
+		if chosen is None and len(items) > 0:
+			chosen = self._MenuLookup[items[0].GetId()]
+		if chosen is not None:
+			pub.sendMessage("IndexImage", message=chosen)
+			self.RightImage.SetFocus()
 	def SelfPubSub(self):
 		pub.subscribe(self._OnFocusEntry, "FocusTagSearch")
 		pub.subscribe(self._OnFocusMenu, "FocusTagSearchMenu")
+		pub.subscribe(self._OnIndexImage, "IndexImage")
+		pub.subscribe(self._OnLeftImage, "LeftImage")
+		pub.subscribe(self._OnRightImage, "RightImage")
+		pub.subscribe(self._OnLeftResult, "LeftTagSearchImage")
+		pub.subscribe(self._OnRightResult, "RightTagSearchImage")
 	def __init__(self, parent, OutputFiles):
 		self._OutputFiles = OutputFiles
 		self._MenuItems = []
 		self._MenuLookup = {}
+		self._MenuUpdated = False
 		self._menu = wx.Menu()
 		self.parent = parent
+		self.pos = CircularCounter( len(self._OutputFiles.InputPaths) - 1 ) # The current image.
 		self.entry = wx.SearchCtrl(parent, style= wx.TE_NOHIDESEL) # Search box containing space-separated tags to search for.
+		self.LeftImage = wx.Button(parent, label = '<', style=wx.BU_EXACTFIT)
+		self.RightImage = wx.Button(parent, label = '>', style=wx.BU_EXACTFIT)
 		self.EntryTip = wx.ToolTip("Tag search field. Enter space-separated tags to update menu. Menu items will switch to the associated image.")
+		self.LeftImageTip = wx.ToolTip("Previous image in search results.")
+		self.RightImageTip = wx.ToolTip("Next image in search results.")
+
+		if len(self._OutputFiles.InputPaths) <= 1:
+			self.LeftImage.Disable()
+			self.RightImage.Disable()
 
 		self.entry.SetToolTip(self.EntryTip)
+		self.LeftImage.SetToolTip(self.LeftImageTip)
+		self.RightImage.SetToolTip(self.RightImageTip)
 
 		for i, p in enumerate(OutputFiles.InputPaths):
 			ItemId = wx.NewId()

@@ -393,13 +393,22 @@ class ImagePanel(wx.Panel):
 		self.ZoomActualButtonTip = wx.ToolTip( ''.join( ( 'Zoom to actual size (1.0 Zoom Ratio).', RenderThreeIfMid(' (', keybinds.get('zoom_actual_size'), ')') ) ) )
 		self.ImageSearch = TagSearch(self, OutputFiles)
 		self.ImageSearch.EntryTip = wx.ToolTip( ''.join( ( 'Tag search field. Enter space-separated tags to update menu. The image must contain all of these, or options may start with \'-\' to exclude them. Menu items will switch to the associated image.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_tag_search'), ')'), RenderThreeIfMid(' (Open Menu: ', keybinds.get('select_tag_search_menu'), ')') ) ) )
+		self.ImageSearch.LeftImageTip = wx.ToolTip( ''.join( ( 'Previous image in search results, relative to the currently loaded image.', RenderThreeIfMid(' (', keybinds.get('left_tag_search_result'), ')') ) ) )
+		self.ImageSearch.RightImageTip = wx.ToolTip( ''.join( ( 'Next image in search results, relative to the currently loaded image.', RenderThreeIfMid(' (', keybinds.get('right_tag_search_result'), ')') ) ) )
 		self.image = ImageDisplay(self, ImageQuality, ViewPort, keybinds)
+		self.ImageSearchSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.ZoomControlSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.LeftPaneSizer = wx.BoxSizer(wx.VERTICAL)
 		self.MainSizer = wx.BoxSizer(wx.HORIZONTAL)
 
 		self.ImageSearch.SelfBinds()
 		self.ImageSearch.SelfPubSub()
+
+		self.ImageSearchSizer.Add(self.ImageSearch.LeftImage, 0, wx.ALIGN_CENTER)
+		self.ImageSearchSizer.AddStretchSpacer(1)
+		self.ImageSearchSizer.Add(self.ImageSearch.entry, 50, wx.ALIGN_CENTER | wx.EXPAND)
+		self.ImageSearchSizer.AddStretchSpacer(1)
+		self.ImageSearchSizer.Add(self.ImageSearch.RightImage, 0, wx.ALIGN_CENTER)
 
 		self.ZoomControlSizer.Add(self.ZoomInButton, 10, wx.ALIGN_CENTER_VERTICAL)
 		self.ZoomControlSizer.AddStretchSpacer(1)
@@ -423,7 +432,7 @@ class ImagePanel(wx.Panel):
 		self.LeftPaneSizer.AddStretchSpacer(1)
 		self.LeftPaneSizer.Add(self.ZoomControlSizer, 0, wx.ALIGN_BOTTOM | wx.ALIGN_LEFT | wx.BOTTOM | wx.LEFT)
 		self.LeftPaneSizer.AddStretchSpacer(4)
-		self.LeftPaneSizer.Add(self.ImageSearch.entry, 0, wx.ALIGN_BOTTOM | wx.ALIGN_LEFT | wx.BOTTOM | wx.LEFT | wx.EXPAND)
+		self.LeftPaneSizer.Add(self.ImageSearchSizer, 0, wx.ALIGN_BOTTOM | wx.ALIGN_LEFT | wx.BOTTOM | wx.LEFT | wx.EXPAND)
 		self.LeftPaneSizer.AddStretchSpacer(2)
 
 		self.MainSizer.Add(self.LeftPaneSizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.EXPAND)
@@ -448,6 +457,8 @@ class ImagePanel(wx.Panel):
 		self.ZoomFitButton.SetToolTip(self.ZoomFitButtonTip)
 		self.ZoomActualButton.SetToolTip(self.ZoomActualButtonTip)
 		self.ImageSearch.entry.SetToolTip(self.ImageSearch.EntryTip)
+		self.ImageSearch.LeftImage.SetToolTip(self.ImageSearch.LeftImageTip)
+		self.ImageSearch.RightImage.SetToolTip(self.ImageSearch.RightImageTip)
 
 		self.pos = CircularCounter(len(self.bitmaps.images) - 1)
 		if self.image.quality == wx.IMAGE_QUALITY_HIGH:
