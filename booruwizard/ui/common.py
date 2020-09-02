@@ -188,7 +188,7 @@ class TagSearch(SearchEntry):
 				else:
 					AddV = False
 					break
-			if AddAll or AddV:
+			if (AddAll or AddV) and i != self.pos.get():
 				Append(_MenuItems[i])
 			f.unlock()
 		self._MenuUpdated = True
@@ -224,12 +224,15 @@ class TagSearch(SearchEntry):
 		self.FocusMenu()
 	def _OnIndexImage(self, message, arg2=None):
 		"Change the image index to the one specified in the event, if possible."
+		self._MenuUpdated = False
 		self.pos.set(message)
 	def _OnLeftImage(self, message, arg2=None):
 		"Shift to the left (-1) position to the current pos in the images array if the pos is greater than 0. Otherwise, loop around to the last item."
+		self._MenuUpdated = False
 		self.pos.dec()
 	def _OnRightImage(self, message, arg2=None):
 		"Shift to the right (+1) position to the current pos in the images array if the pos is less than the length of the positions array. Otherwise, loop around to the first item."
+		self._MenuUpdated = False
 		self.pos.inc()
 	def _OnLeftResult(self, message, arg2=None):
 		"Go to the left (previously) available search result, given the current image."
