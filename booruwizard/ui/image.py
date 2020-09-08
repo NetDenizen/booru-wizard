@@ -406,9 +406,9 @@ class ImagePanel(wx.Panel):
 
 		self.ImageSearchSizer.Add(self.ImageSearch.LeftImage, 0, wx.ALIGN_CENTER)
 		self.ImageSearchSizer.AddStretchSpacer(1)
-		self.ImageSearchSizer.Add(self.ImageSearch.entry, 50, wx.ALIGN_CENTER | wx.EXPAND)
-		self.ImageSearchSizer.AddStretchSpacer(1)
 		self.ImageSearchSizer.Add(self.ImageSearch.RightImage, 0, wx.ALIGN_CENTER)
+		self.ImageSearchSizer.AddStretchSpacer(1)
+		self.ImageSearchSizer.Add(self.ImageSearch.entry, 50, wx.ALIGN_CENTER | wx.EXPAND)
 
 		self.ZoomControlSizer.Add(self.ZoomInButton, 10, wx.ALIGN_CENTER_VERTICAL)
 		self.ZoomControlSizer.AddStretchSpacer(1)
