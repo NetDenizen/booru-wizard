@@ -1,31 +1,34 @@
 import os.path
 import argparse
 import csv
+from collections import OrderedDict
+
 from booruwizard.lib.template import parser, OptionQuestion
 
 class TagEntry:
 	def AddDesc(self, desc):
-		if desc:
-			self.descs.add(desc)
+		if desc and desc not in self.descs:
+			self.descs.append(desc)
 	def AddAliases(self, aliases):
 		for a in aliases:
-			self.aliases.add(a)
+			if a not in self.aliases:
+				self.aliases.append(a)
 	def AddCategory(self, category):
-		if category:
-			self.categories.add(category)
+		if category and category not in self.categories:
+			self.categories.append(category)
 	def GetNameString(self):
 		return self.name
 	def GetDescsString(self):
-		return ', '.join( list(self.descs) )
+		return ', '.join(self.descs)
 	def GetAliasesString(self):
-		return ' '.join( list(self.aliases) )
+		return ' '.join(self.aliases)
 	def GetCategoriesString(self):
-		return ', '.join( list(self.categories) )
+		return ', '.join(self.categories)
 	def __init__(self, name):
 		self.name = name
-		self.descs = set()
-		self.aliases = set()
-		self.categories = set()
+		self.descs = []
+		self.aliases = []
+		self.categories = []
 
 class TagsRecord:
 	def _WriteRow(self, t):
@@ -52,7 +55,7 @@ class TagsRecord:
 	def __init__(self, WriteCategories, writer):
 		self.WriteCategories = WriteCategories
 		self.writer = writer
-		self.tags = {}
+		self.tags = OrderedDict()
 
 def ParseCommandLine():
 	"Function to create a command line argument parser, and return the args object from it."
