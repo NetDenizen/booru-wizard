@@ -3,6 +3,57 @@ import argparse
 import csv
 from booruwizard.lib.template import parser, OptionQuestion
 
+class TagEntry:
+	def AddDesc(self, desc):
+		if desc:
+			self.descs.add(desc)
+	def AddAliases(self, aliases):
+		for a in aliases:
+			self.aliases.add(a)
+	def AddCategory(self, category):
+		if category:
+			self.categories.add(category)
+	def GetNameString(self):
+		return self.name
+	def GetDescsString(self):
+		return ', '.join( list(self.descs) )
+	def GetAliasesString(self):
+		return ' '.join( list(self.aliases) )
+	def GetCategoriesString(self):
+		return ', '.join( list(self.categories) )
+	def __init__(self, name):
+		self.name = name
+		self.descs = set()
+		self.aliases = set()
+		self.categories = set()
+
+class TagsRecord:
+	def _WriteRow(self, t):
+		row = {}
+		row['Tag Name'] = t.GetNameString()
+		row['Tag Description'] = t.GetDescsString()
+		if self.WriteCategories:
+			row['Categories'] = t.GetCategoriesString()
+		row['Tag Aliases To'] = t.GetAliasesString()
+		self.writer.writerow(row)
+	def write(self):
+		for n, t in self.tags.items():
+			self._WriteRow(t)
+	def AddTag(self, name, desc, aliases, category):
+		if not name:
+			return
+		t = self.tags.get(name.lower(), None)
+		if t is None:
+			t = TagEntry(name)
+			self.tags[name] = t
+		t.AddDesc(desc)
+		t.AddAliases(aliases)
+		t.AddCategory(category)
+	def __init__(self, WriteCategories, writer):
+		self.WriteCategories = WriteCategories
+		self.writer = writer
+		self.tags = {}
+
 def ParseCommandLine():
 	"Function to create a command line argument parser, and return the args object from it."
 	ArgParser = argparse.ArgumentParser(description='Get command line arguments.')
@@ -10,12 +61,14 @@ def ParseCommandLine():
 	ArgParser.add_argument('--output', '-o', action='store', default='', required=True, help='Path to the JSON output directory. If none, then copy it will be copied from "--json-input".')
 	ArgParser.add_argument('--overwrite', '-O', action='store_true', help='Overwrite the output file if it already exists.')
 	ArgParser.add_argument('--trim-desc', '-t', action='store_true', help='Remove whitespace, dashes, and the name of the tag from its description text.')
+	ArgParser.add_argument('--suppress-categories', '-c', action='store_true', help="Do not include a 'categories' field with the output.")
 	ArgParser.add_argument('--suppress-question-tags', '-1', action='store_true', help='Do not write those tags which are part of wizard questions (though they may be included from elsewhere).')
 	ArgParser.add_argument('--suppress-nameless-tags', '-2', action='store_true', help='Do not write those tags which are used if a name is unspecified for an image (though they may be included from elsewhere).')
 	ArgParser.add_argument('--suppress-sourceless-tags', '-3', action='store_true', help='Do not write those tags which are used if a source is unspecified for an image (though they may be included from elsewhere).')
 	ArgParser.add_argument('--suppress-tagless-tags', '-4', action='store_true', help='Do not write those tags which are used if other tags are unspecified for an image (though they may be included from elsewhere).')
 	ArgParser.add_argument('--suppress-image-condition-tags', '-5', action='store_true', help='Do not write those tags which are used if a source is unspecified for an image (though they may be included from elsewhere).')
-	ArgParser.add_argument('--suppress-alias-tags', '-6', action='store_true', help='Do not write those tags which are aliased to other tags, or used as aliases for other tags (though they may be included from elsewhere).')
+	ArgParser.add_argument('--suppress-alias-source-tags', '-6', action='store_true', help='Do not write those tags which are aliased to other tags (though they may be included from elsewhere).')
+	ArgParser.add_argument('--suppress-alias-destination-tags', '-7', action='store_true', help='Do not write those tags which are used as aliases for other tags (though they may be included from elsewhere).')
 	return ArgParser.parse_args()
 
 def OpenOutputFile(path, overwrite):
@@ -34,9 +87,9 @@ def ParseInputFile(path):
 def GetConditionalTags(config, name):
 	found = config.ConditionalTags.AllNodes.GetNode( name.lower() )
 	if found:
-		return ' '.join( found.GetChildNames([]) )
+		return found.GetChildNames([])
 	else:
-		return ''
+		return []
 
 def GetTrimmedDesc(text, tag, trim_desc):
 	if not trim_desc or not tag:
@@ -52,50 +105,51 @@ def GetTrimmedDesc(text, tag, trim_desc):
 			break
 	return NewText
 
-def WriteRow(AddedTags, writer, config, tag, desc):
-	TagLower = tag.lower()
-	if not TagLower or TagLower in AddedTags:
-		return
-	AddedTags.add(TagLower)
-	row = {}
-	row['Tag Name'] = TagLower
-	row['Tag Description'] = desc
-	row['Tag Aliases To'] = GetConditionalTags(config, TagLower)
-	writer.writerow(row)
-
-def WriteQuestionTags(suppress, AddedTags, config, writer, trim_desc):
+def RecordQuestionTags(suppress, record, config, trim_desc):
 	if suppress:
 		return
 	for q in config.output:
 		if not isinstance(q, OptionQuestion):
 			continue
 		for o in q.options:
-			WriteRow( AddedTags, writer, config, o.tag, GetTrimmedDesc(o.name, o.tag, trim_desc) )
+			record.AddTag(o.tag, GetTrimmedDesc(o.name, o.tag, trim_desc), GetConditionalTags(config, o.tag), 'Question Tags')
 
-def WriteXTags(suppress, AddedTags, config, X, writer):
+def RecordXTags(suppress, record, config, X, category):
 	if suppress:
 		return
 	for t in X:
-		WriteRow(AddedTags, writer, config, t, '')
+		record.AddTag(t, '', GetConditionalTags(config, t), category)
 
-def WriteNamelessTags(suppress, AddedTags, config, writer):
-	WriteXTags(suppress, AddedTags, config, config.NamelessTags.ReturnStringList(), writer)
+def RecordNamelessTags(suppress, record, config):
+	RecordXTags(suppress, record, config, config.NamelessTags.ReturnStringList(), 'Nameless Tags')
 
-def WriteSourcelessTags(suppress, AddedTags, config, writer):
-	WriteXTags(suppress, AddedTags, config, config.SourcelessTags.ReturnStringList(), writer)
+def RecordSourcelessTags(suppress, record, config):
+	RecordXTags(suppress, record, config, config.SourcelessTags.ReturnStringList(), 'Sourceless Tags')
 
-def WriteTaglessTags(suppress, AddedTags, config, writer):
-	WriteXTags(suppress, AddedTags, config, config.TaglessTags.ReturnStringList(), writer)
+def RecordTaglessTags(suppress, record, config):
+	RecordXTags(suppress, record, config, config.TaglessTags.ReturnStringList(), 'Tagless Tags')
 
-def WriteImageConditionTags(suppress, AddedTags, config, writer):
+def RecordImageConditionTags(suppress, record, config):
 	if suppress:
 		return
 	for c in config.ImageConditions:
 		for t in c.TagString.split():
-			WriteRow(AddedTags, writer, config, t, '')
+			record.AddTag(t, '', GetConditionalTags(config, t), 'Image Condition Tags')
 
-def WriteAliasTags(suppress, AddedTags, config, writer):
-	WriteXTags(suppress, AddedTags, config, config.ConditionalTags.AllNodes.GetChildNames([]), writer)
+def RecordAliasSourceTags(suppress, record, config):
+	if suppress:
+		return
+	for n in config.ConditionalTags.AllNodes.nodes:
+		if n.nodes:
+			record.AddTag(n.name, '', GetConditionalTags(config, n.name), 'Alias Source Tags')
+
+def RecordAliasDestinationTags(suppress, record, config):
+	if suppress:
+		return
+	for n in config.ConditionalTags.AllNodes.nodes:
+		if n.nodes:
+			for cn in n.nodes:
+				record.AddTag(cn.name, '', GetConditionalTags(config, cn.name), 'Alias Destination Tags')
 
 def main():
 	args = ParseCommandLine()
@@ -103,17 +157,23 @@ def main():
 	config = ParseInputFile(args.input)
 	handle = OpenOutputFile(args.output, args.overwrite)
 
-	fieldnames = ['Tag Name', 'Tag Description', 'Tag Aliases To']
+	if not args.suppress_categories:
+		fieldnames = ['Tag Name', 'Tag Description', 'Categories', 'Tag Aliases To']
+	else:
+		fieldnames = ['Tag Name', 'Tag Description', 'Tag Aliases To']
+
 	writer = csv.DictWriter(handle, fieldnames)
 	writer.writeheader()
 
-	AddedTags = set()
-	WriteQuestionTags(args.suppress_question_tags, AddedTags, config, writer, args.trim_desc)
-	WriteNamelessTags(args.suppress_nameless_tags, AddedTags, config, writer)
-	WriteSourcelessTags(args.suppress_sourceless_tags, AddedTags, config, writer)
-	WriteTaglessTags(args.suppress_tagless_tags, AddedTags, config, writer)
-	WriteImageConditionTags(args.suppress_image_condition_tags, AddedTags, config, writer)
-	WriteAliasTags(args.suppress_alias_tags, AddedTags, config, writer)
+	record = TagsRecord(not args.suppress_categories, writer)
+	RecordQuestionTags(args.suppress_question_tags, record, config, args.trim_desc)
+	RecordNamelessTags(args.suppress_nameless_tags, record, config)
+	RecordSourcelessTags(args.suppress_sourceless_tags, record, config)
+	RecordTaglessTags(args.suppress_tagless_tags, record, config)
+	RecordImageConditionTags(args.suppress_image_condition_tags, record, config)
+	RecordAliasSourceTags(args.suppress_alias_source_tags, record, config)
+	RecordAliasDestinationTags(args.suppress_alias_destination_tags, record, config)
+	record.write()
 	handle.close()
 
 if __name__ == '__main__':
