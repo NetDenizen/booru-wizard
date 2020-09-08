@@ -10,6 +10,12 @@ def ParseCommandLine():
 	ArgParser.add_argument('--output', '-o', action='store', default='', required=True, help='Path to the JSON output directory. If none, then copy it will be copied from "--json-input".')
 	ArgParser.add_argument('--overwrite', '-O', action='store_true', help='Overwrite the output file if it already exists.')
 	ArgParser.add_argument('--trim-desc', '-t', action='store_true', help='Remove whitespace, dashes, and the name of the tag from its description text.')
+	ArgParser.add_argument('--suppress-question-tags', '-1', action='store_true', help='Do not write those tags which are part of wizard questions (though they may be included from elsewhere).')
+	ArgParser.add_argument('--suppress-nameless-tags', '-2', action='store_true', help='Do not write those tags which are used if a name is unspecified for an image (though they may be included from elsewhere).')
+	ArgParser.add_argument('--suppress-sourceless-tags', '-3', action='store_true', help='Do not write those tags which are used if a source is unspecified for an image (though they may be included from elsewhere).')
+	ArgParser.add_argument('--suppress-tagless-tags', '-4', action='store_true', help='Do not write those tags which are used if other tags are unspecified for an image (though they may be included from elsewhere).')
+	ArgParser.add_argument('--suppress-image-condition-tags', '-5', action='store_true', help='Do not write those tags which are used if a source is unspecified for an image (though they may be included from elsewhere).')
+	ArgParser.add_argument('--suppress-alias-tags', '-6', action='store_true', help='Do not write those tags which are aliased to other tags, or used as aliases for other tags (though they may be included from elsewhere).')
 	return ArgParser.parse_args()
 
 def OpenOutputFile(path, overwrite):
@@ -57,33 +63,39 @@ def WriteRow(AddedTags, writer, config, tag, desc):
 	row['Tag Aliases To'] = GetConditionalTags(config, TagLower)
 	writer.writerow(row)
 
-def WriteQuestionTags(AddedTags, config, writer, trim_desc):
+def WriteQuestionTags(suppress, AddedTags, config, writer, trim_desc):
+	if suppress:
+		return
 	for q in config.output:
 		if not isinstance(q, OptionQuestion):
 			continue
 		for o in q.options:
 			WriteRow( AddedTags, writer, config, o.tag, GetTrimmedDesc(o.name, o.tag, trim_desc) )
 
-def WriteXTags(AddedTags, config, X, writer):
+def WriteXTags(suppress, AddedTags, config, X, writer):
+	if suppress:
+		return
 	for t in X:
 		WriteRow(AddedTags, writer, config, t, '')
 
-def WriteNamelessTags(AddedTags, config, writer):
-	WriteXTags(AddedTags, config, config.NamelessTags.ReturnStringList(), writer)
+def WriteNamelessTags(suppress, AddedTags, config, writer):
+	WriteXTags(suppress, AddedTags, config, config.NamelessTags.ReturnStringList(), writer)
 
-def WriteSourcelessTags(AddedTags, config, writer):
-	WriteXTags(AddedTags, config, config.SourcelessTags.ReturnStringList(), writer)
+def WriteSourcelessTags(suppress, AddedTags, config, writer):
+	WriteXTags(suppress, AddedTags, config, config.SourcelessTags.ReturnStringList(), writer)
 
-def WriteTaglessTags(AddedTags, config, writer):
-	WriteXTags(AddedTags, config, config.TaglessTags.ReturnStringList(), writer)
+def WriteTaglessTags(suppress, AddedTags, config, writer):
+	WriteXTags(suppress, AddedTags, config, config.TaglessTags.ReturnStringList(), writer)
 
-def WriteImageConditionTags(AddedTags, config, writer):
+def WriteImageConditionTags(suppress, AddedTags, config, writer):
+	if suppress:
+		return
 	for c in config.ImageConditions:
 		for t in c.TagString.split():
 			WriteRow(AddedTags, writer, config, t, '')
 
-def WriteAliasTags(AddedTags, config, writer):
-	WriteXTags(AddedTags, config, config.ConditionalTags.AllNodes.GetChildNames([]), writer)
+def WriteAliasTags(suppress, AddedTags, config, writer):
+	WriteXTags(suppress, AddedTags, config, config.ConditionalTags.AllNodes.GetChildNames([]), writer)
 
 def main():
 	args = ParseCommandLine()
@@ -96,12 +108,12 @@ def main():
 	writer.writeheader()
 
 	AddedTags = set()
-	WriteQuestionTags(AddedTags, config, writer, args.trim_desc)
-	WriteNamelessTags(AddedTags, config, writer)
-	WriteSourcelessTags(AddedTags, config, writer)
-	WriteTaglessTags(AddedTags, config, writer)
-	WriteImageConditionTags(AddedTags, config, writer)
-	WriteAliasTags(AddedTags, config, writer)
+	WriteQuestionTags(args.suppress_question_tags, AddedTags, config, writer, args.trim_desc)
+	WriteNamelessTags(args.suppress_nameless_tags, AddedTags, config, writer)
+	WriteSourcelessTags(args.suppress_sourceless_tags, AddedTags, config, writer)
+	WriteTaglessTags(args.suppress_tagless_tags, AddedTags, config, writer)
+	WriteImageConditionTags(args.suppress_image_condition_tags, AddedTags, config, writer)
+	WriteAliasTags(args.suppress_alias_tags, AddedTags, config, writer)
 	handle.close()
 
 if __name__ == '__main__':
