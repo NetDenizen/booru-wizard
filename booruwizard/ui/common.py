@@ -84,7 +84,7 @@ class PathEntry(SearchEntry):
 		if EntryValue in self._paths:
 			AddAll = True
 		for i, s in enumerate(self._paths):
-			if s != EntryValue and (AddAll or EntryValue in s):
+			if AddAll or EntryValue in s:
 				Append(_MenuItems[i])
 	def UpdateAutocomplete(self):
 		"Try to autocomplete the contents of the path entry to a complete string."
@@ -188,7 +188,7 @@ class TagSearch(SearchEntry):
 				else:
 					AddV = False
 					break
-			if (AddAll or AddV) and i != self.pos.get():
+			if AddAll or AddV:
 				Append(_MenuItems[i])
 			f.unlock()
 		self._MenuUpdated = True
