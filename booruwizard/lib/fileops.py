@@ -54,7 +54,7 @@ SAFETY_VALUES_LOOKUP = {
 # A single managed file and its exception
 class FileOpError(Exception):
 	def __init__(self, message, errno, strerror):
-		super().__init__( ''.join( (message, ' [errno ', errno, ']: ', strerror) ) )
+		super().__init__( ''.join( (message, ' [errno ', str(errno), ']: ', strerror) ) )
 
 class ManagedFile:
 	def __init__(self, OutputDir, path, IsChangedCallback, DataCallback, ReserveCallback, TimerCallback):
