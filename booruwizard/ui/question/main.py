@@ -452,20 +452,26 @@ class BulkTagger(wx.Panel):
 		RemoveTags = tuple( ( e.strip() for e in self.RemoveEntry.GetValue().split() ) )
 		AddTags = tuple( ( e.strip() for e in self.AddEntry.GetValue().split() ) )
 		EnableRemove = False
-		EnableConditional = False
+		EnableReplace = False
+		EnableAlias = False
 		EnableAdd = False
 		for i in self.indices:
 			f = self.OutputFiles[i]
+			CurrentHasRemove = False
+			CurrentHasAdd = False
 			f.lock()
 			if f.tags.HasAnyOfStringList(RemoveTags):
 				EnableRemove = True
+				CurrentHasRemove = True
 			if not f.tags.HasAllOfStringList(AddTags):
 				EnableAdd = True
+				CurrentHasAdd = True
 			f.unlock()
-			if EnableRemove and EnableAdd:
-				EnableConditional = True
+			if CurrentHasRemove and CurrentHasAdd:
+				EnableAlias = True
+				EnableReplace = True
 				break
-		self._SetActionButtons(EnableRemove, EnableConditional, EnableConditional, EnableAdd)
+		self._SetActionButtons(EnableRemove, EnableReplace, EnableAlias, EnableAdd)
 	def _ProcessNumbers(self):
 		"Get list of indices from the NumberEntry, or disable actions on failure."
 		output = []
