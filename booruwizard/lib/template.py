@@ -56,6 +56,8 @@ class PairKey(Enum):
 	CUSTOM_TAGS                   = 37
 	BLANK_QUESTION                = 38
 	NATIVE_TAGS                   = 39
+	TAG_CHECKER                   = 40
+	TAG_CHECKER_SEPARATORS        = 41
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 
 PAIR_KEY_NAMES = {}
@@ -197,7 +199,7 @@ class QuestionType(Enum):
 	CUSTOM_TAGS           = 10 # Displays a pane split between an entry field, and a checklist containing the tags in that field.
 	BLANK_QUESTION        = 11 # Displays an empty pane. Use these as dividers, marked by the given prompt.
 	NATIVE_TAGS           = 12 # Displays a special SESSION_TAGS which displays all tags present in the configuration file, even if they are not selected for any images.
-
+	TAG_CHECKER           = 13 # Search for similar tags by splitting their names into segments based on the given separators. All tags are searched for the existence of all segments longer than one character from at least one other tag. Matches are displayed in the text box.
 QuestionTypeLookup = {
 	PairKey.ENTRY_QUESTION        : QuestionType.ENTRY_QUESTION,
 	PairKey.SESSION_TAGS          : QuestionType.SESSION_TAGS,
@@ -211,7 +213,8 @@ QuestionTypeLookup = {
 	PairKey.ADDED_TAGS_ENTRY      : QuestionType.ADDED_TAGS_ENTRY,
 	PairKey.CUSTOM_TAGS           : QuestionType.CUSTOM_TAGS,
 	PairKey.BLANK_QUESTION        : QuestionType.BLANK_QUESTION,
-	PairKey.NATIVE_TAGS           : QuestionType.NATIVE_TAGS
+	PairKey.NATIVE_TAGS           : QuestionType.NATIVE_TAGS,
+	PairKey.TAG_CHECKER           : QuestionType.TAG_CHECKER
 }
 
 class OptionQuestionType(Enum):
@@ -233,6 +236,11 @@ class SourceQuestion(question):
 		super().__init__(ThisType, text)
 		self.DefaultPattern = []
 		self.DefaultReplacement = []
+
+class TagChecker(question):
+	def __init__(self, ThisType, text):
+		super().__init__(ThisType, text)
+		self.DefaultSeparators = ""
 
 class option:
 	def __init__(self, name, tag):
@@ -342,6 +350,7 @@ class ParserState(Enum):
 	ALIAS_TO        = 4 # When we added the tags to alias to and are waiting for the tags to alias from.
 	SOURCE_QUESTION = 5 # When we are in a SOURCE_QUESTION.
 	IMAGE_CONDITION = 6 # When we have processed an IMAGE_CONDITION_CONDITION and are waiting for a IMAGE_CONDITION_TAGS.
+	TAG_CHECKER     = 7 # When we have processed a TAG_CHECKER and are waiting for TAG_CHECKER_SEPARATORS tags.
 
 RE_HUMANSIZE = re.compile('^([0-9.]+)[ \t]*([a-zA-Z]*)$')
 SIZE_SPECIFIERS = {'kb'        : 1000.0,
@@ -409,7 +418,8 @@ class parser:
 	def _IsOptionQuestionPrepared(self):
 		"Return True if the state is NORMAL or if the state is OPTION_QUESTION and there is at least one option entry in its array."
 		if self._state == ParserState.NORMAL or\
-		   self._state == ParserState.SOURCE_QUESTION:
+		   self._state == ParserState.SOURCE_QUESTION or\
+		   self._state == ParserState.TAG_CHECKER:
 			return True
 		if self._state == ParserState.OPTION_NAME or\
 		   self._state == ParserState.ALIAS_FROM  or\
@@ -502,6 +512,16 @@ class parser:
 			self._state = ParserState.NORMAL
 		else:
 			raise ParserError("Image condition tags added when not in an image condition.", token.line, token.col)
+	def _AddTagChecker(self, token):
+		"Add a SOURCE_QUESTION to the end of output"
+		self._AddQuestion(TagChecker, token)
+		self._state = ParserState.TAG_CHECKER
+	def _AddTagCheckerSeparators(self, token):
+		#TODO: Rewrite?
+		if self._state == ParserState.TAG_CHECKER:
+			self.output[-1].DefaultSeparators = token.value
+		else:
+			raise ParserError("TAG_CHECKER_SEPARATORS set when not in a TAG_CHECKER.", token.line, token.col)
 	def _SetFromLookup(self, lookup, token, errmsg, setter):
 		found = lookup.get(token.value.lower(), None)
 		if found is None:
@@ -594,6 +614,10 @@ class parser:
 			self._AddImageConditionCondition(token)
 		elif token.key == PairKey.IMAGE_CONDITION_TAGS:
 			self._AddImageConditionTags(token)
+		elif token.key == PairKey.TAG_CHECKER:
+			self._AddTagChecker(token)
+		elif token.key == PairKey.TAG_CHECKER_SEPARATORS:
+			self._AddTagCheckerSeparators(token)
 		else:
 			raise ParserError("Unhandled token.", token.line, token.col)
 	def parse(self, string):

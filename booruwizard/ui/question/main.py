@@ -900,6 +900,52 @@ class BlankQuestion(wx.Panel):
 		#self.tooltip = wx.ToolTip("This question is blank.")
 		#self.SetToolTip(self.tooltip)
 
+class TagChecker(wx.Panel):
+	def UpdateChoices(self):
+		self.finder.FindNames() # TODO: Handle this in a callback local to the class?
+		self.display.ChangeValue( '\n'.join(self.finder.FoundNames) )
+	def _OnFindButton(self, e):
+		self.UpdateChoices()
+		e.Skip()
+	def _OnEntryChange(self, e):
+		self.finder.SetUpdateNeeded()
+		e.Skip()
+	def load(self, OutputFile):
+		"Initialize the question for a certain case."
+		pass
+	def clear(self):
+		"Clear the question for the given case."
+		pass
+	def disp(self):
+		"Display the updated question for the given case."
+		self.finder.disp()
+	#def _OnFileUpdatePending(self, message, arg2=None):
+	#	wx.CallAfter(self.first.SetUpdateNeeded)
+	def __init__(self, parent, TagsTracker, q):
+		wx.Panel.__init__(self, parent=parent)
+
+		self.finder = SimilarTagsFinder(self, TagsTracker)
+		self.display = wx.TextCtrl(self, style= wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_NOHIDESEL)
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.finder, 0, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.display, 100, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
+		self.SetSizer(self.sizer)
+
+		self.FinderTip = wx.ToolTip("Determine how similar tags should be found, here.")
+		self.finder.SetToolTip(self.FinderTip)
+		self.DisplayTip = wx.ToolTip("Tags found by the search are here. Not editable.")
+		self.display.SetToolTip(self.DisplayTip)
+
+		self.Bind( wx.EVT_TEXT, self._OnEntryChange, id=self.finder.SeparatorsEntry.GetId() )
+		self.Bind( wx.EVT_BUTTON, self._OnFindButton, id=self.finder.FindButton.GetId() )
+
+		#pub.subscribe(self._OnFileUpdatePending, "FileUpdatePending")
+
+		self.finder.SeparatorsEntry.SetValue(q.DefaultSeparators)
+
 class QuestionsContainer(wx.Panel):
 	def _CurrentWidget(self):
 		"Return the current widget."
@@ -1013,6 +1059,8 @@ class QuestionsContainer(wx.Panel):
 				self.QuestionWidgets.append( BlankQuestion(self) )
 			elif q.type == QuestionType.NATIVE_TAGS:
 				self.QuestionWidgets.append( NativeTags(self, TagsTracker) )
+			elif q.type == QuestionType.TAG_CHECKER:
+				self.QuestionWidgets.append( TagChecker(self, TagsTracker, q) )
 			else:
 				#TODO: Rewrite?
 				raise ValueError() # We should never get this.

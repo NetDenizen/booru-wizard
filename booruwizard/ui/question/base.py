@@ -223,6 +223,90 @@ class SplitterBase(wx.SplitterWindow): # This class should never be used on its 
 		self.second.disp()
 		self.second.Layout()
 
+class SimilarTagsFinder(wx.Panel): # This class should never be used on its own
+	def SetFindButtonState(self):
+		if not self.UpdateNeeded or\
+		   not self.TagsTracker.tags or\
+		   not ( self.SeparatorsEntry.GetValue() or self.ExtraSegmentsEntry.GetValue() ):
+			   self.FindButton.Disable()
+		else:
+			   self.FindButton.Enable()
+	def SetUpdateNeeded(self):
+		self.UpdateNeeded = True
+		self.SetFindButtonState()
+	def ClearUpdateNeeded(self):
+		self.UpdateNeeded = False
+		self.SetFindButtonState()
+	def FindNames(self):
+		separators = self.SeparatorsEntry.GetValue().split()
+		segments = []
+		for n in self.TagsTracker.ReturnStringList():
+			for s in separators:
+				if s in n:
+					segments.append( ( n, n.split(s) ) )
+		self.FoundNames = []
+		for s in segments:
+			AnyNonEmpty = False
+			AnyLong = False
+			for ss in s[1]:
+				if len(ss) > 1:
+					AnyNonEmpty = True
+					AnyLong = True
+					break
+				elif len(ss) > 0:
+					AnyNonEmpty = True
+			if not AnyNonEmpty:
+				if s[0] not in self.FoundNames:
+					self.FoundNames.append(s[0])
+				continue
+			elif not AnyLong:
+				continue
+			AddedSelf = False
+			for n in self.TagsTracker.ReturnStringList():
+				if s[0] == n:
+					continue
+				AllIn = True
+				for ss in s[1]:
+					if ss not in n:
+						AllIn = False
+						break
+				if AllIn and n not in self.FoundNames:
+					if not AddedSelf and s[0] not in self.FoundNames:
+						self.FoundNames.append(s[0])
+						AddedSelf = True
+					self.FoundNames.append(n)
+		self.ClearUpdateNeeded()
+	def load(self, OutputFile):
+		pass
+	def clear(self):
+		pass
+	def disp(self):
+		self.SetUpdateNeeded()
+	def __init__(self, parent, TagsTracker):
+		wx.Panel.__init__(self, parent=parent)
+
+		self.parent = parent
+		self.TagsTracker = TagsTracker
+		self.UpdateNeeded = True
+		self.FoundNames = []
+
+		self.SeparatorsEntryLabel = wx.StaticText(self, label='Separators:')
+		self.SeparatorsEntry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
+		self.SeparatorsEntryTip = wx.ToolTip("The names of tags are split along each of the entries from this space-separated list strings. The split parts are called 'segments'.")
+		self.FindButton = wx.Button(self, label='Find')
+		self.FindButtonTip = wx.ToolTip('Find all permutations of segments greater than one character long in the names of tags.')
+		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+		self.SeparatorsEntry.SetToolTip(self.SeparatorsEntryTip)
+		self.FindButton.SetToolTip(self.FindButtonTip)
+
+		self.sizer.Add(self.SeparatorsEntryLabel, 0, wx.ALIGN_CENTER | wx.CENTER)
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.FindButton, 0, wx.ALIGN_CENTER | wx.CENTER | wx.SHAPED)
+		self.sizer.AddStretchSpacer(1)
+		self.sizer.Add(self.SeparatorsEntry, 300, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
+		self.SetSizer(self.sizer)
+
 class ImageTagsList(TagChoiceQuestion): # This class should never be used on its own
 	def _SetIndex(self):
 		self.IndexEntry.SetValue( str(self.CurrentSource.get() + 1) )
