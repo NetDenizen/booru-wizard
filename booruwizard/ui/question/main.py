@@ -448,8 +448,8 @@ class BulkTagger(wx.Panel):
 			self.NumberEntry.write( ''.join( ( str(value), ' ' ) ) )
 	def _CalculateTagCoverage(self):
 		"Compute the valid actions based on which tags are selected for which indices."
-		RemoveTags = ( e.strip() for e in self.RemoveEntry.GetValue().split() )
-		AddTags = ( e.strip() for e in self.AddEntry.GetValue().split() )
+		RemoveTags = tuple( ( e.strip() for e in self.RemoveEntry.GetValue().split() ) )
+		AddTags = tuple( ( e.strip() for e in self.AddEntry.GetValue().split() ) )
 		EnableRemove = False
 		EnableReplace = False
 		EnableAdd = False
@@ -497,7 +497,7 @@ class BulkTagger(wx.Panel):
 							top = tmp
 						if stop > len(self.OutputFiles):
 							raise ValueError
-						output.extend( range(start - 1, stop - 1) )
+						output.extend( range(start - 1, stop) )
 					except ValueError:
 						self._DisableButtons()
 						return
