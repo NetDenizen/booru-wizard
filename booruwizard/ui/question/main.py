@@ -437,12 +437,13 @@ class BulkTagger(wx.Panel):
 			self.SwapEntryButton.Disable()
 	def disp(self):
 		self._SetSwapEntryButtonState()
-	def _SetActionButtons(self, EnableRemove, EnableReplace, EnableAdd):
+	def _SetActionButtons(self, EnableRemove, EnableReplace, EnableAlias, EnableAdd):
 		self.RemoveButton.Enable(EnableRemove)
 		self.ReplaceButton.Enable(EnableReplace)
+		self.AliasButton.Enable(EnableAlias)
 		self.AddButton.Enable(EnableAdd)
 	def _DisableButtons(self):
-		self._SetActionButtons(False, False, False)
+		self._SetActionButtons(False, False, False, False)
 	def _AddNumber(self, value):
 		if value - 1 not in self.indices:
 			self.NumberEntry.write( ''.join( ( str(value), ' ' ) ) )
@@ -451,7 +452,7 @@ class BulkTagger(wx.Panel):
 		RemoveTags = tuple( ( e.strip() for e in self.RemoveEntry.GetValue().split() ) )
 		AddTags = tuple( ( e.strip() for e in self.AddEntry.GetValue().split() ) )
 		EnableRemove = False
-		EnableReplace = False
+		EnableConditional = False
 		EnableAdd = False
 		for i in self.indices:
 			f = self.OutputFiles[i]
@@ -462,9 +463,9 @@ class BulkTagger(wx.Panel):
 				EnableAdd = True
 			f.unlock()
 			if EnableRemove and EnableAdd:
-				EnableReplace = True
+				EnableConditional = True
 				break
-		self._SetActionButtons(EnableRemove, EnableReplace, EnableAdd)
+		self._SetActionButtons(EnableRemove, EnableConditional, EnableConditional, EnableAdd)
 	def _ProcessNumbers(self):
 		"Get list of indices from the NumberEntry, or disable actions on failure."
 		output = []
@@ -547,6 +548,19 @@ class BulkTagger(wx.Panel):
 			f.FinishChange()
 		self._CalculateTagCoverage()
 		e.Skip()
+	def _OnAliasButton(self, e):
+		RemoveTags = tuple( en.strip() for en in self.RemoveEntry.GetValue().split() )
+		AddTags = tuple( en.strip() for en in self.AddEntry.GetValue().split() )
+		for i in self.indices:
+			f = self.OutputFiles[i]
+			f.PrepareChange()
+			if f.tags.HasAnyOfStringList(RemoveTags):
+				self.TagsTracker.SubStringList(f.tags.ReturnStringList(), 1)
+				f.tags.SetStringList(AddTags, 2)
+				self.TagsTracker.AddStringList(f.tags.ReturnStringList(), 1)
+			f.FinishChange()
+		self._CalculateTagCoverage()
+		e.Skip()
 	def _OnAddButton(self, e):
 		AddTags = tuple( en.strip() for en in self.AddEntry.GetValue().split() )
 		for i in self.indices:
@@ -578,9 +592,10 @@ class BulkTagger(wx.Panel):
 		self.AddEntry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL | wx.TE_MULTILINE)
 
 		# Action controls
-		self.RemoveButton = wx.Button(self, label='Remove')
-		self.ReplaceButton = wx.Button(self, label='Replace')
-		self.AddButton = wx.Button(self, label='Add')
+		self.RemoveButton = wx.Button(self, label='^ Remove')
+		self.ReplaceButton = wx.Button(self, label='> Replace >')
+		self.AliasButton = wx.Button(self, label='> Alias >')
+		self.AddButton = wx.Button(self, label='Add ^')
 
 		self._DisableButtons()
 
@@ -591,6 +606,7 @@ class BulkTagger(wx.Panel):
 		self.AddEntryTip = wx.ToolTip('Tags to be added.')
 		self.RemoveButtonTip = wx.ToolTip('Remove the tags listed in the left (remove) entry.')
 		self.ReplaceButtonTip = wx.ToolTip('If any tags listed in the left (remove) entry can be found, do the remove then add actions.')
+		self.AliasButtonTip = wx.ToolTip('If any tags listed in the left (remove) entry can be found, do the add action.')
 		self.AddButtonTip = wx.ToolTip('Add the tags listed in the right (add) entry.')
 
 		# Setting tooltips
@@ -600,6 +616,7 @@ class BulkTagger(wx.Panel):
 		self.AddEntry.SetToolTip(self.AddEntryTip)
 		self.RemoveButton.SetToolTip(self.RemoveButtonTip)
 		self.ReplaceButton.SetToolTip(self.ReplaceButtonTip)
+		self.AliasButton.SetToolTip(self.AliasButtonTip)
 		self.AddButton.SetToolTip(self.AddButtonTip)
 
 		# Event binding
@@ -611,11 +628,13 @@ class BulkTagger(wx.Panel):
 		self.Bind( wx.EVT_TEXT, self._OnUpdate, id=self.AddEntry.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnRemoveButton, id=self.RemoveButton.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnReplaceButton, id=self.ReplaceButton.GetId() )
+		self.Bind( wx.EVT_BUTTON, self._OnAliasButton, id=self.AliasButton.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnAddButton, id=self.AddButton.GetId() )
 
 		# Sizers
 		self.SelectionSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.EntrySizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.ConditionalActionSizer = wx.BoxSizer(wx.VERTICAL)
 		self.ActionSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -634,19 +653,25 @@ class BulkTagger(wx.Panel):
 		self.EntrySizer.AddStretchSpacer(1)
 		self.EntrySizer.Add(self.AddEntry, 75, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
 
+		self.ConditionalActionSizer.Add(self.ReplaceButton, 0, wx.CENTER | wx.ALIGN_CENTER | wx.SHAPED)
+		self.ConditionalActionSizer.AddStretchSpacer(1)
+		self.ConditionalActionSizer.Add(self.AliasButton, 0, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
+
+		self.ActionSizer.AddStretchSpacer(100)
 		self.ActionSizer.Add(self.RemoveButton, 0, wx.CENTER | wx.ALIGN_CENTER | wx.SHAPED)
 		self.ActionSizer.AddStretchSpacer(5)
-		self.ActionSizer.Add(self.ReplaceButton, 0, wx.CENTER | wx.ALIGN_CENTER | wx.SHAPED)
+		self.ActionSizer.Add(self.ConditionalActionSizer, 0, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
 		self.ActionSizer.AddStretchSpacer(5)
 		self.ActionSizer.Add(self.AddButton, 0, wx.CENTER | wx.ALIGN_CENTER | wx.SHAPED)
+		self.ActionSizer.AddStretchSpacer(100)
 
-		self.sizer.AddStretchSpacer(1)
-		self.sizer.Add(self.SelectionSizer, 2, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
-		self.sizer.AddStretchSpacer(1)
-		self.sizer.Add(self.EntrySizer, 25, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
-		self.sizer.AddStretchSpacer(1)
-		self.sizer.Add(self.ActionSizer, 2, wx.CENTER | wx.ALIGN_CENTER | wx.SHAPED)
-		self.sizer.AddStretchSpacer(1)
+		self.sizer.AddStretchSpacer(2)
+		self.sizer.Add(self.SelectionSizer, 4, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(2)
+		self.sizer.Add(self.EntrySizer, 50, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(2)
+		self.sizer.Add(self.ActionSizer, 18, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
+		self.sizer.AddStretchSpacer(2)
 
 		self.SetSizer(self.sizer)
 
