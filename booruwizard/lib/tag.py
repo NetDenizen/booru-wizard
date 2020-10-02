@@ -262,5 +262,5 @@ class ConditionalTagger:
 	def SetTagsInit(self, obj, target):
 		"Set tags using each entry from a dictionary."
 		for k, v in obj.items():
-			if v == 1:
+			if v > 0:
 				self.SetTags(k, target)

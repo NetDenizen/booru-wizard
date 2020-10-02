@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* Do aliases for all tags in use, when starting.
+
 * Implement TAG_CHECKER.
 
 * Implement tag search field.
