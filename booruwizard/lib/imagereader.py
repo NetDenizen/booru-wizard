@@ -142,10 +142,10 @@ class ImageReader:
 						 )
 			self._OpenImages.pop(0)
 	def get(self, idx):
-		"Return WX image object for the image managed at the index."
+		"Return the ManagedImage object for the image managed at the index."
 		return self.images[idx]
 	def load(self, idx):
-		"Return WX image object for the image managed at the index, after loading its associated image data."
+		"Return ManagedImage object for the image managed at the index, after loading its associated image data."
 		if self.images[idx].image is None:
 			self.images[idx].open()
 			self._CullSpace(self.images[idx].DataSize)
