@@ -242,6 +242,7 @@ class SimilarTagsFinder(wx.Panel): # This class should never be used on its own
 		separators = self.SeparatorsEntry.GetValue().split()
 		segments = []
 		for n in self.TagsTracker.ReturnStringList():
+			segments.append( ( n, tuple(n) ) )
 			for s in separators:
 				if s in n:
 					segments.append( ( n, n.split(s) ) )
