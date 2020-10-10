@@ -8,6 +8,7 @@ from booruwizard.lib.fileops import SAFETY_NAMES_LOOKUP, DEFAULT_SAFETY, DEFAULT
 from booruwizard.lib.tag import TagsContainer, ConditionalTagger
 from booruwizard.lib.alphabackground import DEFAULT_COLOR1_PIXEL, DEFAULT_COLOR2_PIXEL, DEFAULT_SQUARE_WIDTH
 from booruwizard.lib.viewport import DEFAULT_ZOOM_INTERVAL, DEFAULT_ZOOM_ACCEL, DEFAULT_ZOOM_ACCEL_STEPS, DEFAULT_PAN_INTERVAL
+from booruwizard.lib.netcode import DEFAULT_USER_AGENT
 
 # Generic template error definition
 class TemplateError(Exception):
@@ -58,6 +59,8 @@ class PairKey(Enum):
 	NATIVE_TAGS                   = 39
 	TAG_CHECKER                   = 40
 	TAG_CHECKER_SEPARATORS        = 41
+	SOURCE_QUESTION_BAD_ID_TAGS   = 42
+	SOURCE_QUESTION_USER_AGENT    = 43
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 
 PAIR_KEY_NAMES = {}
@@ -236,6 +239,8 @@ class SourceQuestion(question):
 		super().__init__(ThisType, text)
 		self.DefaultPattern = []
 		self.DefaultReplacement = []
+		self.BadIdTags = []
+		self.UserAgent = DEFAULT_USER_AGENT
 
 class TagChecker(question):
 	def __init__(self, ThisType, text):
@@ -348,7 +353,7 @@ class ParserState(Enum):
 	OPTION_NAME     = 2 # When we added the name of an option and are waiting for the tag.
 	ALIAS_FROM      = 3 # When we added the tags to alias from and are waiting for the tags to alias to.
 	ALIAS_TO        = 4 # When we added the tags to alias to and are waiting for the tags to alias from.
-	SOURCE_QUESTION = 5 # When we are in a SOURCE_QUESTION.
+	SOURCE_QUESTION = 5 # When we are in a SOURCE_QUESTION and are waiting for SOURCE_QUESTION_PATTERN, SOURCE_QUESTION_REPLACEMENT, SOURCE_QUESTION_BAD_ID_TAGS, SOURCE_QUESTION_USER_AGENT.
 	IMAGE_CONDITION = 6 # When we have processed an IMAGE_CONDITION_CONDITION and are waiting for a IMAGE_CONDITION_TAGS.
 	TAG_CHECKER     = 7 # When we have processed a TAG_CHECKER and are waiting for TAG_CHECKER_SEPARATORS tags.
 
@@ -501,6 +506,18 @@ class parser:
 			self.output[-1].DefaultReplacement.append(token.value)
 		else:
 			raise ParserError("SOURCE_QUESTION_REPLACEMENT added when not in a SOURCE_QUESTION.", token.line, token.col)
+	def _AddSourceQuestionBadIdTags(self, token):
+		#TODO: Rewrite?
+		if self._state == ParserState.SOURCE_QUESTION:
+			self.output[-1].BadIdTags.extend( token.value.split() )
+		else:
+			raise ParserError("SOURCE_QUESTION_BAD_ID_TAGS added when not in a SOURCE_QUESTION.", token.line, token.col)
+	def _AddSourceQuestionUserAgent(self, token):
+		#TODO: Rewrite?
+		if self._state == ParserState.SOURCE_QUESTION:
+			self.output[-1].UserAgent = token.value
+		else:
+			raise ParserError("SOURCE_QUESTION_USER_AGENT added when not in a SOURCE_QUESTION.", token.line, token.col)
 	def _AddImageConditionCondition(self, token):
 		if not self._IsOptionQuestionPrepared():
 			raise ParserError("Image condition added when in a question.", token.line, token.col)
@@ -618,6 +635,10 @@ class parser:
 			self._AddTagChecker(token)
 		elif token.key == PairKey.TAG_CHECKER_SEPARATORS:
 			self._AddTagCheckerSeparators(token)
+		elif token.key == PairKey.SOURCE_QUESTION_BAD_ID_TAGS:
+			self._AddSourceQuestionBadIdTags(token)
+		elif token.key == PairKey.SOURCE_QUESTION_USER_AGENT:
+			self._AddSourceQuestionUserAgent(token)
 		else:
 			raise ParserError("Unhandled token.", token.line, token.col)
 	def parse(self, string):

@@ -50,7 +50,7 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 		self.Sash1Pos = 0.2
 		self.top = ImageContainer(self, images, ImageQuality, OutputFiles, ViewPort, keybinds)
 		self.middle = PromptContainer(self, len(OutputFiles.InputPaths), questions, keybinds)
-		self.bottom = QuestionsContainer(self, TagsTracker, questions, OutputFiles)
+		self.bottom = QuestionsContainer(self, TagsTracker, questions, OutputFiles, images)
 
 		self.BottomTip = wx.ToolTip( ''.join( ( 'The currently loaded question', RenderThreeIfMid(' (Focus: ', keybinds.get('select_question'), ')') ) ) )
 		self.bottom.SetToolTip(self.BottomTip)

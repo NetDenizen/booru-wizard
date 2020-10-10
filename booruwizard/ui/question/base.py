@@ -517,10 +517,12 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 			self.RomanizeButton.Enable()
 		else:
 			self.RomanizeButton.Disable()
+	def SetButtonStates(self):
+		self.SetRomanizeButtonState()
 	def _OnChange(self, e):
 		"Set the value."
 		self._SetValue()
-		self.SetRomanizeButtonState()
+		self.SetButtonStates()
 		e.Skip()
 	def _OnRomanize(self, e):
 		"Replace Kana characters of selected parts of the string with their Romaji equivalents, using kanji_to_romaj, and update the tags accordingly."
@@ -547,6 +549,6 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 	def disp(self):
 		"Display the updated check question for the given case."
 		self.entry.ChangeValue( self._GetValue() )
-		self.SetRomanizeButtonState()
+		self.SetButtonStates()
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent=parent)

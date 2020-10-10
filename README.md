@@ -76,13 +76,15 @@ Dependencies should not be an issue to the end-user, since the software will be 
 
 * kanji_to_romaji3 (A Python 3 port I made of the kanji_to_romaji library, which can be found here: https://github.com/NetDenizen/kanji_to_romaji3)
 
+* saucenao-api
+
 * PyInstaller (For the officially supported build method.)
 
 To satisfy all the dependencies, run:
 
 ```
 python3 -m pip install --upgrade pip
-python3 -m pip install wxPython PyPubSub PyInstaller
+python3 -m pip install wxPython PyPubSub PyInstaller saucenao_api
 git clone https://github.com/NetDenizen/kanji_to_romaji3
 cd kanji_to_romaji3
 python3 -m pip install ./
@@ -91,7 +93,7 @@ python3 -m pip install ./
 To upgrade existing dependencies, run:
 
 ```
-python3 -m pip install --upgrade pip wxPython PyPubSub PyInstaller
+python3 -m pip install --upgrade pip wxPython PyPubSub PyInstaller saucenao_api
 git clone https://github.com/NetDenizen/kanji_to_romaji3
 cd kanji_to_romaji3
 python3 -m pip install --upgrade ./

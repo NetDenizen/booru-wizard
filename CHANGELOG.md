@@ -2,6 +2,12 @@
 
 ## TODO-TO-DO 2.0
 
+* Implement SOURCE_QUESTION_BAD_ID_TAGS and SOURCE_QUESTION_USER_AGENT.
+
+* Implement checking of source URLs in SOURCE_QUESTION.
+
+* Implement searching for the sources of images with saucenao-api in SOURCE_QUESTION.
+
 * Do aliases for all tags in use, when starting.
 
 * Implement TAG_CHECKER.

@@ -2,6 +2,13 @@
 
 import re
 
+from urllib.request import urlopen
+from urllib.parse import urlparse
+from urllib.error import URLError, HTTPError
+
+from saucenao_api import SauceNao
+from saucenao_api.errors import UnknownApiError, UnknownServerError, UnknownClientError, BadKeyError, BadFileSizeError, ShortLimitReachedError, LongLimitReachedError, SauceNaoApiError
+
 import wx
 import wx.lib.scrolledpanel
 from pubsub import pub
@@ -9,7 +16,8 @@ from pubsub import pub
 from booruwizard.lib.fileops import safety
 from booruwizard.lib.tag import TagsContainer
 from booruwizard.lib.template import QuestionType, OptionQuestionType
-from booruwizard.ui.common import CircularCounter, PathEntry
+from booruwizard.lib.netcode import HeadRequest
+from booruwizard.ui.common import CircularCounter, PathEntry, RenderThreeIfMid
 from booruwizard.ui.question.base import *
 
 class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
@@ -733,11 +741,41 @@ class SourceQuestion(SingleStringEntry):
 					self.PathFormatReplacement = PotentialReplacement
 			except (re.error, IndexError):
 				pass
+	def _SetSourceTestButtonState(self):
+		uri = urlparse( self.entry.GetValue() )
+		if uri.scheme != 'http' and uri.scheme != 'https':
+			self.BadIdChoicesLabel.SetLabel("Source URI scheme must be 'http' or 'https'.")
+			self.SourceTestButton.Disable()
+		elif not uri.netloc:
+			self.BadIdChoicesLabel.SetLabel("Source URI does not specify a domain.")
+			self.SourceTestButton.Disable()
+		elif not uri.path:
+			self.BadIdChoicesLabel.SetLabel("Source URI does not specify a path.")
+			self.SourceTestButton.Disable()
+		else:
+			self.BadIdChoicesLabel.SetLabel("Source URI ready for testing.")
+			self.SourceTestButton.Enable()
+		self.BadIdChoicesContainerSizer.Layout()
+	def _SetSourceSearchButtonState(self):
+		# TODO: Prevent further searches if results for an image are already loaded?
+		if self.images.get( self.pos.get() ).image is not None:
+			self.SourceChoicesLabel.SetLabel( ''.join( ( "Ready to search for loaded image.", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
+			self.SourceSearchButton.Enable()
+		else:
+			self.SourceChoicesLabel.SetLabel( ''.join( ( "Failed to load image for searching.", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
+			self.SourceSearchButton.Disable()
+		self.SourceChoicesContainerSizer.Layout()
 	def _SetPathFormatButtonState(self):
 		if self.PathFormatReplacement is not None:
 			self.PathFormatButton.Enable()
 		else:
 			self.PathFormatButton.Disable()
+	def SetButtonStates(self):
+		#TODO Rewrite?
+		self.SetRomanizeButtonState()
+		self._SetSourceTestButtonState()
+		self._SetSourceSearchButtonState()
+		self._SetPathFormatButtonState()
 	def _MenuItemExists(self, value, menu):
 		for i in menu.GetMenuItems():
 			if value == i.GetItemLabel():
@@ -758,18 +796,55 @@ class SourceQuestion(SingleStringEntry):
 		self._ValueGetter = self.OutputFile.GetSource
 		self._ValueSetter = self.OutputFile.SetSource
 		self._SetPathFormatReplacement()
+		self.BadIdChoices.load(OutputFile)
+	def clear(self):
+		"Clear the question for the given case."
+		self.BadIdChoices.clear()
+	def _SetSourceChoicesTip(self):
+		if self.SourceChoicesTipText is not None:
+			self.SourceChoices.UnsetToolTip()
+			self.SourceChoices.SetToolTip( wx.ToolTip(self.SourceChoicesTipText) )
+	def _UpdateSourceChoicesSelection(self):
+		SelectionIndex = 0
+		try:
+			results = self.SourceChoicesResults[self.pos.get()]
+			if results:
+				SelectionIndex = results.index( self.entry.GetValue() )
+		except ValueError:
+			pass
+		self.SourceChoices.SetSelection(SelectionIndex)
+	def _UpdateSourceChoices(self):
+		CurrentResults = self.SourceChoicesResultsNames[self.pos.get()]
+		if not CurrentResults:
+			CurrentResults = ['<CUSTOM>']
+		self.Unbind( wx.EVT_RADIOBOX, id=self.SourceChoices.GetId() )
+		self.SourceChoicesSizer.Remove(0)
+		self.SourceChoices.Destroy()
+		self.SourceChoices = wx.RadioBox(self.SourceChoicesScrollable, choices=CurrentResults, style= wx.RA_SPECIFY_ROWS | wx.BORDER_NONE)
+		self._SetSourceChoicesTip()
+		self.SourceChoicesSizer.Add(self.SourceChoices, 1, wx.ALIGN_LEFT | wx.LEFT | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
+		self.Bind( wx.EVT_RADIOBOX, self._OnSourceChoices, id=self.SourceChoices.GetId() )
+		self.MainSizer.Layout()
+		self._UpdateSourceChoicesSelection()
+	def disp(self):
+		"Display the updated check question for the given case."
+		super().disp()
+		self._UpdateSourceChoices()
+		self.BadIdChoices.disp()
+		self.SetButtonStates()
+	def _UpdateChange(self):
+		self._SetValue()
+		self._SetPathFormatReplacement()
+		self.SetButtonStates()
+		self._UpdateSourceChoicesSelection()
 	def _OnChange(self, e):
 		"Set the value."
-		self._SetValue()
-		self.SetRomanizeButtonState()
-		self._SetPathFormatReplacement()
-		self._SetPathFormatButtonState()
+		self._UpdateChange()
 		e.Skip()
 	def _OnPathFormatButton(self, e):
 		self.entry.ChangeValue(self.PathFormatReplacement)
 		self._UpdatePathFormatMenuItems()
-		self._SetValue()
-		self.PathFormatButton.Disable()
+		self._UpdateChange()
 		e.Skip()
 	def _OnPathFormatEntry(self, e):
 		self._SetPathFormatReplacement()
@@ -787,9 +862,89 @@ class SourceQuestion(SingleStringEntry):
 		#self._SetPathFormatReplacement()
 		#self._SetPathFormatButtonState()
 		e.Skip()
-	def __init__(self, parent, q):
+	def _OnSourceTestButton(self, e):
+		self.BadIdChoicesLabel.SetLabel("Requesting source URI.")
+		request = HeadRequest( self.entry.GetValue() )
+		request.add_header("User-Agent", self.SourceTestUserAgent)
+		try:
+			response = urlopen(request)
+			self.BadIdChoicesLabel.SetLabel( ''.join( ("Successfully opened source URI (", str(response.status), " ", response.reason, ")") ) )
+		except HTTPError as err:
+			self.BadIdChoicesLabel.SetLabel( ''.join( ("Unable to open source URI (", str(err.code), " ", err.reason, ")") ) )
+		except URLError as err:
+			self.BadIdChoicesLabel.SetLabel( ''.join( ("Unable to parse source URI (", err.reason, ")") ) )
+		self.BadIdChoicesContainerSizer.Layout()
+		e.Skip()
+	def _OnSourceSearchButton(self, e):
+		self.SourceChoicesLabel.SetLabel( ''.join( ( "Searching for loaded image.", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
+		try:
+			stream = open(self.images.get( self.pos.get() ).path, 'rb')
+			results = SauceNao().from_file(stream)
+			stream.close()
+			self.SourceChoicesResultsNames[self.pos.get()] = ['<CUSTOM>']
+			self.SourceChoicesResults[self.pos.get()] = [None]
+			for r in results:
+				BaseName = ''.join( (str(r.similarity), '%-', str(r.author), '-', str(r.title)) )
+				UrlAdded = False
+				for u in r.urls:
+					UrlAdded = True
+					self.SourceChoicesResultsNames[self.pos.get()].append( ''.join( (BaseName, '-', u) ) )
+					self.SourceChoicesResults[self.pos.get()].append( str(u) )
+				if not UrlAdded:
+					self.SourceChoicesResultsNames[self.pos.get()].append(BaseName)
+					self.SourceChoicesResults[self.pos.get()].append( str(r.title) )
+			self.SourceChoicesRemainingSearches = str(results.long_remaining)
+			self.SourceChoicesLabel.SetLabel( ''.join( ( "Loaded image successfully searched.", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
+		except UnknownApiError:
+			self.SourceChoicesLabel.SetLabel( ''.join( ( "Unable to search for loaded image. (Unknown error)", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
+		except UnknownServerError:
+			self.SourceChoicesLabel.SetLabel( ''.join( ( "Unable to search for loaded image. (Unknown server)", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
+		except UnknownClientError:
+			self.SourceChoicesLabel.SetLabel( ''.join( ( "Unable to search for loaded image. (Unknown client)", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
+		except BadKeyError:
+			self.SourceChoicesLabel.SetLabel( ''.join( ( "Unable to search for loaded image. (Bad key)", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
+		except BadFileSizeError:
+			self.SourceChoicesLabel.SetLabel( ''.join( ( "Unable to search for loaded image. (Bad file size)", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
+		except ShortLimitReachedError:
+			self.SourceChoicesLabel.SetLabel( ''.join( ( "Unable to search for loaded image. (SauceNAO burst limit reached)", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
+		except LongLimitReachedError:
+			self.SourceChoicesLabel.SetLabel( ''.join( ( "Unable to search for loaded image. (SauceNAO daily limit reached)", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
+		except SauceNaoApiError:
+			self.SourceChoicesLabel.SetLabel( ''.join( ( "Unable to search for loaded image. (Generic error)", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
+		except OSError as err:
+			self.SourceChoicesLabel.SetLabel( ''.join( ( "Unable to search for loaded image. (IO error: ", str(err.errno), " ", err.strerror, ")", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
+		self._UpdateSourceChoices()
+		self.SourceChoicesContainerSizer.Layout()
+		e.Skip()
+	def _OnSourceChoices(self, e):
+		selection = self.SourceChoices.GetSelection()
+		if selection > 0:
+			OldValue = self.entry.GetValue()
+			NewValue = self.SourceChoicesResults[self.pos.get()][selection]
+			if OldValue != NewValue:
+				self.entry.ChangeValue(NewValue)
+				self._SetValue()
+				self._SetPathFormatReplacement()
+				self.SetRomanizeButtonState()
+				self._SetSourceTestButtonState()
+				self._SetPathFormatButtonState()
+		e.Skip()
+	def _OnSourceChoicesContainerSize(self, e):
+		self.BadIdChoicesContainer.SetMaxSize( self.SourceChoicesContainer.GetSize() )
+		e.Skip()
+	def _OnIndexImage(self, message, arg2=None):
+		"Change the index index to the one specified in the message, if possible."
+		self.pos.set(message)
+	def _OnRightImage(self, message, arg2=None):
+		"Shift to the right (+1) position to the current pos in the entry string array if the pos is less than the length of the entry string array. Otherwise, loop around to the first item."
+		self.pos.inc()
+	def _OnLeftImage(self, message, arg2=None):
+		"Shift to the left (-1) position to the current pos in the entry string array if the pos is greater than 0. Otherwise, loop around to the last item."
+		self.pos.dec()
+	def __init__(self, parent, q, NumImages, TagsTracker, images):
 		SingleStringEntry.__init__(self, parent)
 
+		self.images = images
 		self.OutputFile = None # File data object
 		self._ValueSetter = None
 		self._ValueGetter = None
@@ -797,6 +952,28 @@ class SourceQuestion(SingleStringEntry):
 		self.EntryTip = wx.ToolTip("Enter source here.")
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
 		self.RomanizeButtonTip = wx.ToolTip('Convert selected (or all) Kana characters to their Romaji equivalents.')
+		self.DisplaySplitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
+		self.pos = CircularCounter(NumImages - 1) # Position in entry strings
+		self.SourceChoicesRemainingSearches = None
+		self.SourceChoicesResults = [None] * NumImages # The results for SourceSearchButton shall be saved to avoid overusing SauceNao
+		self.SourceChoicesResultsNames = [None] * NumImages # The results for SourceSearchButton shall be saved to avoid overusing SauceNao
+		self.SourceChoicesContainer = wx.Panel(self.DisplaySplitter)
+		self.SourceSearchButton = wx.Button(self.SourceChoicesContainer, label='Search Source Image')
+		self.SourceSearchButtonTip = wx.ToolTip('Attempt to search for the image on SauceNao')
+		self.SourceChoicesLabel = wx.StaticText(self.SourceChoicesContainer, style= wx.ALIGN_CENTER)
+		self.SourceChoicesLabelTip = wx.ToolTip("The status of the search performed by the 'Search Source Image' button.")
+		self.SourceChoicesScrollable = wx.lib.scrolledpanel.ScrolledPanel(self.SourceChoicesContainer)
+		#TODO: Wrap up first version of this into the same function used when the choices are updated?
+		self.SourceChoices = wx.RadioBox(self.SourceChoicesScrollable, choices=['<CUSTOM>'], style= wx.RA_SPECIFY_ROWS | wx.BORDER_NONE)
+		self.SourceChoicesTipText = "Usable results of 'Search Source Image' are displayed here."
+		self.BadIdChoicesContainer = wx.Panel(self.DisplaySplitter)
+		self.SourceTestButton = wx.Button(self.BadIdChoicesContainer, label='Test Source URL')
+		self.SourceTestButtonTip = wx.ToolTip('Attempt to make an HTTP request with the source as a URL, then print the result.')
+		self.SourceTestUserAgent = q.UserAgent
+		self.BadIdChoicesLabel = wx.StaticText(self.BadIdChoicesContainer, style= wx.ALIGN_CENTER)
+		self.BadIdChoicesLabelTip = wx.ToolTip("The status of the request performed by the 'Test Source URL' button.")
+		self.BadIdChoices = ArbitraryCheckQuestion(self.BadIdChoicesContainer, TagsTracker)
+		self.BadIdChoicesTip = wx.ToolTip('Pick tags set by SOURCE_QUESTION_BAD_ID_TAGS, primarily meant to be used to record issues with the source and its accessibility.')
 		self.PathFormatButton = wx.Button(self, label='->')
 		self.PathFormatReplaceText = wx.StaticText(self, label='Replace')
 		self.PathFormatPatternEntry = wx.SearchCtrl(self, style= wx.TE_NOHIDESEL)
@@ -822,18 +999,51 @@ class SourceQuestion(SingleStringEntry):
 		for v in q.DefaultReplacement:
 			self._AddPathFormatMenuItem(v, self.PathFormatReplaceMenu, self._OnPathFormatReplaceMenuItemChosen)
 
-		self.EntrySizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.SourceChoicesLabelSizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.BadIdChoicesLabelSizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.SourceChoicesContainerSizer = wx.BoxSizer(wx.VERTICAL)
+		self.BadIdChoicesContainerSizer = wx.BoxSizer(wx.VERTICAL)
+		self.SourceChoicesSizer = wx.BoxSizer(wx.VERTICAL)
 		self.PathFormatSizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.ButtonsSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.entry.SetToolTip(self.EntryTip)
 		self.RomanizeButton.SetToolTip(self.RomanizeButtonTip)
+		self.SourceTestButton.SetToolTip(self.SourceTestButtonTip)
+		self.SourceSearchButton.SetToolTip(self.SourceSearchButtonTip)
+		self.SourceChoicesLabel.SetToolTip(self.SourceChoicesLabelTip)
+		self._SetSourceChoicesTip()
+		self.BadIdChoicesLabel.SetToolTip(self.BadIdChoicesLabelTip)
+		self.BadIdChoices.SetToolTip(self.BadIdChoicesTip)
 		self.PathFormatPatternEntry.SetToolTip(self.PathFormatPatternEntryTip)
 		self.PathFormatReplaceEntry.SetToolTip(self.PathFormatReplaceEntryTip)
 		self.PathFormatButton.SetToolTip(self.PathFormatButtonTip)
 
-		self.EntrySizer.AddStretchSpacer(1)
-		self.EntrySizer.Add(self.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
+		self.SourceChoicesLabelSizer.AddStretchSpacer(1)
+		self.SourceChoicesLabelSizer.Add(self.SourceChoicesLabel, 0, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
+		self.SourceChoicesLabelSizer.AddStretchSpacer(1)
+
+		self.BadIdChoicesLabelSizer.AddStretchSpacer(1)
+		self.BadIdChoicesLabelSizer.Add(self.BadIdChoicesLabel, 0, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
+		self.BadIdChoicesLabelSizer.AddStretchSpacer(1)
+
+		self.SourceChoicesSizer.Add(self.SourceChoices, 1, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
+		self.SourceChoicesScrollable.SetSizer(self.SourceChoicesSizer)
+
+		self.SourceChoicesContainerSizer.Add(self.SourceSearchButton, 0, wx.ALIGN_CENTER | wx.CENTER | wx.SHAPED)
+		self.SourceChoicesContainerSizer.AddStretchSpacer(1)
+		self.SourceChoicesContainerSizer.Add(self.SourceChoicesLabelSizer, 0, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
+		self.SourceChoicesContainerSizer.AddStretchSpacer(1)
+		self.SourceChoicesContainerSizer.Add(self.SourceChoicesScrollable, 35, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
+		self.SourceChoicesContainer.SetSizer(self.SourceChoicesContainerSizer)
+
+		self.BadIdChoicesContainerSizer.Add(self.SourceTestButton, 0, wx.ALIGN_CENTER | wx.CENTER | wx.SHAPED)
+		self.BadIdChoicesContainerSizer.AddStretchSpacer(1)
+		self.BadIdChoicesContainerSizer.Add(self.BadIdChoicesLabelSizer, 0, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
+		self.BadIdChoicesContainerSizer.AddStretchSpacer(1)
+		self.BadIdChoicesContainerSizer.Add(self.BadIdChoices, 35, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
+		self.BadIdChoicesContainer.SetSizer(self.BadIdChoicesContainerSizer)
 
 		self.PathFormatSizer.Add(self.PathFormatButton, 0, wx.ALIGN_CENTER)
 		self.PathFormatSizer.AddStretchSpacer(1)
@@ -845,18 +1055,39 @@ class SourceQuestion(SingleStringEntry):
 		self.PathFormatSizer.AddStretchSpacer(1)
 		self.PathFormatSizer.Add(self.PathFormatReplaceEntry, 60, wx.ALIGN_CENTER | wx.EXPAND)
 
-		self.MainSizer.Add(self.EntrySizer, 40, wx.ALIGN_CENTER | wx.EXPAND)
-		self.MainSizer.AddStretchSpacer(15)
-		self.MainSizer.Add(self.PathFormatSizer, 40, wx.ALIGN_CENTER | wx.EXPAND)
-		self.MainSizer.AddStretchSpacer(15)
-		self.MainSizer.Add(self.RomanizeButton, 0, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
+		self.ButtonsSizer.AddStretchSpacer(30)
+		self.ButtonsSizer.Add(self.RomanizeButton, 0, wx.ALIGN_CENTER | wx.CENTER | wx.SHAPED)
+		self.ButtonsSizer.AddStretchSpacer(30)
+
+		self.MainSizer.AddStretchSpacer(2)
+		self.MainSizer.Add(self.entry, 0, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.AddStretchSpacer(2)
+		self.MainSizer.Add(self.PathFormatSizer, 0, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.AddStretchSpacer(2)
+		self.MainSizer.Add(self.ButtonsSizer, 0, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
+		self.MainSizer.AddStretchSpacer(2)
+		self.MainSizer.Add(self.DisplaySplitter, 55, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
 		self.SetSizer(self.MainSizer)
 
 		self.Bind( wx.EVT_BUTTON, self._OnRomanize, id=self.RomanizeButton.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnChange, id=self.entry.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnPathFormatButton, id=self.PathFormatButton.GetId() )
+		self.Bind( wx.EVT_BUTTON, self._OnSourceTestButton, id=self.SourceTestButton.GetId() )
+		self.Bind( wx.EVT_BUTTON, self._OnSourceSearchButton, id=self.SourceSearchButton.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnPathFormatEntry, id=self.PathFormatPatternEntry.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnPathFormatEntry, id=self.PathFormatReplaceEntry.GetId() )
+		self.Bind( wx.EVT_RADIOBOX, self._OnSourceChoices, id=self.SourceChoices.GetId() )
+		self.Bind( wx.EVT_SIZE, self._OnSourceChoicesContainerSize, id=self.SourceChoicesContainer.GetId() )
+		pub.subscribe(self._OnIndexImage, "IndexImage")
+		pub.subscribe(self._OnLeftImage, "LeftImage")
+		pub.subscribe(self._OnRightImage, "RightImage")
+
+		self.SourceChoicesScrollable.SetOwnBackgroundColour( wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW) )
+		self.SourceChoicesScrollable.SetupScrolling()
+		self.BadIdChoices.SetChoices(q.BadIdTags)
+		self.DisplaySplitter.SetMinimumPaneSize( self.GetSize().GetWidth() )
+		self.DisplaySplitter.SplitVertically(self.SourceChoicesContainer, self.BadIdChoicesContainer)
+		self.BadIdChoicesContainer.SetMaxSize( self.SourceChoicesContainer.GetSize() )
 
 class SafetyQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 	def _UpdateSafety(self):
@@ -1043,7 +1274,7 @@ class QuestionsContainer(wx.Panel):
 		self.LockQuestion = False
 	def _OnFocusQuestionBody(self, message, arg2=None):
 		self._CurrentWidget().SetFocus()
-	def __init__(self, parent, TagsTracker, questions, OutputFiles):
+	def __init__(self, parent, TagsTracker, questions, OutputFiles, images):
 		wx.Panel.__init__(self, parent=parent)
 
 		NumImages = len(OutputFiles.InputPaths)
@@ -1070,8 +1301,8 @@ class QuestionsContainer(wx.Panel):
 				self.QuestionWidgets.append( NameQuestion(self) )
 				proportion = 0
 			elif q.type == QuestionType.SOURCE_QUESTION:
-				self.QuestionWidgets.append( SourceQuestion(self, q) )
-				proportion = 0
+				self.QuestionWidgets.append( SourceQuestion(self, q, NumImages, TagsTracker, images) )
+				#proportion = 0
 			elif q.type == QuestionType.SAFETY_QUESTION:
 				self.QuestionWidgets.append( SafetyQuestion(self) )
 			elif q.type == QuestionType.IMAGE_TAGS_ENTRY:
