@@ -530,7 +530,7 @@ class parser:
 		else:
 			raise ParserError("Image condition tags added when not in an image condition.", token.line, token.col)
 	def _AddTagChecker(self, token):
-		"Add a SOURCE_QUESTION to the end of output"
+		"Add a TAG_CHECKER to the end of output"
 		self._AddQuestion(TagChecker, token)
 		self._state = ParserState.TAG_CHECKER
 	def _AddTagCheckerSeparators(self, token):
