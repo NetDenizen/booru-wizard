@@ -15,6 +15,7 @@ RE_WHITESPACE = re.compile(r'\s')
 class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 	def SetChoicesTip(self):
 		if self.ChoicesTipText is not None:
+			self.choices.UnsetToolTip()
 			self.choices.SetToolTip( wx.ToolTip(self.ChoicesTipText) )
 	def _UpdateChoice(self, choice):
 		"Bound to EVT_CHECKLISTBOX; set selected tags and remove the previously selected ones."
