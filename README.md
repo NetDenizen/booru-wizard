@@ -139,6 +139,12 @@ There are a number of features and changes which I consider for this software. T
 
 * Consider a setting to make output directories, if they don't already exist. The file dialog is crippled in this regard on Linux
 
+* Consider making the tag search field more interactive, so the user need not enter exact matches.
+
+* Consider fully implementing Gelbooru-style tag searching in the tag search field.
+
+* Overhaul the image display, so it does not suffer from extremely skewed aspect ratios when zoomed in.
+
 ### Open
 
 * I've considered adding more features to the image-viewer itself, such as the ability to zoom, and the ability to display animation. - Zooming implemented. Animation would likely involve complicated integration with ffmpeg libraries. wx animation support is too inconsistent between platforms. Specifically, the necessary methods are not supported for GTK.
