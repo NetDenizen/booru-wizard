@@ -125,8 +125,6 @@ There are a number of features and changes which I consider for this software. T
 
 * Many settings pertaining to the operation of this software can be set in the configuration file before starting. Consider allowing more configuration while running the software, and the possibility of editing the configuration file from the software.
 
-* Consider integrating the software with reverse image search services, to more efficiently identify sources.
-
 * Consider allowing the software to parse and write to different output formats than JSON. Perhaps SQLite?
 
 * Consider adding metadata to the output files, which allow the software to more precisely recreate the state that it was in when those files were written. For instance, in ENTRY_QUESTION, tags can be added, however, the software does not know which tags to put in that entry question, when starting.
@@ -161,4 +159,6 @@ There are a number of features and changes which I consider for this software. T
 
 * Especially in the case of imagesets, I consider that the same sequence of tags might be frequently repeated between multiple images. This raises the question as to if it should be possible to copy tags from one image to another. If not directly implemented, a string containing all tags, in a similar vein to the SESSION_TAGS option can be copy-and-pasted. - Implemented by SESSION_TAGS_IMPORTER, and BULK_TAGGER
 
-* It may greatly improve memorization of keybinds by listing them in the tooltips for the relevant field.
+* It may greatly improve memorization of keybinds by listing them in the tooltips for the relevant field. - Keybinds will now appear in tooltips, if they are present.
+
+* Consider integrating the software with reverse image search services, to more efficiently identify sources. - Implemented by saucenao-api integration in SOURCE_QUESTION
