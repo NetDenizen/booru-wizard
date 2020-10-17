@@ -121,14 +121,16 @@ class ViewPort:
 		self.SampleYPos = 0.0 # Y position of upper-left corner of sample area, as a fraction of that area's height.
 		self.SampleWidth = 1.0 # Width of sample area, as a fraction of the target area's full width.
 		self.SampleHeight = 1.0 # Height  of sample area, as a fraction of the target area's full width.
+	def RenderBackground(self, width, height):
+		if width != 0 and height != 0 and\
+		   ( self.BackgroundBitmap is None or\
+		     width != self.BackgroundBitmap.GetWidth() or\
+		     height != self.BackgroundBitmap.GetHeight() ):
+			   self.BackgroundBitmap = wx.Bitmap.FromBuffer( width, height, self.BackgroundManager.get(width, height) )
 	def UpdateBackground(self, DisplayWidth, DisplayHeight):
 		self.DisplayWidth = DisplayWidth
 		self.DisplayHeight = DisplayHeight
-		if self.DisplayWidth != 0 and self.DisplayHeight != 0 and\
-		   ( self.BackgroundBitmap is None or\
-		     self.DisplayWidth != self.BackgroundBitmap.GetWidth() or\
-		     self.DisplayHeight != self.BackgroundBitmap.GetHeight() ):
-			   self.BackgroundBitmap = wx.Bitmap.FromBuffer( self.DisplayWidth, self.DisplayHeight, self.BackgroundManager.get(self.DisplayWidth, self.DisplayHeight) )
+		self.RenderBackground(self.DisplayWidth, self.DisplayHeight)
 	def UpdateImage(self, image, quality):
 		"Return wx.Image, through the viewport."
 		self.image = image
@@ -148,7 +150,7 @@ class ViewPort:
 			SampleRect = wx.Rect(SampleXPos, SampleYPos, ZoomWidth, ZoomHeight)
 
 			NewImage = image.GetSubImage(SampleRect)
-			NewImage.Rescale(self.DisplayWidth, self.DisplayHeight, quality)
+			#NewImage.Rescale(self.DisplayWidth, self.DisplayHeight, quality)
 		elif ImageWidth == self.DisplayWidth and ImageHeight == self.DisplayHeight:
 			NewImage = image
 		elif self.DisplayWidth != 0 and self.DisplayHeight != 0:
@@ -159,6 +161,8 @@ class ViewPort:
 		if NewImage is None:
 			self.ImageBitmap = None
 		else:
+			NewImageSize = NewImage.GetSize()
+			self.RenderBackground( NewImageSize.GetWidth(), NewImageSize.GetHeight() )
 			self.ImageBitmap = wx.Bitmap(NewImage)
 	def ApplyZoomSteps(self, OldSteps):
 		"Zoom in or out by OldSteps, according to the state of the viewport."
