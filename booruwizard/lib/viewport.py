@@ -143,6 +143,7 @@ class ViewPort:
 			if len(self.AccelStepsList) > 0 and self.AccelSteps == 0:
 				self.AccelStepsList.pop()
 				self.AccelStepsList.append(TargetDistance) #TODO: Make sure this is always less than zoom interval
+		self.TotalSteps = 0
 		self._CalcConstrainedSample()
 	def RenderBackground(self, width, height):
 		if width != 0 and height != 0 and\
@@ -182,8 +183,6 @@ class ViewPort:
 			self.ImageBitmap = None
 	def ApplyZoomSteps(self, OldSteps):
 		"Zoom in or out by OldSteps, according to the state of the viewport."
-		if self.TotalSteps != 0:
-			return
 		if self.state == ViewPortState.ACTUAL:
 			self.ApplyActualSize()
 			if OldSteps > 0:
