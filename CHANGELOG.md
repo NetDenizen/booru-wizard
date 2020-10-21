@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* The image display now uses the entirety of the open window area.
+
 * Implement SOURCE_QUESTION_BAD_ID_TAGS and SOURCE_QUESTION_USER_AGENT.
 
 * Implement checking of source URLs in SOURCE_QUESTION.

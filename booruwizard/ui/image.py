@@ -11,46 +11,6 @@ from booruwizard.ui.common import PathEntry, CircularCounter, RenderThreeIfMid, 
 
 #TODO: Should we have a control to affect the scaling (maybe an alternate scrollbar setting), or to change the background color?
 class ImageDisplay(wx.Panel):
-	def CalculateSize(self, NewImage):
-		if self.image is None:
-			if NewImage:
-				self.ClearOnPaint = True
-				self.viewport.UpdateImage(self.image, self.quality)
-			return
-		ImageWidth = self.image.GetWidth()
-		ImageHeight = self.image.GetHeight()
-		PanelSize = self.GetSize()
-		PanelWidth = PanelSize.GetWidth()
-		PanelHeight = PanelSize.GetHeight()
-		if ImageWidth > ImageHeight:
-			NewWidth = PanelWidth
-			NewHeight = PanelHeight * (ImageHeight / ImageWidth)
-		else:
-			NewWidth = PanelWidth * (ImageWidth / ImageHeight)
-			NewHeight = PanelHeight
-		DiffHeight = (PanelHeight - NewHeight) / 2
-		if DiffHeight < 0:
-			DiffHeight = 0
-		UpdateBackground = False
-		if NewWidth != self.width:
-			self.width = NewWidth
-			self.ClearOnPaint = True
-			UpdateBackground = True
-		if NewHeight != self.height:
-			self.height = NewHeight
-			self.ClearOnPaint = True
-			UpdateBackground = True
-		if DiffHeight != self.DiffHeight:
-			self.DiffHeight = DiffHeight
-			UpdateBackground = True
-		UpdateImage = NewImage
-		if NewWidth == 0 and NewHeight == 0:
-			UpdateBackground = False
-			UpdateImage = False
-		if UpdateBackground:
-			self.viewport.UpdateBackground(NewWidth, NewHeight)
-		if UpdateImage:
-			self.viewport.UpdateImage(self.image, self.quality)
 	def _UpdateMove(self):
 		self.viewport.UpdateBackground(self.viewport.DisplayWidth, self.viewport.DisplayHeight)
 		self.viewport.UpdateImage(self.image, self.quality)
@@ -84,7 +44,7 @@ class ImageDisplay(wx.Panel):
 		self.MouseStartX = e.GetX()
 		self.MouseStartY = e.GetY()
 		self.MouseDown = True
-		if self.viewport.ZoomLevel != 1.0:
+		if self.viewport.ZoomLevel != self.viewport.FitLevel:
 			self.SetCursor( wx.Cursor(wx.CURSOR_CROSS) )
 		e.Skip()
 	def _OnMouseUp(self, e):
@@ -107,7 +67,16 @@ class ImageDisplay(wx.Panel):
 		e.Skip()
 	def _OnSize(self, e):
 		OldSteps = self.viewport.TotalSteps
-		self.CalculateSize(False)
+		PanelSize = self.GetSize()
+		PanelWidth = PanelSize.GetWidth()
+		PanelHeight = PanelSize.GetHeight()
+		if self.width != PanelWidth:
+			self.ClearOnPaint = True
+			self.width = PanelWidth
+		if self.height != PanelHeight:
+			self.ClearOnPaint = True
+			self.height = PanelHeight
+		self.viewport.UpdateBackground(self.width, self.height)
 		self.viewport.ApplyZoomSteps(OldSteps)
 		self.parent.UpdateZoomControls()
 		self.viewport.UpdateImage(self.image, self.quality)
@@ -122,22 +91,33 @@ class ImageDisplay(wx.Panel):
 		if self.quality != self.CurrentQuality:
 			self.CurrentQuality = self.quality
 			self.viewport.UpdateImage(self.image, self.quality)
-		dc.DrawBitmap(self.viewport.BackgroundBitmap, 0, self.DiffHeight, True)
-		dc.DrawBitmap(self.viewport.ImageBitmap, 0, self.DiffHeight, True)
+		dc.DrawBitmap(self.viewport.BackgroundBitmap, 0, 0, True)
+		dc.DrawBitmap(self.viewport.ImageBitmap, 0, 0, True)
 		self.Update()
 		self.Refresh()
 		e.Skip()
 	def SetImage(self, image):
 		self.image = image
-		self.CalculateSize(True)
+		OldSteps = self.viewport.TotalSteps
+		PanelSize = self.GetSize()
+		PanelWidth = PanelSize.GetWidth()
+		PanelHeight = PanelSize.GetHeight()
+		if self.width != PanelWidth:
+			self.ClearOnPaint = True
+			self.width = PanelWidth
+		if self.height != PanelHeight:
+			self.ClearOnPaint = True
+			self.height = PanelHeight
+		self.viewport.UpdateBackground(self.width, self.height)
+		self.viewport.ApplyZoomSteps(OldSteps)
+		self.parent.UpdateZoomControls()
+		self.viewport.UpdateImage(self.image, self.quality)
 	def __init__(self, parent, quality, viewport, keybinds):
 		wx.Panel.__init__(self, parent=parent)
 		self.parent = parent
 		self.image = None
 		self.height = None
 		self.width = None
-		self.DiffHeight = None
-		self.DiffWidth = None
 		self.ClearOnPaint = False
 		self.quality = quality
 		self.CurrentQuality = quality
@@ -226,14 +206,11 @@ class ImagePanel(wx.Panel):
 									 )
 			ImageSize = self.image.image.GetSize()
 			if (self.image.viewport.state == ViewPortState.ACTUAL and\
-			   self.image.viewport.TotalSteps == 0) or\
-			   (ImageSize.GetWidth() <= self.image.viewport.DisplayWidth and\
-			   ImageSize.GetHeight() <= self.image.viewport.DisplayHeight and\
-			   self.image.viewport.GetActualSizeRatio()[0] == 1.0):
+			   self.image.viewport.ZoomLevel == 1.0):
 				self.ZoomActualButton.Disable()
 			else:
 				self.ZoomActualButton.Enable()
-			if self.image.viewport.ZoomLevel == 1.0:
+			if self.image.viewport.ZoomLevel == self.image.viewport.FitLevel:
 				self.ZoomFitButton.Disable()
 				self.ZoomOutButton.Disable()
 			else:
@@ -437,7 +414,7 @@ class ImagePanel(wx.Panel):
 
 		self.MainSizer.Add(self.LeftPaneSizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.EXPAND)
 		self.MainSizer.AddStretchSpacer(1)
-		self.MainSizer.Add(self.image, 20, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
+		self.MainSizer.Add(self.image, 20, wx.ALIGN_LEFT | wx.LEFT | wx.EXPAND)
 		self.SetSizer(self.MainSizer)
 
 		self.ResolutionDisplay.SetToolTip(self.ResolutionTip)

@@ -19,108 +19,131 @@ class ViewPortState(Enum):
 	FIT = 0
 	ACTUAL = 1
 
-# TODO Should actual size zooming be rounded to the nearest _CalcZoomTimes value?
 class ViewPort:
 	def _CalcSample(self):
 		"Apply zooming of an arbitrary amount."
-		SizeShift = 1.0 / self.ZoomLevel
-		MoveShift = (1.0 - SizeShift) / 2.0
-		self.SampleXPos = self.SampleXPos - ( (1.0 - self.SampleWidth) / 2.0 ) + MoveShift
-		self.SampleYPos = self.SampleYPos - ( (1.0 - self.SampleHeight) / 2.0 ) + MoveShift
-		self.SampleWidth = SizeShift
-		self.SampleHeight = SizeShift
-	def _CalcZoomTimes(self, direction, times):
-		"Calculate zooming in or out a number of times."
-		if direction == -1.0 and self.ZoomLevel <= self.ZoomInterval:
-			return
-		AccelChange = ( (self.AccelSteps + times * direction) / self.ZoomAccelSteps )
-		if AccelChange < 0.0:
-			AccelChange = ceil(AccelChange)
-		elif AccelChange > 0.0:
-			AccelChange = floor(AccelChange)
-		self.ZoomInterval += (self.ZoomAccel * AccelChange)
-		if self.ZoomInterval < self.ZoomAccel:
-			self.ZoomInterval = self.ZoomAccel
-		self.AccelSteps += int(times * direction)
-		if fabs(self.AccelSteps) >= self.ZoomAccelSteps:
-			self.AccelSteps = int(self.AccelSteps % self.ZoomAccelSteps)
-		ActualZoomInterval = ( (self.ZoomLevel / self.GetActualSizeRatio()[0]) * self.ZoomInterval )
-		self.ZoomLevel += (ActualZoomInterval * direction)
-		if self.ZoomLevel < 1.0:
-			self.ZoomLevel = 1.0
+		PosXRatio = ( 1.0 - (self.ZoomLevel / self.FitXLevel) )
+		PosYRatio = ( 1.0 - (self.ZoomLevel / self.FitYLevel) )
+		self.SampleXPos = self.OrigSampleXPos * PosXRatio
+		self.SampleYPos = self.OrigSampleYPos * PosYRatio
+		self.SampleWidth = self.ZoomLevel
+		self.SampleHeight = self.ZoomLevel
 	def _ConstrainSample(self):
 		"Ensure that the sample area remains within 0.0-1.0 bounds."
+		if self.SampleXPos + self.SampleWidth > self.FitXLevel:
+			self.SampleXPos = self.FitXLevel - self.SampleWidth
+		if self.SampleYPos + self.SampleHeight > self.FitYLevel:
+			self.SampleYPos = self.FitYLevel - self.SampleHeight
 		if self.SampleXPos < 0.0:
 			self.SampleXPos = 0.0
 		if self.SampleYPos < 0.0:
 			self.SampleYPos = 0.0
-		EndXPos = self.SampleWidth + self.SampleXPos
-		EndYPos = self.SampleHeight + self.SampleYPos
-		EndXPosDiff = 1.0 - EndXPos
-		EndYPosDiff = 1.0 - EndYPos
-		if EndXPosDiff < 0.0:
-			NewSampleXPos = self.SampleXPos + EndXPosDiff
-			if NewSampleXPos >= 0.0:
-				self.SampleXPos = NewSampleXPos
-			else:
-				self.SampleXPos = 0.0
-				self.SampleWidth += fabs(NewSampleXPos)
-		if EndYPosDiff < 0.0:
-			NewSampleYPos = self.SampleYPos + EndYPosDiff
-			if NewSampleYPos >= 0.0:
-				self.SampleYPos = NewSampleYPos
-			else:
-				self.SampleYPos = 0.0
-				self.SampleHeight += fabs(NewSampleYPos)
-		if self.SampleHeight > 1.0:
-			self.SampleHeight = 1.0
-		if self.SampleWidth > 1.0:
-			self.SampleWidth = 1.0
+		if self.SampleXPos + self.SampleWidth > self.FitXLevel:
+			self.SampleXPos = 0.0
+			self.SampleWidth = self.FitXLevel
+		if self.SampleYPos + self.SampleHeight > self.FitYLevel:
+			self.SampleYPos = 0.0
+			self.SampleHeight = self.FitYLevel
+	def _CalcConstrainedSample(self):
+		self._CalcSample()
+		self._ConstrainSample()
 	def ApplyZoomTimes(self, ZoomIn, times):
 		"Apply zooming in or out a number of times."
-		if ZoomIn:
-			direction = 1.0
-		else:
-			direction = -1.0
-		OldRatio = self.GetActualSizeRatio()[0]
-		self._CalcZoomTimes(direction, times)
-		self._CalcSample()
-		self._ConstrainSample()
-		NewRatio = self.GetActualSizeRatio()[0]
-		if OldRatio != NewRatio:
-			self.TotalSteps += int(times * direction)
+		for t in range(times):
+			if not ZoomIn:
+				if self.ZoomLevel >= self.FitLevel:
+					self.ZoomLevel = self.FitLevel
+					break
+				if len(self.AccelStepsList) > 1:
+						self.ZoomInterval = self.AccelStepsList[-2]
+						self.ZoomLevel += self.AccelStepsList[-1]
+						self.AccelSteps -= 1
+						self.TotalSteps -= 1
+						if self.AccelSteps < 0:
+							self.AccelSteps = self.ZoomAccelSteps
+						self.AccelStepsList.pop()
+				else:
+					break
+			else:
+				if self.ZoomLevel <= self.ZoomInterval:
+					self.ZoomLevel = self.ZoomInterval
+					break
+				self.AccelSteps += 1
+				if self.AccelSteps > self.ZoomAccelSteps:
+					self.AccelSteps = 0
+					self.ZoomInterval += self.ZoomAccel
+				self.AccelStepsList.append(self.ZoomInterval)
+				ZoomLevel = self.ZoomLevel
+				self.ZoomLevel -= self.ZoomInterval
+				self.TotalSteps += 1
+				#TODO: Roll this into a function
+				if ZoomLevel > 1.0 and self.ZoomLevel < 1.0:
+					TargetDistance = ZoomLevel - 1.0
+					#TODO: Ensure this is always positive
+					self.ZoomLevel = 1.0
+					if len(self.AccelStepsList) > 0 and self.AccelSteps == 0:
+						self.AccelStepsList.pop()
+						self.AccelStepsList.append(TargetDistance) #TODO: Make sure this is always less than zoom interval
+		self._CalcConstrainedSample()
 	def ApplyMove(self, x, y):
 		"Apply horizontal and vertical movement."
-		self.SampleXPos += x
-		self.SampleYPos += y
-		self._CalcSample()
-		self._ConstrainSample()
-	def ApplyActualSize(self):
-		#TODO: Regulate values.
-		if self.image is None:
-			return
-		self.state = ViewPortState.ACTUAL
-		self.TotalSteps = 0
-		ImageSize = self.image.GetSize()
-
-		self.ZoomLevel = sqrt( ( ImageSize.GetWidth() * ImageSize.GetHeight() ) / (self.DisplayWidth * self.DisplayHeight) )
-		self.ZoomInterval = sqrt(2 * (self.ZoomAccel / self.ZoomAccelSteps) * fabs(1.0 - self.ZoomLevel) + self.ZoomStartInterval * self.ZoomStartInterval)
-		self.AccelSteps = int(ceil( (fabs(self.ZoomInterval - self.ZoomStartInterval) / self.ZoomAccel) * self.ZoomAccelSteps ) % self.ZoomAccelSteps)
-
-		self._CalcSample()
-		self._ConstrainSample()
+		self.OrigSampleXPos += (x * self.ZoomLevel * self.FitXLevel)
+		self.OrigSampleYPos += (y * self.ZoomLevel * self.FitYLevel)
+		if self.OrigSampleXPos > self.FitXLevel:
+			self.OrigSampleXPos = self.FitXLevel
+		if self.OrigSampleYPos > self.FitYLevel:
+			self.OrigSampleYPos = self.FitYLevel
+		if self.OrigSampleXPos < 0.0:
+			self.OrigSampleXPos = 0.0
+		if self.OrigSampleYPos < 0.0:
+			self.OrigSampleYPos = 0.0
+		self._CalcConstrainedSample()
 	def ApplyFit(self):
 		"Zoom so the entire area is sampled."
 		self.state = ViewPortState.FIT
 		self.TotalSteps = 0
 		self.ZoomInterval = self.ZoomStartInterval
-		self.ZoomLevel = 1.0 # Current size of the sample area, relative to the actual image; always starts at 1.0
 		self.AccelSteps = 0
+		if self.image is None or self.DisplayWidth == 0 or self.DisplayHeight == 0:
+			self.ZoomLevel = 1.0 # Current size of the sample area, relative to the display area; always starts at 1.0
+			self.FitXLevel = self.ZoomLevel
+			self.FitYLevel = self.ZoomLevel
 
-		self.SampleXPos = 0.0 # X position of upper-left corner of sample area, as a fraction of that area's width.
-		self.SampleYPos = 0.0 # Y position of upper-left corner of sample area, as a fraction of that area's height.
-		self.SampleWidth = 1.0 # Width of sample area, as a fraction of the target area's full width.
-		self.SampleHeight = 1.0 # Height  of sample area, as a fraction of the target area's full width.
+			self.OrigSampleXPos = 0.5 # X position of upper-left corner of sample area, as a fraction of display area's width.
+			self.OrigSampleYPos = 0.5 # Y position of upper-left corner of sample area, as a fraction of display area's height.
+			self.SampleWidth = 1.0 # Width of sample area, as a fraction of the display area's full width.
+			self.SampleHeight = 1.0 # Height  of sample area, as a fraction of the display area's full width.
+		else:
+			ImageSize = self.image.GetSize()
+			self.ZoomLevel  = max(ImageSize.GetWidth() / self.DisplayWidth, ImageSize.GetHeight() / self.DisplayHeight)
+			self.FitXLevel = ImageSize.GetWidth() / self.DisplayWidth
+			self.FitYLevel = ImageSize.GetHeight() / self.DisplayHeight
+
+			self.OrigSampleXPos = self.FitXLevel / 2.0 # X position of upper-left corner of sample area, as a fraction of display area's width.
+			self.OrigSampleYPos = self.FitYLevel / 2.0 # Y position of upper-left corner of sample area, as a fraction of display area's height.
+			self.SampleWidth = self.ZoomLevel # Width of sample area, as a fraction of the display area's full width.
+			self.SampleHeight = self.ZoomLevel # Height  of sample area, as a fraction of the display area's full width.
+		self._CalcConstrainedSample()
+		self.AccelStepsList = [self.ZoomInterval]
+		self.FitLevel = self.ZoomLevel
+	def ApplyActualSize(self):
+		if self.image is None:
+			return
+		self.ApplyFit()
+		self.state = ViewPortState.ACTUAL
+
+		ZoomLevel = self.ZoomLevel
+		while self.ZoomLevel > 1.0:
+			ZoomLevel = self.ZoomLevel
+			self.ApplyZoomTimes(True, 1)
+		if self.ZoomLevel < 1.0:
+			TargetDistance = ZoomLevel - 1.0
+			#TODO: Ensure this is always positive
+			self.ZoomLevel = 1.0
+			if len(self.AccelStepsList) > 0 and self.AccelSteps == 0:
+				self.AccelStepsList.pop()
+				self.AccelStepsList.append(TargetDistance) #TODO: Make sure this is always less than zoom interval
+		self._CalcConstrainedSample()
 	def RenderBackground(self, width, height):
 		if width != 0 and height != 0 and\
 		   ( self.BackgroundBitmap is None or\
@@ -142,28 +165,21 @@ class ViewPort:
 		ImageWidth = ImageSize.GetWidth()
 		ImageHeight = ImageSize.GetHeight()
 
-		if self.ZoomLevel > 1.0:
-			SampleXPos = int( floor(self.SampleXPos * ImageWidth) )
-			SampleYPos = int( floor(self.SampleYPos * ImageHeight) )
-			ZoomWidth = int( floor(self.SampleWidth * ImageWidth) )
-			ZoomHeight = int( floor(self.SampleHeight * ImageHeight) )
-			SampleRect = wx.Rect(SampleXPos, SampleYPos, ZoomWidth, ZoomHeight)
+		SampleXPos = int( floor(self.SampleXPos * self.DisplayWidth) )
+		SampleYPos = int( floor(self.SampleYPos * self.DisplayHeight) )
+		ZoomWidth = int( floor(self.SampleWidth * self.DisplayWidth) )
+		ZoomHeight = int( floor(self.SampleHeight * self.DisplayHeight) )
+		SampleRect = wx.Rect(SampleXPos, SampleYPos, ZoomWidth, ZoomHeight)
 
+		try:
 			NewImage = image.GetSubImage(SampleRect)
-			#NewImage.Rescale(self.DisplayWidth, self.DisplayHeight, quality)
-		elif ImageWidth == self.DisplayWidth and ImageHeight == self.DisplayHeight:
-			NewImage = image
-		elif self.DisplayWidth != 0 and self.DisplayHeight != 0:
-			NewImage = image.Scale(self.DisplayWidth, self.DisplayHeight, quality)
-		else:
-			NewImage = None
+			NewImage.Rescale(self.DisplayWidth, self.DisplayHeight, quality)
 
-		if NewImage is None:
-			self.ImageBitmap = None
-		else:
 			NewImageSize = NewImage.GetSize()
 			self.RenderBackground( NewImageSize.GetWidth(), NewImageSize.GetHeight() )
 			self.ImageBitmap = wx.Bitmap(NewImage)
+		except:
+			self.ImageBitmap = None
 	def ApplyZoomSteps(self, OldSteps):
 		"Zoom in or out by OldSteps, according to the state of the viewport."
 		if self.TotalSteps != 0:
@@ -181,21 +197,13 @@ class ViewPort:
 	def GetActualSizeRatio(self):
 		"Return the zoom level relative to the actual size of the image, rather than the display, along with the sample and display sizes, in a tuple formatted: (ratio, SampleWidth, SampleHeight)."
 		ImageSize = self.image.GetSize()
-		ImageWidth = ImageSize.GetWidth()
-		ImageHeight = ImageSize.GetHeight()
-		SampleWidth = self.SampleWidth * ImageWidth
-		SampleHeight = self.SampleHeight * ImageHeight
-		ImageSquare = ImageWidth * ImageHeight
+		SampleWidth = self.SampleWidth * self.DisplayWidth
+		SampleHeight = self.SampleHeight * self.DisplayHeight
 		if self.DisplayWidth == 0 or self.DisplayHeight == 0:
 			ratio = 0
 		else:
-			ratio = sqrt( ImageSquare / (SampleWidth * SampleHeight) ) /\
-					sqrt( ImageSquare / (self.DisplayWidth * self.DisplayHeight) )
+			ratio = sqrt( ( ImageSize.GetWidth() * ImageSize.GetHeight() ) / (SampleWidth * SampleHeight) )
 		return (ratio, SampleWidth, SampleHeight)
-	def GetActualFitRatio(self):
-		"Return the zoom level necessary to fit the display, relative to the size of the image, rather than the display (1.0)."
-		ImageSize = self.image.GetSize()
-		return sqrt( (self.DisplayWidth * self.DisplayHeight) / ( ImageSize.GetWidth() * ImageSize.GetHeight() ) )
 	def __init__(self, BackgroundColor1, BackgroundColor2, BackgroundSquareWidth, ZoomStartInterval, ZoomAccel, ZoomAccelSteps, PanInterval):
 		self.BackgroundManager = TransparencyBackground(BackgroundColor1, BackgroundColor2, BackgroundSquareWidth)
 		self.ZoomStartInterval = ZoomStartInterval # Start amount ZoomLevel is increased or decreased by each zoom step.
