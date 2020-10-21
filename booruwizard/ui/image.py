@@ -73,9 +73,13 @@ class ImageDisplay(wx.Panel):
 		if self.width != PanelWidth:
 			self.ClearOnPaint = True
 			self.width = PanelWidth
+		else:
+			self.ClearOnPaint = False
 		if self.height != PanelHeight:
 			self.ClearOnPaint = True
 			self.height = PanelHeight
+		else:
+			self.ClearOnPaint = False
 		self.viewport.UpdateBackground(self.width, self.height)
 		self.viewport.ApplyZoomSteps(OldSteps)
 		self.parent.UpdateZoomControls()
@@ -98,19 +102,7 @@ class ImageDisplay(wx.Panel):
 		e.Skip()
 	def SetImage(self, image):
 		self.image = image
-		OldSteps = self.viewport.TotalSteps
-		PanelSize = self.GetSize()
-		PanelWidth = PanelSize.GetWidth()
-		PanelHeight = PanelSize.GetHeight()
-		if self.width != PanelWidth:
-			self.ClearOnPaint = True
-			self.width = PanelWidth
-		if self.height != PanelHeight:
-			self.ClearOnPaint = True
-			self.height = PanelHeight
-		self.viewport.UpdateBackground(self.width, self.height)
-		self.viewport.ApplyZoomSteps(OldSteps)
-		self.parent.UpdateZoomControls()
+		self.ClearOnPaint = False
 		self.viewport.UpdateImage(self.image, self.quality)
 	def __init__(self, parent, quality, viewport, keybinds):
 		wx.Panel.__init__(self, parent=parent)
