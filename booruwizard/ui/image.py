@@ -68,18 +68,8 @@ class ImageDisplay(wx.Panel):
 	def _OnSize(self, e):
 		OldSteps = self.viewport.TotalSteps
 		PanelSize = self.GetSize()
-		PanelWidth = PanelSize.GetWidth()
-		PanelHeight = PanelSize.GetHeight()
-		if self.width != PanelWidth:
-			self.ClearOnPaint = True
-			self.width = PanelWidth
-		else:
-			self.ClearOnPaint = False
-		if self.height != PanelHeight:
-			self.ClearOnPaint = True
-			self.height = PanelHeight
-		else:
-			self.ClearOnPaint = False
+		self.width = PanelSize.GetWidth()
+		self.height = PanelSize.GetHeight()
 		self.viewport.UpdateBackground(self.width, self.height)
 		self.viewport.ApplyZoomSteps(OldSteps)
 		self.parent.UpdateZoomControls()
@@ -88,8 +78,6 @@ class ImageDisplay(wx.Panel):
 	def _OnPaint(self, e):
 		"Load the image at pos in the bitmap at array and scale it to fit the panel. If the image has alpha, overlay it with an image from the background manager."
 		dc = wx.AutoBufferedPaintDC(self)
-		if self.ClearOnPaint:
-			dc.Clear()
 		if self.viewport.ImageBitmap is None:
 			return
 		if self.quality != self.CurrentQuality:
@@ -102,7 +90,6 @@ class ImageDisplay(wx.Panel):
 		e.Skip()
 	def SetImage(self, image):
 		self.image = image
-		self.ClearOnPaint = False
 		self.viewport.UpdateImage(self.image, self.quality)
 	def __init__(self, parent, quality, viewport, keybinds):
 		wx.Panel.__init__(self, parent=parent)
@@ -110,7 +97,6 @@ class ImageDisplay(wx.Panel):
 		self.image = None
 		self.height = None
 		self.width = None
-		self.ClearOnPaint = False
 		self.quality = quality
 		self.CurrentQuality = quality
 		self.viewport = viewport
