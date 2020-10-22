@@ -87,8 +87,9 @@ class ViewPort:
 		self._CalcConstrainedSample()
 	def ApplyMove(self, x, y):
 		"Apply horizontal and vertical movement."
-		self.OrigSampleXPos += (x * self.ZoomLevel * self.FitXLevel)
-		self.OrigSampleYPos += (y * self.ZoomLevel * self.FitYLevel)
+		FitMaxLevel = max(self.FitXLevel, self.FitYLevel)
+		self.OrigSampleXPos += (x * self.ZoomLevel * FitMaxLevel)
+		self.OrigSampleYPos += (y * self.ZoomLevel * FitMaxLevel)
 		self.OrigSampleXPos = min(self.OrigSampleXPos, self.FitXLevel)
 		self.OrigSampleYPos = min(self.OrigSampleYPos, self.FitYLevel)
 		self.OrigSampleXPos = max(self.OrigSampleXPos, 0.0)
