@@ -194,7 +194,10 @@ class ImagePanel(wx.Panel):
 			else:
 				self.ZoomFitButton.Enable()
 				self.ZoomOutButton.Enable()
-			self.ZoomInButton.Enable()
+			if self.image.viewport.ZoomLevel <= self.image.viewport.ZoomInterval:
+				self.ZoomInButton.Disable()
+			else:
+				self.ZoomInButton.Enable()
 	def _update(self):
 		"Update the current bitmap, the information display, and controls."
 		self._UpdateImage()
