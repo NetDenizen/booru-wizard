@@ -70,6 +70,9 @@ class ViewPort:
 						self.AccelStepsList.pop()
 				else:
 					break
+				if self.ZoomLevel >= self.FitLevel:
+					self.ZoomLevel = self.FitLevel
+					break
 			else:
 				if self.ZoomLevel <= self.ZoomInterval:
 					self.ZoomLevel = self.ZoomInterval
@@ -84,6 +87,9 @@ class ViewPort:
 				self.TotalSteps += 1
 				if ZoomLevel > 1.0 and self.ZoomLevel < 1.0:
 					self._ActualFinalAccelStep(ZoomLevel)
+				if self.ZoomLevel <= self.ZoomInterval:
+					self.ZoomLevel = self.ZoomInterval
+					break
 		self._CalcConstrainedSample()
 	def ApplyMove(self, x, y):
 		"Apply horizontal and vertical movement."
