@@ -180,12 +180,15 @@ class ViewPort:
 			self.ApplyActualSize()
 			if OldSteps > 0:
 				self.ApplyZoomTimes(True, OldSteps)
+				self.TotalSteps = OldSteps
 			elif OldSteps < 0:
 				self.ApplyZoomTimes( False, abs(OldSteps) )
+				self.TotalSteps = OldSteps
 		else:
 			self.ApplyFit()
 			if OldSteps > 0:
 				self.ApplyZoomTimes(True, OldSteps)
+				self.TotalSteps = OldSteps
 	def GetActualSizeRatio(self):
 		"Return the zoom level relative to the actual size of the image, rather than the display, along with the sample and display sizes, in a tuple formatted: (ratio, SampleWidth, SampleHeight)."
 		ImageSize = self.image.GetSize()
