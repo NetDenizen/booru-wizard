@@ -127,8 +127,10 @@ class ViewPort:
 	def ApplyActualSize(self):
 		if self.image is None:
 			return
-		self.ApplyFit()
 		self.state = ViewPortState.ACTUAL
+
+		while self.ZoomLevel < 1.0:
+			self.ApplyZoomTimes(False, 1)
 
 		ZoomLevel = self.ZoomLevel
 		while self.ZoomLevel > 1.0:
