@@ -72,8 +72,8 @@ class ImageDisplay(wx.Panel):
 		self.height = PanelSize.GetHeight()
 		self.viewport.UpdateBackground(self.width, self.height)
 		self.viewport.ApplyZoomSteps(OldSteps)
-		self.parent.UpdateZoomControls()
 		self.viewport.UpdateImage(self.image, self.quality)
+		self.parent.UpdateZoomControls()
 		e.Skip()
 	def _OnPaint(self, e):
 		"Load the image at pos in the bitmap at array and scale it to fit the panel. If the image has alpha, overlay it with an image from the background manager."

@@ -155,6 +155,13 @@ class ViewPort:
 			self.ImageBitmap = None
 			return
 
+		if self.ZoomLevel == self.FitLevel:
+			self.state = ViewPortState.FIT
+			self.TotalSteps = 0
+		elif self.ZoomLevel == 1.0:
+			self.state = ViewPortState.ACTUAL
+			self.TotalSteps = 0
+
 		ImageSize = image.GetSize()
 		ImageWidth = ImageSize.GetWidth()
 		ImageHeight = ImageSize.GetHeight()
