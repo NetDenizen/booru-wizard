@@ -350,7 +350,7 @@ class ImagePanel(wx.Panel):
 		self.ZoomActualButton = wx.Button(self, label="1.0", style=wx.BU_EXACTFIT)
 		self.ZoomActualButtonTip = wx.ToolTip( ''.join( ( 'Zoom to actual size (1.0 Zoom Ratio).', RenderThreeIfMid(' (', keybinds.get('zoom_actual_size'), ')') ) ) )
 		self.ImageSearch = TagSearch(self, OutputFiles)
-		self.ImageSearch.EntryTip = wx.ToolTip( ''.join( ( 'Tag search field. Enter space-separated tags to update menu. The image must contain all of these, or options may start with \'-\' to exclude them. Menu items will switch to the associated image.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_tag_search'), ')'), RenderThreeIfMid(' (Open Menu: ', keybinds.get('select_tag_search_menu'), ')') ) ) )
+		self.ImageSearch.EntryTipText = ''.join( ( 'Tag search field. Enter space-separated tags to update menu. The image must contain all of these, or options may start with \'-\' to exclude them. Menu items will switch to the associated image.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_tag_search'), ')'), RenderThreeIfMid(' (Open Menu: ', keybinds.get('select_tag_search_menu'), ')') ) )
 		self.ImageSearch.LeftImageTip = wx.ToolTip( ''.join( ( 'Previous image in search results, relative to the currently loaded image.', RenderThreeIfMid(' (', keybinds.get('left_tag_search_result'), ')') ) ) )
 		self.ImageSearch.RightImageTip = wx.ToolTip( ''.join( ( 'Next image in search results, relative to the currently loaded image.', RenderThreeIfMid(' (', keybinds.get('right_tag_search_result'), ')') ) ) )
 		self.image = ImageDisplay(self, ImageQuality, ViewPort, keybinds)
@@ -414,7 +414,7 @@ class ImagePanel(wx.Panel):
 		self.ZoomOutButton.SetToolTip(self.ZoomOutButtonTip)
 		self.ZoomFitButton.SetToolTip(self.ZoomFitButtonTip)
 		self.ZoomActualButton.SetToolTip(self.ZoomActualButtonTip)
-		self.ImageSearch.entry.SetToolTip(self.ImageSearch.EntryTip)
+		self.ImageSearch.SetEntryTip()
 		self.ImageSearch.LeftImage.SetToolTip(self.ImageSearch.LeftImageTip)
 		self.ImageSearch.RightImage.SetToolTip(self.ImageSearch.RightImageTip)
 
@@ -487,7 +487,7 @@ class ImageLabel(wx.Panel):
 	def _OnPathEntry(self, e):
 		"Send an IndexImage message, if the index of PathEntry contents can be found in paths; otherwise, try to autocomplete the contents."
 		try:
-			pub.sendMessage( "IndexImage", message=self.PathEntry.SearchPath( self.PathEntry.GetPath() ) )
+			pub.sendMessage( "IndexImage", message=self.PathEntry.SearchPath( self.PathEntry.GetValue() ) )
 		except ValueError: # TODO: Should this work with any exception?
 			self.PathEntry.UpdateAutocomplete()
 		e.Skip()
@@ -498,12 +498,12 @@ class ImageLabel(wx.Panel):
 		self.pos = CircularCounter(self.PathEntry.GetPathsLen() - 1) # Position in paths
 		self.IndexEntry = wx.TextCtrl(self, style= wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Editable display for current image index
 		self.IndexLabel = wx.StaticText(self, style= wx.ALIGN_CENTER) # Static part of image index display
-		self.PathEntry.EntryTip = wx.ToolTip( ''.join( ( 'Image path entry; if the path doesn\'t exist, then press enter autocomplete.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_image_path'), ')'), RenderThreeIfMid(' (Open Menu: ', keybinds.get('select_image_path_menu'), ')') ) ) )
+		self.PathEntry.EntryTipText = ''.join( ( 'Image path entry; if the path doesn\'t exist, then press enter autocomplete.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_image_path'), ')'), RenderThreeIfMid(' (Open Menu: ', keybinds.get('select_image_path_menu'), ')') ) )
 		self.IndexEntryTip = wx.ToolTip( ''.join( ( 'Image index entry. Press enter to select the image index.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_image_index'), ')') ) ) )
 		self.IndexLabelTip = wx.ToolTip('Total number of images.')
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-		self.PathEntry.entry.SetToolTip(self.PathEntry.EntryTip)
+		self.PathEntry.SetEntryTip()
 		self.IndexEntry.SetToolTip(self.IndexEntryTip)
 		self.IndexLabel.SetToolTip(self.IndexLabelTip)
 

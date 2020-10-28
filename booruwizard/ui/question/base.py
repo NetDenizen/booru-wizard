@@ -395,7 +395,7 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 	def _OnPathEntry(self, e):
 		"Send an IndexImage message, if the index of PathEntry contents can be found in paths; otherwise, try to autocomplete the contents."
 		try:
-			value = self.PathEntry.SearchPath( self.PathEntry.GetPath() )
+			value = self.PathEntry.SearchPath( self.PathEntry.GetValue() )
 			self.CurrentSource.set(value)
 			self.OutputFile = self.OutputFiles[value]
 			self.disp()

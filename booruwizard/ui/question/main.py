@@ -521,7 +521,7 @@ class BulkTagger(wx.Panel):
 	def _OnPathEntry(self, e):
 		"Send an IndexImage message, if the index of PathEntry contents can be found in paths; otherwise, try to autocomplete the contents."
 		try:
-			self._AddNumber(self.PathEntry.SearchPath( self.PathEntry.GetPath() ) + 1)
+			self._AddNumber(self.PathEntry.SearchPath( self.PathEntry.GetValue() ) + 1)
 		except ValueError: # TODO: Should this work with any exception?
 			self.PathEntry.UpdateAutocomplete()
 		e.Skip()
