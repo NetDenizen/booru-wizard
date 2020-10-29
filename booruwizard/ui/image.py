@@ -7,7 +7,7 @@ from pubsub import pub
 
 from booruwizard.lib.imagereader import ImageReader
 from booruwizard.lib.viewport import ViewPortState
-from booruwizard.ui.common import PathEntry, CircularCounter, RenderThreeIfMid, TagSearch
+from booruwizard.ui.common import PathEntry, CircularCounter, RenderThreeIfMid, TagSearch, TagLookup
 
 #TODO: Should we have a control to affect the scaling (maybe an alternate scrollbar setting), or to change the background color?
 class ImageDisplay(wx.Panel):
@@ -319,7 +319,24 @@ class ImagePanel(wx.Panel):
 	def _OnOutputUpdateButton(self, e):
 		pub.sendMessage("FileUpdateForce", message=None)
 		e.Skip()
-	def __init__(self, parent, OutputFiles, images, ImageQuality, ViewPort, keybinds):
+	def _AddFoundTag(self, name):
+		self.TagLookup.Clear()
+		if name not in self.ImageSearch.GetValue().split():
+			if self.ImageSearch.IsEmpty():
+				self.ImageSearch.Clear()
+			self.ImageSearch.write( ''.join( (name, ' ') ) )
+			self.ImageSearch.ForcePendingUpdate() #TODO: We may not need this if 'write' forces an update event.
+	def OnTagLookupSelection(self, e):
+		self._AddFoundTag( self.TagLookup.GetMenuItem( e.GetId() ) )
+		e.Skip()
+	def _OnTagLookupEntry(self, e):
+		name = self.TagLookup.GetValue().strip()
+		if name in self.TagLookup.GetAutocompleteOptions():
+			self._AddFoundTag(name)
+		else:
+			self.TagLookup.UpdateAutocomplete()
+		e.Skip()
+	def __init__(self, parent, OutputFiles, TagsTracker, images, ImageQuality, ViewPort, keybinds):
 		wx.Panel.__init__(self, parent=parent)
 
 		self.pos = None # Position in bitmaps
@@ -349,22 +366,37 @@ class ImagePanel(wx.Panel):
 		self.ZoomFitButtonTip = wx.ToolTip( ''.join( ( 'Zoom to fit window.', RenderThreeIfMid(' (', keybinds.get('zoom_fit'), ')') ) ) )
 		self.ZoomActualButton = wx.Button(self, label="1.0", style=wx.BU_EXACTFIT)
 		self.ZoomActualButtonTip = wx.ToolTip( ''.join( ( 'Zoom to actual size (1.0 Zoom Ratio).', RenderThreeIfMid(' (', keybinds.get('zoom_actual_size'), ')') ) ) )
+		self.TagLookupLabel = wx.StaticText(self, label='->', style= wx.ALIGN_CENTER)
+		self.TagLookup = TagLookup(self, self.OnTagLookupSelection, TagsTracker)
+		self.TagLookup.EntryTipText = ''.join( ( 'This search menu lists all tags which contain the entered text. Press enter for autocomplete. If the tag is already an exact match, then autocomplete will copy to the below field. Clicking a menu item will also do this.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_tag_lookup'), ')'), RenderThreeIfMid(' (Open Menu: ', keybinds.get('select_tag_lookup_menu'), ')') ) )
+		#self.ImageSearchLabel = wx.StaticText(self, label='V Search by tag V', style= wx.ALIGN_CENTER)
 		self.ImageSearch = TagSearch(self, OutputFiles)
-		self.ImageSearch.EntryTipText = ''.join( ( 'Tag search field. Enter space-separated tags to update menu. The image must contain all of these, or options may start with \'-\' to exclude them. Menu items will switch to the associated image.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_tag_search'), ')'), RenderThreeIfMid(' (Open Menu: ', keybinds.get('select_tag_search_menu'), ')') ) )
+		self.ImageSearch.EntryTipText = ''.join( ( 'To search images by tags, enter each tag separated by a space. The image must contain all of these, or options may start with \'-\' to exclude them. Menu items will switch to the associated image.', RenderThreeIfMid(' (Focus: ', keybinds.get('select_tag_search'), ')'), RenderThreeIfMid(' (Open Menu: ', keybinds.get('select_tag_search_menu'), ')') ) )
 		self.ImageSearch.LeftImageTip = wx.ToolTip( ''.join( ( 'Previous image in search results, relative to the currently loaded image.', RenderThreeIfMid(' (', keybinds.get('left_tag_search_result'), ')') ) ) )
 		self.ImageSearch.RightImageTip = wx.ToolTip( ''.join( ( 'Next image in search results, relative to the currently loaded image.', RenderThreeIfMid(' (', keybinds.get('right_tag_search_result'), ')') ) ) )
 		self.image = ImageDisplay(self, ImageQuality, ViewPort, keybinds)
+		#self.TagLookupSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.ImageSearchSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.ZoomControlSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.LeftPaneSizer = wx.BoxSizer(wx.VERTICAL)
 		self.MainSizer = wx.BoxSizer(wx.HORIZONTAL)
 
+		self.TagLookup.SelfBinds()
+		self.TagLookup.SelfPubSub()
 		self.ImageSearch.SelfBinds()
 		self.ImageSearch.SelfPubSub()
+
+		#self.TagLookupSizer.Add(self.TagLookupLabel, 0, wx.ALIGN_CENTER)
+		#self.TagLookupSizer.AddStretchSpacer(1)
+		#self.TagLookupSizer.Add(self.TagLookup.entry, 50, wx.ALIGN_CENTER | wx.EXPAND)
 
 		self.ImageSearchSizer.Add(self.ImageSearch.LeftImage, 0, wx.ALIGN_CENTER)
 		self.ImageSearchSizer.AddStretchSpacer(1)
 		self.ImageSearchSizer.Add(self.ImageSearch.RightImage, 0, wx.ALIGN_CENTER)
+		self.ImageSearchSizer.AddStretchSpacer(1)
+		self.ImageSearchSizer.Add(self.TagLookup.entry, 25, wx.ALIGN_CENTER | wx.EXPAND)
+		self.ImageSearchSizer.AddStretchSpacer(1)
+		self.ImageSearchSizer.Add(self.TagLookupLabel, 0, wx.ALIGN_CENTER)
 		self.ImageSearchSizer.AddStretchSpacer(1)
 		self.ImageSearchSizer.Add(self.ImageSearch.entry, 50, wx.ALIGN_CENTER | wx.EXPAND)
 
@@ -390,6 +422,10 @@ class ImagePanel(wx.Panel):
 		self.LeftPaneSizer.AddStretchSpacer(1)
 		self.LeftPaneSizer.Add(self.ZoomControlSizer, 0, wx.ALIGN_BOTTOM | wx.ALIGN_LEFT | wx.BOTTOM | wx.LEFT)
 		self.LeftPaneSizer.AddStretchSpacer(4)
+		#self.LeftPaneSizer.Add(self.TagLookupSizer, 0, wx.ALIGN_BOTTOM | wx.ALIGN_LEFT | wx.BOTTOM | wx.LEFT | wx.EXPAND)
+		#self.LeftPaneSizer.AddStretchSpacer(1)
+		#self.LeftPaneSizer.Add(self.ImageSearchLabel, 0, wx.ALIGN_CENTER)
+		#self.LeftPaneSizer.AddStretchSpacer(1)
 		self.LeftPaneSizer.Add(self.ImageSearchSizer, 0, wx.ALIGN_BOTTOM | wx.ALIGN_LEFT | wx.BOTTOM | wx.LEFT | wx.EXPAND)
 		self.LeftPaneSizer.AddStretchSpacer(2)
 
@@ -415,6 +451,7 @@ class ImagePanel(wx.Panel):
 		self.ZoomFitButton.SetToolTip(self.ZoomFitButtonTip)
 		self.ZoomActualButton.SetToolTip(self.ZoomActualButtonTip)
 		self.ImageSearch.SetEntryTip()
+		self.TagLookup.SetEntryTip()
 		self.ImageSearch.LeftImage.SetToolTip(self.ImageSearch.LeftImageTip)
 		self.ImageSearch.RightImage.SetToolTip(self.ImageSearch.RightImageTip)
 
@@ -436,6 +473,7 @@ class ImagePanel(wx.Panel):
 		self.Bind( wx.EVT_BUTTON, self._OnZoomOut, id=self.ZoomOutButton.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnZoomFit, id=self.ZoomFitButton.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnZoomActual, id=self.ZoomActualButton.GetId() )
+		self.Bind( wx.EVT_TEXT_ENTER, self._OnTagLookupEntry, id=self.TagLookup.entry.GetId() )
 
 		pub.subscribe(self._OnFileUpdatePending, "FileUpdatePending")
 		pub.subscribe(self._OnFileUpdateClear, "FileUpdateClear")
@@ -525,10 +563,10 @@ class ImageLabel(wx.Panel):
 		pub.subscribe(self._OnFocusImageIndex, "FocusImageIndex")
 
 class ImageContainer(wx.Panel):
-	def __init__(self, parent, images, ImageQuality, OutputFiles, viewport, keybinds):
+	def __init__(self, parent, images, ImageQuality, OutputFiles, TagsTracker, viewport, keybinds):
 		wx.Panel.__init__(self, parent=parent)
 
-		self.image = ImagePanel(self, OutputFiles, images, ImageQuality, viewport, keybinds)
+		self.image = ImagePanel(self, OutputFiles, TagsTracker, images, ImageQuality, viewport, keybinds)
 		self.label = ImageLabel(self, OutputFiles.InputPaths, keybinds)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 

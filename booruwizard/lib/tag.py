@@ -177,6 +177,24 @@ class TagsContainer:
 				OutputLists.append( list() )
 			OutputLists[t.occurrences - 1].append(t.name)
 		return [' '.join(l) for l in OutputLists]
+	def FindFuzzy(self, name):
+		"Return all tags, the name of which, contains the given substring, even if that tag has 0 occurrences."
+		#TODO: See if this needs to be optimized.
+		NameLower = name.lower()
+		output = []
+		for n in self.names:
+			if NameLower in n:
+				output.append(n)
+		return output
+	def FindFuzzyDict(self, name):
+		"Return a dict of all tags with names as keys and occurrences as values, the names of which, contains the given substring, even if that tag has 0 occurrences."
+		#TODO: See if this needs to be optimized.
+		NameLower = name.lower()
+		output = OrderedDict()
+		for t in self.tags:
+			if NameLower in t.name:
+				output[t.name] = t.occurrences
+		return output
 
 class ConditionalTaggerNode:
 	def __init__(self, name):

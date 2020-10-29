@@ -51,20 +51,20 @@ class CircularCounter:
 		self._MaxValue = MaxValue
 		self._value = 0
 
-class SearchEntry:
+class SearchEntry: # This class should never be used on its own
 	def GetValue(self):
 		"Get the current value of the entry."
 		return self.entry.GetValue()
+	def write(self, text):
+		self.entry.write(text)
+	def IsEmpty(self):
+		return self.entry.IsEmpty()
+	def Clear(self):
+		self.entry.Clear()
 	def SetEntryTip(self):
 		if self.EntryTipText is not None:
 			self.entry.UnsetToolTip()
 			self.entry.SetToolTip( wx.ToolTip(self.EntryTipText) )
-	def GetMenuItemIds(self):
-		"Return a list of IDs for each menu item."
-		output = []
-		for i in self._MenuItems:
-			output.append( i.GetId() )
-		return output
 	def FocusEntry(self):
 		self.entry.SetFocus()
 	def FocusMenu(self):
@@ -136,8 +136,8 @@ class PathEntry(SearchEntry):
 	def SearchPath(self, query):
 		return self._paths.index(query)
 	def SelfBinds(self):
-		for i in self.GetMenuItemIds():
-			self.parent.Bind(wx.EVT_MENU, self._OnMenuItemChosen, id=i)
+		for i in self._MenuItems:
+			self.parent.Bind( wx.EVT_MENU, self._OnMenuItemChosen, id=i.GetId() )
 
 		self.parent.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self._OnSearch, id=self.entry.GetId() )
 	def SelfPubSub(self):
@@ -167,6 +167,8 @@ class PathEntry(SearchEntry):
 		self.SetPath(0)
 
 class TagSearch(SearchEntry):
+	def ForcePendingUpdate(self):
+		self._MenuUpdated = False
 	def UpdateMenu(self):
 		if self._MenuUpdated:
 			return
@@ -208,8 +210,8 @@ class TagSearch(SearchEntry):
 		self._MenuUpdated = False
 		e.Skip()
 	def SelfBinds(self):
-		for i in self.GetMenuItemIds():
-			self.parent.Bind(wx.EVT_MENU, self._OnMenuItemChosen, id=i)
+		for i in self._MenuItems:
+			self.parent.Bind( wx.EVT_MENU, self._OnMenuItemChosen, id=i.GetId() )
 
 		self.parent.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self._OnSearch, id=self.entry.GetId() )
 		self.parent.Bind( wx.EVT_BUTTON, self._OnLeftImageButton, id=self.LeftImage.GetId() )
@@ -299,5 +301,76 @@ class TagSearch(SearchEntry):
 			item = wx.MenuItem(self._menu, ItemId, PreviewText, PreviewText)
 			self._MenuItems.append(item)
 			self._MenuLookup[ItemId] = i
+		self.entry.SetMenu(self._menu)
+		self.entry.ShowSearchButton(False)
+
+class TagLookup(SearchEntry):
+	def UpdateMenu(self):
+		"Set the contents of PathMenu based on the contents of PathEntry."
+		for i in self._MenuItems:
+			self.parent.Unbind( wx.EVT_MENU, id=i.GetId() )
+		for i in self._menu.GetMenuItems():
+			self._menu.Remove(i)
+		self._MenuItems = []
+		self._MenuLookup = {}
+		results = self.TagsTracker.FindFuzzyDict( self.entry.GetValue().strip() )
+		results = sorted(results.items(), key=lambda i: i[1], reverse=True)
+		for r in results:
+			ItemId = wx.NewId()
+			PreviewText = ''.join( ( r[0], ' : ', str(r[1]) ) )
+			item = wx.MenuItem(self._menu, ItemId, PreviewText, PreviewText)
+			self._MenuItems.append(item)
+			self._MenuLookup[ItemId] = r[0]
+			self.parent.Bind(wx.EVT_MENU, self.ItemCallback, id=ItemId)
+			self._menu.Append(item)
+	def UpdateAutocomplete(self):
+		val = self.entry.GetValue().lower()
+		orig = val.lower()
+		ContainsOrig = []
+		StartsWithOrig = []
+		prefixes = []
+		for s in self.GetAutocompleteOptions():
+			if orig in s:
+				ContainsOrig.append(s)
+				if s.startswith(orig):
+					StartsWithOrig.append(s)
+			if val in s:
+				if len(s) > len(val):
+					val = s
+			else:
+				prefixes.append( commonprefix([s, val]) )
+		if len(ContainsOrig) == 1:
+			val = ContainsOrig[0]
+		elif len(StartsWithOrig) > 0:
+			val = commonprefix(StartsWithOrig)
+		else:
+			prefixes = tuple( (p for p in prefixes if p) )
+			if len(prefixes) > 0:
+				val = max(prefixes, key=len)
+			else:
+				val = orig
+		self.entry.SetValue(val)
+	def GetAutocompleteOptions(self):
+		return self.TagsTracker.FindFuzzy( self.entry.GetValue().strip() )
+	def GetMenuItem(self, ItemId):
+		"Set the path entry to the chosen menu value."
+		return self._MenuLookup[ItemId]
+	def SelfBinds(self):
+		self.parent.Bind( wx.EVT_SEARCHCTRL_SEARCH_BTN, self._OnSearch, id=self.entry.GetId() )
+	def SelfPubSub(self):
+		pub.subscribe(self._OnFocusEntry, "FocusTagLookup")
+		pub.subscribe(self._OnFocusMenu, "FocusTagLookupMenu")
+	def __init__(self, parent, ItemCallback, TagsTracker):
+		self.TagsTracker = TagsTracker
+		self._MenuItems = []
+		self._MenuLookup = {}
+		self._menu = wx.Menu()
+		self.parent = parent
+		self.ItemCallback = ItemCallback
+		self.entry = wx.SearchCtrl(parent, style= wx.TE_LEFT | wx.TE_PROCESS_ENTER | wx.TE_NOHIDESEL) # Search box containing path of current image
+		self.EntryTipText = "This search menu lists all tags which contain the entered text. Press enter for autocomplete."
+
+		self.SetEntryTip()
+
 		self.entry.SetMenu(self._menu)
 		self.entry.ShowSearchButton(False)

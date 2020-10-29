@@ -14,7 +14,7 @@
 
 * Implement TAG_CHECKER.
 
-* Implement tag search field.
+* Implement tag search fields.
 
 * NAMELESS_TAGS are now added on an empty source, as well as an unset one.
 

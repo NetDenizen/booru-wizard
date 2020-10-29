@@ -48,7 +48,7 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 
 		self.Sash0Pos = 0.4
 		self.Sash1Pos = 0.2
-		self.top = ImageContainer(self, images, ImageQuality, OutputFiles, ViewPort, keybinds)
+		self.top = ImageContainer(self, images, ImageQuality, OutputFiles, TagsTracker, ViewPort, keybinds)
 		self.middle = PromptContainer(self, len(OutputFiles.InputPaths), questions, keybinds)
 		self.bottom = QuestionsContainer(self, TagsTracker, questions, OutputFiles, images)
 
@@ -64,7 +64,7 @@ class MainContainer(wx.lib.splitter.MultiSplitterWindow):
 		self.Bind( wx.EVT_SPLITTER_SASH_POS_CHANGED, self._OnSashChanged, id=self.GetId() )
 
 		size = self.GetEffectiveMinSize()
-		size.SetHeight( int(float( size.GetHeight() ) * 1.9) )
+		size.SetHeight( int(float( size.GetHeight() ) * 1.75) )
 		size.SetWidth( int(float( size.GetWidth() ) * 1.5) )
 		self.SetMinSize(size)
 
