@@ -137,13 +137,13 @@ There are a number of features and changes which I consider for this software. T
 
 * Consider a setting to make output directories, if they don't already exist. The file dialog is crippled in this regard on Linux
 
-* Consider fully implementing Gelbooru-style tag searching in the tag search field.
-
 ### Open
 
 * I've considered adding more features to the image-viewer itself, such as the ability to zoom, and the ability to display animation. - Zooming implemented. Animation would likely involve complicated integration with ffmpeg libraries. wx animation support is too inconsistent between platforms. Specifically, the necessary methods are not supported for GTK.
 
-* Currently, the software produces little in the way of command-line output which could be logged. What is logged, is typically from within the wxPython library. Aside from the command-line logging, such information could also be included in a window or other widget, or flushed to a file. - Basic command line logging implemented, especially for file operations.
+* Currently, the software produces little in the way of command-line output which could be logged. What is logged, is typically from within the wxPython library. Aside from the command-line logging, such information could also be included in a window or other widget, or flushed to a file. - Basic command line logging implemented, especially for file operations. Are there any other places where we could add this?
+
+* Consider fully implementing Gelbooru-style tag searching in the tag search field. - Negation using '-' is available. Consider adding '~' for 'OR' operations and parentheses to affect order of evaluation.
 
 ### Finished
 
