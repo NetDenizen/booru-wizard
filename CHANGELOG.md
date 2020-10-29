@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* Implement DEFAULT_NAME.
+
 * The image display now uses the entirety of the open window area.
 
 * Implement SOURCE_QUESTION_BAD_ID_TAGS and SOURCE_QUESTION_USER_AGENT.

@@ -61,6 +61,7 @@ class PairKey(Enum):
 	TAG_CHECKER_SEPARATORS        = 41
 	SOURCE_QUESTION_BAD_ID_TAGS   = 42
 	SOURCE_QUESTION_USER_AGENT    = 43
+	DEFAULT_NAME                  = 44
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 
 PAIR_KEY_NAMES = {}
@@ -388,7 +389,7 @@ class parser:
 
 		self.ImageConditions = []
 
-		self.DefaultName = None # Actually cannot currently be changed by the configuration file, but is here for extra flexibility.
+		self.DefaultName = None
 		self.NamelessTags = TagsContainer()
 
 		self.DefaultSource = None
@@ -639,6 +640,8 @@ class parser:
 			self._AddSourceQuestionBadIdTags(token)
 		elif token.key == PairKey.SOURCE_QUESTION_USER_AGENT:
 			self._AddSourceQuestionUserAgent(token)
+		elif token.key == PairKey.DEFAULT_NAME:
+			self.DefaultName = token.value
 		else:
 			raise ParserError("Unhandled token.", token.line, token.col)
 	def parse(self, string):
