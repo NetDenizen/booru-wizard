@@ -137,11 +137,7 @@ There are a number of features and changes which I consider for this software. T
 
 * Consider a setting to make output directories, if they don't already exist. The file dialog is crippled in this regard on Linux
 
-* Consider making the tag search field more interactive, so the user need not enter exact matches.
-
 * Consider fully implementing Gelbooru-style tag searching in the tag search field.
-
-* Overhaul the image display, so it does not suffer from extremely skewed aspect ratios when zoomed in.
 
 ### Open
 
@@ -162,3 +158,7 @@ There are a number of features and changes which I consider for this software. T
 * It may greatly improve memorization of keybinds by listing them in the tooltips for the relevant field. - Keybinds will now appear in tooltips, if they are present.
 
 * Consider integrating the software with reverse image search services, to more efficiently identify sources. - Implemented by saucenao-api integration in SOURCE_QUESTION
+
+* Overhaul the image display, so it does not suffer from extremely skewed aspect ratios when zoomed in. - The image display now uses the entire area, to show as much of the image as possible.
+
+* Consider making the tag search field more interactive, so the user need not enter exact matches. - Added a second field to look up tag names using an autocomplete menu, and copy them to the image search menu.
