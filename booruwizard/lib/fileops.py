@@ -202,10 +202,12 @@ class FileData:
 			self.indent = 4
 
 		self.name = None
+		self.DefaultName = DefaultName
 		self.NamelessTags = NamelessTags
 		self.SetName(DefaultName)
 
 		self.source = None
+		self.DefaultSource = DefaultSource
 		self.SourcelessTags = SourcelessTags
 		self.SetSource(DefaultSource)
 
@@ -244,6 +246,8 @@ class FileData:
 			self.SetName(name)
 		else:
 			raise ControlFileError( ''.join( ("'name' field is '", self._GetJSONTypeName(name), "' but must be a string or null, or not included.") ) )
+		if not self.name:
+			self.SetName(self.DefaultName)
 	def _LoadJSONSource(self, obj):
 		"Load the source field from the JSON object."
 		source = obj.get( 'source', unfound() )
@@ -251,6 +255,8 @@ class FileData:
 			self.SetSource(source)
 		else:
 			raise ControlFileError( ''.join( ("'source' field is '", self._GetJSONTypeName(source), "' but must be a string or null, or not included.") ) )
+		if not self.source:
+			self.SetSource(self.DefaultSource)
 	def _LoadJSONRating(self, obj):
 		"Load the rating field from a JSON object."
 		rating = obj.get( 'rating', unfound() )

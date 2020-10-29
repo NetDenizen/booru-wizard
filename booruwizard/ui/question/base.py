@@ -512,7 +512,9 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 		"Set value controlled by this field."
 		value = self.entry.GetValue()
 		self.OutputFile.PrepareChange()
+		self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		self._ValueSetter(value)
+		self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		self.OutputFile.FinishChange()
 	def SetRomanizeButtonState(self):
 		if self.entry.GetValue():

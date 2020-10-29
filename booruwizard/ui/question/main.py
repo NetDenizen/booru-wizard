@@ -695,12 +695,13 @@ class NameQuestion(SingleStringEntry):
 		self.OutputFile = OutputFile
 		self._ValueGetter = self.OutputFile.GetName
 		self._ValueSetter = self.OutputFile.SetName
-	def __init__(self, parent):
+	def __init__(self, parent, TagsTracker):
 		SingleStringEntry.__init__(self, parent)
 
 		self.OutputFile = None # File data object
 		self._ValueSetter = None
 		self._ValueGetter = None
+		self.TagsTracker = TagsTracker
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
 		self.EntryTip = wx.ToolTip("Set name to use here.")
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
@@ -948,6 +949,7 @@ class SourceQuestion(SingleStringEntry):
 		self.OutputFile = None # File data object
 		self._ValueSetter = None
 		self._ValueGetter = None
+		self.TagsTracker = TagsTracker
 		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
 		self.EntryTip = wx.ToolTip("Enter source here.")
 		self.RomanizeButton = wx.Button(self, label='Romanize Kana Characters')
@@ -1298,7 +1300,7 @@ class QuestionsContainer(wx.Panel):
 			elif q.type == QuestionType.SESSION_TAGS:
 				self.QuestionWidgets.append( SessionTags(self, TagsTracker) )
 			elif q.type == QuestionType.NAME_QUESTION:
-				self.QuestionWidgets.append( NameQuestion(self) )
+				self.QuestionWidgets.append( NameQuestion(self, TagsTracker) )
 				proportion = 0
 			elif q.type == QuestionType.SOURCE_QUESTION:
 				self.QuestionWidgets.append( SourceQuestion(self, q, NumImages, TagsTracker, images) )
