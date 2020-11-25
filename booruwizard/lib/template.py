@@ -260,6 +260,7 @@ class OptionQuestion(question):
 	def GetChoiceNames(self):
 		output = []
 		for o in self.options:
+			#output.append( o.name.replace('&', '') ) #XXX: Escape GTK 'mnemonic' characters.
 			output.append(o.name)
 		return output
 	def GetChoiceTags(self):

@@ -818,6 +818,8 @@ class SourceQuestion(SingleStringEntry):
 		CurrentResults = self.SourceChoicesResultsNames[self.pos.get()]
 		if not CurrentResults:
 			CurrentResults = ['<CUSTOM>']
+		else:
+			CurrentResults = [r.replace('&', '') for r in CurrentResults]  #XXX: Remove GTK 'mnemonic' characters.
 		self.Unbind( wx.EVT_RADIOBOX, id=self.SourceChoices.GetId() )
 		self.SourceChoicesSizer.Remove(0)
 		self.SourceChoices.Destroy()
