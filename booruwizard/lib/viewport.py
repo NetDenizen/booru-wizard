@@ -129,8 +129,13 @@ class ViewPort:
 			return
 		self.state = ViewPortState.ACTUAL
 
+		ZoomLevel = self.ZoomLevel
 		while self.ZoomLevel < 1.0:
 			self.ApplyZoomTimes(False, 1)
+			if ZoomLevel == self.ZoomLevel:
+				break
+			else:
+				ZoomLevel = self.ZoomLevel
 
 		ZoomLevel = self.ZoomLevel
 		while self.ZoomLevel > 1.0:
