@@ -191,6 +191,7 @@ class ViewPort:
 	def ApplyZoomSteps(self, OldSteps):
 		"Zoom in or out by OldSteps, according to the state of the viewport."
 		if self.state == ViewPortState.ACTUAL:
+			self.ApplyFit()
 			self.ApplyActualSize()
 			if OldSteps > 0:
 				self.ApplyZoomTimes(True, OldSteps)
