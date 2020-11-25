@@ -224,6 +224,8 @@ class ViewPort:
 		if self.PanInterval <= 0.0:
 			raise ViewPortError( ''.join( ('Pan interval "', str(self.ZoomAccelSteps), '" must be greater than 0.0') ) )
 
+		self.XOffset = 0
+		self.YOffset = 0
 		self.DisplayWidth = 0
 		self.DisplayHeight = 0
 		self.BackgroundBitmap = None

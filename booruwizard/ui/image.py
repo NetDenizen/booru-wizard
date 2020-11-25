@@ -85,8 +85,8 @@ class ImageDisplay(wx.Panel):
 		if self.quality != self.CurrentQuality:
 			self.CurrentQuality = self.quality
 			self.viewport.UpdateImage(self.image, self.quality)
-		dc.DrawBitmap(self.viewport.BackgroundBitmap, 0, 0, True)
-		dc.DrawBitmap(self.viewport.ImageBitmap, 0, 0, True)
+		dc.DrawBitmap(self.viewport.BackgroundBitmap, self.viewport.XOffset, self.viewport.YOffset, True)
+		dc.DrawBitmap(self.viewport.ImageBitmap, self.viewport.XOffset, self.viewport.YOffset, True)
 		self.Update()
 		self.Refresh()
 		e.Skip()
