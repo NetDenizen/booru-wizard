@@ -177,11 +177,29 @@ class ViewPort:
 		SampleYPos = int( floor(self.SampleYPos * self.DisplayHeight) )
 		ZoomWidth = int( floor(self.SampleWidth * self.DisplayWidth) )
 		ZoomHeight = int( floor(self.SampleHeight * self.DisplayHeight) )
-		SampleRect = wx.Rect(SampleXPos, SampleYPos, ZoomWidth, ZoomHeight)
 
+		self.XOffset = 0
+		self.YOffset = 0
+		DisplayWidth = self.DisplayWidth
+		DisplayHeight = self.DisplayHeight
+		if self.ZoomLevel == 1.0:
+			if DisplayWidth > ImageWidth:
+				diff = int( floor( ( DisplayWidth - ImageWidth ) ) )
+				self.XOffset = diff // 2
+				DisplayWidth -= diff
+				SampleXPos = max(0, SampleXPos - diff)
+				ZoomWidth = ImageWidth
+			if DisplayHeight > ImageHeight:
+				diff = int( floor( ( DisplayHeight - ImageHeight ) ) )
+				self.YOffset = diff // 2
+				DisplayHeight -= diff
+				SampleYPos = max(0, SampleYPos - diff)
+				ZoomHeight = ImageHeight
+
+		SampleRect = wx.Rect(SampleXPos, SampleYPos, ZoomWidth, ZoomHeight)
 		try:
 			NewImage = image.GetSubImage(SampleRect)
-			NewImage.Rescale(self.DisplayWidth, self.DisplayHeight, quality)
+			NewImage.Rescale(DisplayWidth, DisplayHeight, quality)
 
 			NewImageSize = NewImage.GetSize()
 			self.RenderBackground( NewImageSize.GetWidth(), NewImageSize.GetHeight() )
@@ -191,7 +209,11 @@ class ViewPort:
 	def ApplyZoomSteps(self, OldSteps):
 		"Zoom in or out by OldSteps, according to the state of the viewport."
 		if self.state == ViewPortState.ACTUAL:
+			OrigSampleXPos = self.OrigSampleXPos
+			OrigSampleYPos = self.OrigSampleYPos
 			self.ApplyFit()
+			self.OrigSampleXPos = OrigSampleXPos
+			self.OrigSampleYPos = OrigSampleYPos
 			self.ApplyActualSize()
 			if OldSteps > 0:
 				self.ApplyZoomTimes(True, OldSteps)
