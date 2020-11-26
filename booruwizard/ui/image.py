@@ -87,12 +87,12 @@ class ImageDisplay(wx.Panel):
 			self.viewport.UpdateImage(self.image, self.quality)
 		dc.DrawBitmap(self.viewport.BackgroundBitmap, self.viewport.XOffset, self.viewport.YOffset, True)
 		dc.DrawBitmap(self.viewport.ImageBitmap, self.viewport.XOffset, self.viewport.YOffset, True)
-		self.Update()
 		self.Refresh()
 		e.Skip()
 	def SetImage(self, image):
 		self.image = image
 		self._UpdateSize()
+		self.Refresh()
 	def __init__(self, parent, quality, viewport, keybinds):
 		wx.Panel.__init__(self, parent=parent)
 		self.parent = parent
