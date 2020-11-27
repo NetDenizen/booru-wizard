@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh -efu
 
 # A POSIX-compliant shell-script to run the software with some default settings.
 EXE_PATH='./booru-wizard'
@@ -12,10 +12,9 @@ JSON_OUTPUT=''
 extra_args=''
 if [ $# -ne 0 ]
 then
-	DEFAULT_IFS=$IFS
 	IFS=' '
 	extra_args="$*"
-	IFS=$DEFAULT_IFS
+	unset IFS
 fi
 
 "$EXE_PATH" --config "$CONFIG" \
