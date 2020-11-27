@@ -58,7 +58,7 @@ class SearchEntry: # This class should never be used on its own
 	def write(self, text):
 		self.entry.write(text)
 	def IsEmpty(self):
-		return self.entry.IsEmpty()
+		return self.entry.GetValue() == ""
 	def Clear(self):
 		self.entry.Clear()
 	def SetEntryTip(self):
