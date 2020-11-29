@@ -12,11 +12,11 @@ So far, this entails:
 
 * Tags
 
-Prompts displayed by the wizard can be manually determined by the user through the use of a configuration file. The default one included with this software is intended to be self-documenting, and explain the format, in addition to providing examples.
+Prompts displayed by the wizard can be manually determined by the user through use of a configuration file. The default one included with this software is intended to be self-documenting, and explain the format, in addition to providing examples.
 
 To anyone outside of the hair-fetish community, note that this default configuration file is specifically intended for organizing hair-fetish themed works. Should the software become more popular outside of this community, I might begin using a more generic default configuration.
 
-Metadata output from this software is in a series of .json files which correspond to each image opened. They are given the same name, but with `.json` appended to them. When the software is restarted, these same files are read to restore its previous state.
+Metadata output from this software is in a series of JSON files which correspond to each image opened. They are given the same name, but with `.json` appended to them. When the software is restarted, these same files are read to restore its previous state.
 
 This software was originally designed to be used in conjunction with the uploader userscript at: https://github.com/NetDenizen/Booru-mass-uploader
 
@@ -40,7 +40,7 @@ These basic steps may be followed to get both the wizard software, and the uploa
 
 2. Extract the archive to the directory of your choice.
 
-3. `run.bat` (on Windows) or `run.sh` (on Linux) may be used to run the software with the default configuration file set, and will accept extra command line parameters. It is not at all necessary, and the `booru-wizard` executable may be run directly directly.
+3. `run.bat` (on Windows) or `run.sh` (on Linux) may be used to run the software with the default configuration file set, and will accept extra command line parameters. It is not at all necessary, and the `booru-wizard` executable may be run directly.
 
    The images directory is where the actual images you wish to manage should be. The software produces its output in a series of .json files which correspond to each image file; these are sent to the output JSON directory. Finally, output files may be reopened, to restore the settings of your previous session; the input JSON directory is searched for these.
 
@@ -48,13 +48,13 @@ These basic steps may be followed to get both the wizard software, and the uploa
 
 ### Booru-mass-uploader
 
-1. Install a userscript manager for your browser. Common choices are Greasemonkey, Tampermonkey, and Violentmonkey are the 3 popular options. Thus far, the testing for this software has been with Greasemonkey on Mozilla browsers.
+1. Install a userscript manager for your browser. Greasemonkey, Tampermonkey, and Violentmonkey are 3 popular options. Thus far, the testing for this software has been with Greasemonkey on Mozilla browsers.
 
 2. The script can be acquired [here](https://netdenizen.github.io/Booru-mass-uploader/booru.mass.uploader.user.js). You should know the userscript manager has recognized it, since it will create a popup prompting to install.
 
 3. Go to the supported \*booru of your choice. Currently, Gelbooru 0.1, Danbooru, and Moebooru based sites should be supported, but note that this software was adapted from a preexisting project, and I've only tested Gelbooru for my version. If the script is loaded, you should see a 'Mass Upload' link at the top of the page, or in the navigation bar.
 
-4. The page should be largely self-documenting, but a quick overview is that '.JSON files:' serves a similar role to the input JSON files option for the booru-wizard, and 'Image files:' a similarly equivalent roles. The images you wish to upload should be selected by 'Image files:', while the corresponding JSON files should be selected by '.JSON files:'.
+4. The page should be largely self-documenting, but a quick overview is that '.JSON files:' serves a similar role to the input JSON files option for the booru-wizard, and 'Image files:' a similarly equivalent role. The images you wish to upload should be selected by 'Image files:', while the corresponding JSON files should be selected by '.JSON files:'.
 
 ## Interface Overview
 
@@ -64,15 +64,15 @@ The image is divided into 3 panes, which can be resized within the window, by cl
 
 ## Building and Dependencies
 
-The software is intended to run on Windows and Linux. A Mac port is a possibility, but it is a low priority, unless I find there is a great demand for it. Technically speaking, there is nothing in the code that I believe would make it incompatible, but I won't be actively maintaining and testing a port, for now. The library I used also seems to lack certain features on Mac.
+The software is intended to run on Windows and Linux. A Mac port is a possibility, but a low priority, unless I find a great demand for it. Technically speaking, there is nothing in the code that I believe would make it incompatible, but I won't be actively maintaining and testing a port, for now. wxPython (the GUI toolkit) does seem to lack certain features on Mac.
 
-Dependencies should not be an issue to the end-user, since the software will be packaged as a standalone executable along with the default configuration file, and a script to run the executable using that. Otherwise, the dependencies are:
+Dependencies should not be an issue to the end-user, since the software will be packaged as a standalone executable along with the default configuration file, and a script to run the executable with it. Otherwise, the dependencies are:
 
 * Python 3.4 or newer
 
 * wxPython 4
 
-* PyPubSub (Should be automatically included with wxPython)
+* PyPubSub
 
 * kanji_to_romaji3 (A Python 3 port I made of the kanji_to_romaji library, which can be found here: https://github.com/NetDenizen/kanji_to_romaji3)
 
