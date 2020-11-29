@@ -103,6 +103,12 @@ To build with PyInstaller, use this command from the root directory of the repos
 
 `python3 -m PyInstaller --clean --onefile --windowed --strip --name booru-wizard main.py`
 
+Once booru-wizard is built, the generation of packages for distribution may be automated by running `make_package.sh` from the root directory of the repository. Example:
+
+`./make_package.sh booru-wizard ./package /tmp 2.0 x86_64 linux`
+
+To get usage information for the script, simply run it without arguments.
+
 main.py can also be run directly with the booru-wizard files present in the same directory:
 
 `python3 main.py`
