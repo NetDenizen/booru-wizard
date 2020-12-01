@@ -44,7 +44,7 @@ class ImageDisplay(wx.Panel):
 		self.MouseStartX = e.GetX()
 		self.MouseStartY = e.GetY()
 		self.MouseDown = True
-		if self.viewport.ZoomLevel != self.viewport.FitLevel:
+		if self.viewport.ZoomLevel < self.viewport.FitLevel:
 			self.SetCursor( wx.Cursor(wx.CURSOR_CROSS) )
 		e.Skip()
 	def _OnMouseUp(self, e):
