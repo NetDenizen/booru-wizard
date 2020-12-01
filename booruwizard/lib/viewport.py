@@ -2,7 +2,6 @@
 
 from decimal import ROUND_FLOOR
 from decimal import Decimal as D
-from math import sqrt
 from enum import Enum
 
 import wx
@@ -55,11 +54,12 @@ class ViewPort:
 		if len(self.AccelStepsList) > 0 and self.AccelSteps == 0:
 			self.AccelStepsList.pop()
 			self.AccelStepsList.append(TargetDistance) #TODO: Make sure this is always less than zoom interval
+	def MaxZoomLevel(self):
+		return self.FitLevel + D(1.0)
 	def ApplyZoomTimes(self, ZoomIn, times):
 		"Apply zooming in or out a number of times."
 		for t in range(times):
 			if not ZoomIn:
-				MaxZoomLevel = self.FitLevel + D(1.0)
 				if self.ZoomLevel >= self.FitLevel:
 					self.AccelSteps += 1
 					if self.AccelSteps > self.ZoomAccelSteps:
@@ -69,7 +69,7 @@ class ViewPort:
 					ZoomLevel = self.ZoomLevel
 					self.ZoomLevel += self.ZoomInterval
 					self.TotalSteps -= 1
-					if self.ZoomLevel >= MaxZoomLevel:
+					if self.ZoomLevel >= self.MaxZoomLevel():
 						self.ZoomInterval = self.AccelStepsList[-2]
 						self.ZoomLevel -= self.AccelStepsList[-1]
 						self.AccelSteps -= 1
@@ -284,10 +284,7 @@ class ViewPort:
 		ImageSize = self.image.GetSize()
 		SampleWidth = self.SampleWidth * self.DisplayWidth
 		SampleHeight = self.SampleHeight * self.DisplayHeight
-		if self.DisplayWidth == 0 or self.DisplayHeight == 0:
-			ratio = 0
-		else:
-			ratio = sqrt( ( ImageSize.GetWidth() * ImageSize.GetHeight() ) / (SampleWidth * SampleHeight) )
+		ratio = self.FitLevel / self.ZoomLevel
 		return (ratio, SampleWidth, SampleHeight)
 	def __init__(self, BackgroundColor1, BackgroundColor2, BackgroundSquareWidth, ZoomStartInterval, ZoomAccel, ZoomAccelSteps, PanInterval):
 		self.BackgroundManager = TransparencyBackground(BackgroundColor1, BackgroundColor2, BackgroundSquareWidth)
