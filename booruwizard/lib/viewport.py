@@ -74,9 +74,6 @@ class ViewPort:
 					self.ZoomLevel = self.FitLevel
 					break
 			else:
-				if self.ZoomLevel <= self.ZoomInterval:
-					self.ZoomLevel = self.ZoomInterval
-					break
 				self.AccelSteps += 1
 				if self.AccelSteps > self.ZoomAccelSteps:
 					self.AccelSteps = 0
@@ -88,6 +85,8 @@ class ViewPort:
 				if ZoomLevel > 1.0 and self.ZoomLevel < 1.0:
 					self._ActualFinalAccelStep(ZoomLevel)
 				if self.ZoomLevel <= self.ZoomInterval:
+					self.AccelStepsList.pop()
+					self.AccelStepsList.append(ZoomLevel - self.ZoomInterval)
 					self.ZoomLevel = self.ZoomInterval
 					break
 		self._CalcConstrainedSample()
