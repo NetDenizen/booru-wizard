@@ -18,6 +18,7 @@ class ViewPortError(Exception):
 class ViewPortState(Enum):
 	FIT = 0
 	ACTUAL = 1
+	ASPECT = 2
 
 class ViewPort:
 	def _CalcSample(self):
@@ -58,9 +59,10 @@ class ViewPort:
 		for t in range(times):
 			if self.ZoomLock:
 				break
-			if not ZoomIn:
+			elif not ZoomIn:
 				if self.ZoomLevel >= self.FitLevel:
 					self.ZoomLevel = self.FitLevel
+					self.state = ViewPortState.ASPECT
 					break
 				if len(self.AccelStepsList) > 1:
 						self.ZoomInterval = self.AccelStepsList[-2]
@@ -75,6 +77,8 @@ class ViewPort:
 				if self.ZoomLevel >= self.FitLevel:
 					self.ZoomLevel = self.FitLevel
 					break
+			elif self.state == ViewPortState.ASPECT:
+				self.state = ViewPortState.FIT
 			else:
 				self.AccelSteps += 1
 				if self.AccelSteps > self.ZoomAccelSteps:
@@ -153,6 +157,9 @@ class ViewPort:
 			self._ActualFinalAccelStep(ZoomLevel)
 		self.TotalSteps = 0
 		self._CalcConstrainedSample()
+	def ApplyAspect(self):
+		self.ApplyFit()
+		self.state = ViewPortState.ASPECT
 	def RenderBackground(self, width, height):
 		if width != 0 and height != 0 and\
 		   ( self.BackgroundBitmap is None or\
@@ -170,12 +177,13 @@ class ViewPort:
 			self.ImageBitmap = None
 			return
 
-		if self.ZoomLevel == self.FitLevel:
-			self.state = ViewPortState.FIT
-			self.TotalSteps = 0
-		elif self.ZoomLevel == 1.0:
-			self.state = ViewPortState.ACTUAL
-			self.TotalSteps = 0
+		if self.state != ViewPortState.ASPECT:
+			if self.ZoomLevel == self.FitLevel:
+				self.state = ViewPortState.FIT
+				self.TotalSteps = 0
+			elif self.ZoomLevel == 1.0:
+				self.state = ViewPortState.ACTUAL
+				self.TotalSteps = 0
 
 		ImageSize = image.GetSize()
 		ImageWidth = ImageSize.GetWidth()
@@ -190,7 +198,29 @@ class ViewPort:
 		self.YOffset = 0
 		DisplayWidth = self.DisplayWidth
 		DisplayHeight = self.DisplayHeight
-		if self.ZoomLevel == 1.0:
+		if self.state == ViewPortState.ASPECT:
+			if ImageWidth > ImageHeight:
+				DisplayRatio = DisplayHeight / DisplayWidth
+				ImageRatio = ImageHeight / ImageWidth
+				if DisplayRatio > ImageRatio:
+					RatioDiff = ImageRatio / DisplayRatio
+				else:
+					RatioDiff = DisplayRatio / ImageRatio
+				DisplayHeight *= RatioDiff
+			else:
+				DisplayRatio = DisplayWidth / DisplayHeight
+				ImageRatio = ImageWidth / ImageHeight
+				if DisplayRatio > ImageRatio:
+					RatioDiff = ImageRatio / DisplayRatio
+				else:
+					RatioDiff = DisplayRatio / ImageRatio
+				RatioDiff = ImageRatio / DisplayRatio
+				DisplayWidth *= RatioDiff
+			self.XOffset = int( floor( ( self.DisplayWidth - DisplayWidth ) * 0.5 ) )
+			self.YOffset = int( floor( ( self.DisplayHeight - DisplayHeight ) * 0.5 ) )
+			DisplayWidth = int( floor(DisplayWidth) )
+			DisplayHeight = int( floor(DisplayHeight) )
+		elif self.ZoomLevel == 1.0:
 			if DisplayWidth > ImageWidth:
 				diff = int( floor( ( DisplayWidth - ImageWidth ) ) )
 				self.XOffset = diff // 2
@@ -229,11 +259,13 @@ class ViewPort:
 			elif OldSteps < 0:
 				self.ApplyZoomTimes( False, abs(OldSteps) )
 				self.TotalSteps = OldSteps
-		else:
+		elif self.state == ViewPortState.FIT:
 			self.ApplyFit()
 			if OldSteps > 0:
 				self.ApplyZoomTimes(True, OldSteps)
 				self.TotalSteps = OldSteps
+		else:
+			self.ApplyAspect()
 	def GetActualSizeRatio(self):
 		"Return the zoom level relative to the actual size of the image, rather than the display, along with the sample and display sizes, in a tuple formatted: (ratio, SampleWidth, SampleHeight)."
 		ImageSize = self.image.GetSize()
