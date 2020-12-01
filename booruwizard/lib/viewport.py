@@ -56,6 +56,8 @@ class ViewPort:
 	def ApplyZoomTimes(self, ZoomIn, times):
 		"Apply zooming in or out a number of times."
 		for t in range(times):
+			if self.ZoomLock:
+				break
 			if not ZoomIn:
 				if self.ZoomLevel >= self.FitLevel:
 					self.ZoomLevel = self.FitLevel
@@ -110,11 +112,18 @@ class ViewPort:
 			self.ZoomLevel = 1.0 # Current size of the sample area, relative to the display area; always starts at 1.0
 			self.FitXLevel = self.ZoomLevel
 			self.FitYLevel = self.ZoomLevel
+			self.ZoomLock = True
 		else:
 			ImageSize = self.image.GetSize()
-			self.ZoomLevel  = max(ImageSize.GetWidth() / self.DisplayWidth, ImageSize.GetHeight() / self.DisplayHeight)
+			ImageWidth = ImageSize.GetWidth()
+			ImageHeight = ImageSize.GetHeight()
+			self.ZoomLevel  = max(ImageWidth / self.DisplayWidth, ImageHeight / self.DisplayHeight)
 			self.FitXLevel = ImageSize.GetWidth() / self.DisplayWidth
 			self.FitYLevel = ImageSize.GetHeight() / self.DisplayHeight
+			if ImageWidth <= self.DisplayWidth and ImageHeight <= self.DisplayHeight:
+				self.ZoomLock = True
+			else:
+				self.ZoomLock = False
 
 		self.OrigSampleXPos = self.FitXLevel / 2.0 # X position of upper-left corner of sample area, as a fraction of display area's width.
 		self.OrigSampleYPos = self.FitYLevel / 2.0 # Y position of upper-left corner of sample area, as a fraction of display area's height.
