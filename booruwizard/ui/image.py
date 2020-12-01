@@ -131,7 +131,7 @@ class ImagePanel(wx.Panel):
 	def _HumanSize(self, val):
 		"Return a string containing the human readable representation of size 'val'."
 		if val // 1024 == 0:
-			return ''.join( (str(val), 'bytes') )
+			return ''.join( (str(val), ' bytes') )
 		elif val // 1048576 == 0:
 			return ''.join( (str( round(val / 1000.0, 3) ), ' kB') )
 		else:
