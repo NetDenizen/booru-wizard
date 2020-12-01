@@ -300,9 +300,9 @@ class ViewPort:
 		self.ZoomAccelSteps = ZoomAccelSteps
 		self.PanInterval = D(PanInterval) # Amount by which the image is panned by a single step.
 
-		if self.ZoomStartInterval <= 0.0:
+		if self.ZoomStartInterval <= D(0.0):
 			raise ViewPortError( ''.join( ('Start zoom interval "', str(self.ZoomStartInterval), '" must be greater than 0.0') ) )
-		if self.ZoomAccel <= 0.0:
+		if self.ZoomAccel <= D(0.0):
 			raise ViewPortError( ''.join( ('Zoom accel "', str(self.ZoomAccel), '" must be greater than 0.0') ) )
 		if self.ZoomAccelSteps <= 0:
 			raise ViewPortError( ''.join( ('Zoom accel steps "', str(self.ZoomAccelSteps), '" must be greater than 0') ) )
