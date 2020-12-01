@@ -1,6 +1,6 @@
 "Component related to adjusting display of an image."
 
-from math import fabs, ceil, floor, sqrt
+from math import floor, sqrt
 from enum import Enum
 
 import wx
