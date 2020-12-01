@@ -194,7 +194,7 @@ class ImagePanel(wx.Panel):
 				self.ZoomFitButton.Disable()
 			else:
 				self.ZoomFitButton.Enable()
-			if self.image.viewport.ZoomLevel >= self.image.viewport.MaxZoomLevel():
+			if self.image.viewport.MaxZoomLevelReached:
 				self.ZoomOutButton.Disable()
 			else:
 				self.ZoomOutButton.Enable()

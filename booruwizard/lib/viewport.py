@@ -1,6 +1,6 @@
 "Component related to adjusting display of an image."
 
-from decimal import ROUND_FLOOR
+from decimal import ROUND_FLOOR, getcontext
 from decimal import Decimal as D
 from enum import Enum
 
@@ -12,6 +12,8 @@ DEFAULT_ZOOM_INTERVAL = 0.05
 DEFAULT_ZOOM_ACCEL = 0.01
 DEFAULT_ZOOM_ACCEL_STEPS = 2
 DEFAULT_PAN_INTERVAL = 0.05
+
+getcontext().prec = 17
 
 class ViewPortError(Exception):
 	pass
@@ -46,18 +48,11 @@ class ViewPort:
 	def _CalcConstrainedSample(self):
 		self._CalcSample()
 		self._ConstrainSample()
-	def _ActualFinalAccelStep(self, ZoomLevel):
-		"Calculate the zoom interval necessary to reach a zoom level of 1.0, then apply that, while replacing the last step with that step."
-		TargetDistance = ZoomLevel - D(1.0)
-		#TODO: Ensure this is always positive
-		self.ZoomLevel = D(1.0)
-		if len(self.AccelStepsList) > 0 and self.AccelSteps == 0:
-			self.AccelStepsList.pop()
-			self.AccelStepsList.append(TargetDistance) #TODO: Make sure this is always less than zoom interval
 	def MaxZoomLevel(self):
 		return self.FitLevel + D(1.0)
 	def ApplyZoomTimes(self, ZoomIn, times):
 		"Apply zooming in or out a number of times."
+		self.MaxZoomLevelReached = False
 		for t in range(times):
 			if not ZoomIn:
 				if self.ZoomLevel >= self.FitLevel:
@@ -70,6 +65,7 @@ class ViewPort:
 					self.ZoomLevel += self.ZoomInterval
 					self.TotalSteps -= 1
 					if self.ZoomLevel >= self.MaxZoomLevel():
+						self.MaxZoomLevelReached = True
 						self.ZoomInterval = self.AccelStepsList[-2]
 						self.ZoomLevel -= self.AccelStepsList[-1]
 						self.AccelSteps -= 1
@@ -113,9 +109,12 @@ class ViewPort:
 					break
 			else:
 				if self.ZoomLevel <= self.ZoomInterval:
+					self.AccelStepsList.pop()
 					if self.FitLevel < self.ZoomInterval:
+						self.AccelStepsList.append(ZoomLevel - self.FitLevel)
 						self.ZoomLevel = self.FitLevel
 					else:
+						self.AccelStepsList.append(ZoomLevel - self.ZoomInterval)
 						self.ZoomLevel = self.ZoomInterval
 					break
 				self.AccelSteps += 1
@@ -127,13 +126,20 @@ class ViewPort:
 				self.ZoomLevel -= self.ZoomInterval
 				self.TotalSteps += 1
 				if ZoomLevel > D(1.0) and self.ZoomLevel < D(1.0):
-					self._ActualFinalAccelStep(ZoomLevel)
+					TargetDistance = ZoomLevel - D(1.0)
+					self.ZoomLevel = D(1.0)
+					self.AccelStepsList.pop()
+					self.AccelStepsList.append(TargetDistance) #TODO: Make sure this is always less than zoom interval
 				if self.ZoomLevel <= self.ZoomInterval:
+					self.AccelStepsList.pop()
 					if self.FitLevel < self.ZoomInterval:
+						self.AccelStepsList.append(ZoomLevel - self.FitLevel)
 						self.ZoomLevel = self.FitLevel
 					else:
+						self.AccelStepsList.append(ZoomLevel - self.ZoomInterval)
 						self.ZoomLevel = self.ZoomInterval
 					break
+		print(self.AccelStepsList)
 		self._CalcConstrainedSample()
 	def ApplyMove(self, x, y):
 		"Apply horizontal and vertical movement."
@@ -186,7 +192,15 @@ class ViewPort:
 			ZoomLevel = self.ZoomLevel
 			self.ApplyZoomTimes(True, 1)
 		if self.ZoomLevel < D(1.0):
-			self._ActualFinalAccelStep(ZoomLevel)
+			TargetDistance = ZoomLevel - D(1.0)
+			self.AccelSteps += 1
+			if self.AccelSteps > self.ZoomAccelSteps:
+				self.AccelSteps = 0
+			self.AccelStepsList.append(TargetDistance)
+			self.TotalSteps += 1
+			self.ZoomLevel = D(1.0)
+			self.AccelStepsList.pop()
+			self.AccelStepsList.append(TargetDistance) #TODO: Make sure this is always less than zoom interval
 		self.TotalSteps = 0
 		self._CalcConstrainedSample()
 	def RenderBackground(self, width, height):
@@ -309,6 +323,7 @@ class ViewPort:
 		if self.PanInterval <= D(0.0):
 			raise ViewPortError( ''.join( ('Pan interval "', str(self.ZoomAccelSteps), '" must be greater than 0.0') ) )
 
+		self.MaxZoomLevelReached = False
 		self.XOffset = 0
 		self.YOffset = 0
 		self.DisplayWidth = 0
