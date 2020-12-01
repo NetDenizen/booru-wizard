@@ -252,6 +252,13 @@ class ViewPort:
 			self.XOffset = int( ( ( D(self.DisplayWidth) - D(DisplayWidth) ) * D(0.5) ).quantize(D('1.'), rounding=ROUND_FLOOR) )
 			self.YOffset = int( ( ( D(self.DisplayHeight) - D(DisplayHeight) ) * D(0.5) ).quantize(D('1.'), rounding=ROUND_FLOOR) )
 
+		if ZoomWidth == 0:
+			ZoomWidth = 1
+			SampleXPos = 0
+		if ZoomHeight == 0:
+			ZoomHeight = 1
+			SampleYPos = 0
+
 		SampleRect = wx.Rect(SampleXPos, SampleYPos, ZoomWidth, ZoomHeight)
 		try:
 			NewImage = image.GetSubImage(SampleRect)
@@ -282,8 +289,8 @@ class ViewPort:
 	def GetActualSizeRatio(self):
 		"Return the zoom level relative to the actual size of the image, rather than the display, along with the sample and display sizes, in a tuple formatted: (ratio, SampleWidth, SampleHeight)."
 		ImageSize = self.image.GetSize()
-		SampleWidth = self.SampleWidth * D(self.DisplayWidth)
-		SampleHeight = self.SampleHeight * D(self.DisplayHeight)
+		SampleWidth = ( self.SampleWidth * D(self.DisplayWidth) ).max( D(1) )
+		SampleHeight =( self.SampleHeight * D(self.DisplayHeight) ).max( D(1) )
 		ratio = self.FitLevel / self.ZoomLevel
 		return (ratio, SampleWidth, SampleHeight)
 	def __init__(self, BackgroundColor1, BackgroundColor2, BackgroundSquareWidth, ZoomStartInterval, ZoomAccel, ZoomAccelSteps, PanInterval):
