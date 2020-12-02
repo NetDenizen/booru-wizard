@@ -20,6 +20,12 @@ class ViewPortState(Enum):
 	ACTUAL = 1
 	ASPECT = 2
 
+def CalcRatioDiff(ImageRatio, DisplayRatio):
+	if DisplayRatio > ImageRatio:
+		return ImageRatio / DisplayRatio
+	else:
+		return DisplayRatio / ImageRatio
+
 class ViewPort:
 	def _CalcSample(self):
 		"Apply zooming of an arbitrary amount."
@@ -200,22 +206,9 @@ class ViewPort:
 		DisplayHeight = self.DisplayHeight
 		if self.state == ViewPortState.ASPECT:
 			if ImageWidth > ImageHeight:
-				DisplayRatio = DisplayHeight / DisplayWidth
-				ImageRatio = ImageHeight / ImageWidth
-				if DisplayRatio > ImageRatio:
-					RatioDiff = ImageRatio / DisplayRatio
-				else:
-					RatioDiff = DisplayRatio / ImageRatio
-				DisplayHeight *= RatioDiff
+				DisplayHeight = int( floor(CalcRatioDiff(ImageHeight / ImageWidth, DisplayHeight / DisplayWidth) * DisplayHeight) )
 			else:
-				DisplayRatio = DisplayWidth / DisplayHeight
-				ImageRatio = ImageWidth / ImageHeight
-				if DisplayRatio > ImageRatio:
-					RatioDiff = ImageRatio / DisplayRatio
-				else:
-					RatioDiff = DisplayRatio / ImageRatio
-				RatioDiff = ImageRatio / DisplayRatio
-				DisplayWidth *= RatioDiff
+				DisplayWidth = int( floor(CalcRatioDiff(ImageWidth / ImageHeight, DisplayWidth / DisplayHeight) * DisplayWidth) )
 			self.XOffset = int( floor( ( self.DisplayWidth - DisplayWidth ) * 0.5 ) )
 			self.YOffset = int( floor( ( self.DisplayHeight - DisplayHeight ) * 0.5 ) )
 			DisplayWidth = int( floor(DisplayWidth) )
