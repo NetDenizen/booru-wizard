@@ -32,6 +32,9 @@ class ImageDisplay(wx.Panel):
 	def _OnZoomOut(self, message, arg2=None):
 		self.viewport.ApplyZoomTimes(False, 1)
 		self._UpdateMove()
+	def _OnZoomAspect(self, message, arg2=None):
+		self.viewport.ApplyAspect()
+		self._UpdateMove()
 	def _OnZoomFit(self, message, arg2=None):
 		self.viewport.ApplyFit()
 		self._UpdateMove()
@@ -124,6 +127,7 @@ class ImageDisplay(wx.Panel):
 		pub.subscribe(self._OnPanDown, "PanDown")
 		pub.subscribe(self._OnZoomIn, "ZoomIn")
 		pub.subscribe(self._OnZoomOut, "ZoomOut")
+		pub.subscribe(self._OnZoomAspect, "ZoomAspect")
 		pub.subscribe(self._OnZoomFit, "ZoomFit")
 		pub.subscribe(self._OnZoomActualSize, "ZoomActualSize")
 
@@ -174,6 +178,7 @@ class ImagePanel(wx.Panel):
 			self.ZoomDisplay.SetLabel('')
 			self.ZoomInButton.Disable()
 			self.ZoomOutButton.Disable()
+			self.ZoomAspectButton.Disable()
 			self.ZoomFitButton.Disable()
 			self.ZoomActualButton.Disable()
 		else:
@@ -196,6 +201,10 @@ class ImagePanel(wx.Panel):
 			else:
 				self.ZoomFitButton.Enable()
 				self.ZoomOutButton.Enable()
+			if self.image.viewport.state == ViewPortState.ASPECT:
+				self.ZoomAspectButton.Disable()
+			else:
+				self.ZoomAspectButton.Enable()
 			if self.image.viewport.ZoomLock or self.image.viewport.state == ViewPortState.ASPECT:
 				self.ZoomOutButton.Disable()
 			else:
@@ -298,6 +307,9 @@ class ImagePanel(wx.Panel):
 	def _OnZoomOut(self, e):
 		pub.sendMessage("ZoomOut", message=None)
 		e.Skip()
+	def _OnZoomAspect(self, e):
+		pub.sendMessage("ZoomAspect", message=None)
+		e.Skip()
 	def _OnZoomFit(self, e):
 		pub.sendMessage("ZoomFit", message=None)
 		e.Skip()
@@ -314,6 +326,9 @@ class ImagePanel(wx.Panel):
 		else:
 			self.ZoomInButton.SetFocus()
 	def _OnZoomFitReceived(self, message, arg2=None):
+		self.UpdateZoomControls()
+		self.ZoomInButton.SetFocus()
+	def _OnZoomAspectReceived(self, message, arg2=None):
 		self.UpdateZoomControls()
 		self.ZoomInButton.SetFocus()
 	def _OnZoomActualReceived(self, message, arg2=None):
@@ -368,6 +383,8 @@ class ImagePanel(wx.Panel):
 		self.ZoomInButtonTip = wx.ToolTip( ''.join( ( 'Zoom in to displayed image.', RenderThreeIfMid(' (', keybinds.get('zoom_in'), ')') ) ) )
 		self.ZoomOutButton = wx.Button(self, label="-", style=wx.BU_EXACTFIT)
 		self.ZoomOutButtonTip = wx.ToolTip( ''.join( ( 'Zoom out from displayed image.', RenderThreeIfMid(' (', keybinds.get('zoom_out'), ')') ) ) )
+		self.ZoomAspectButton = wx.Button(self, label="1:1", style=wx.BU_EXACTFIT)
+		self.ZoomAspectButtonTip = wx.ToolTip( ''.join( ( 'Zoom so that the aspect ratio of the display matches that of the actual image.', RenderThreeIfMid(' (', keybinds.get('zoom_aspect'), ')') ) ) )
 		self.ZoomFitButton = wx.Button(self, label="FIT", style=wx.BU_EXACTFIT)
 		self.ZoomFitButtonTip = wx.ToolTip( ''.join( ( 'Zoom to fit window.', RenderThreeIfMid(' (', keybinds.get('zoom_fit'), ')') ) ) )
 		self.ZoomActualButton = wx.Button(self, label="1.0", style=wx.BU_EXACTFIT)
@@ -409,6 +426,8 @@ class ImagePanel(wx.Panel):
 		self.ZoomControlSizer.Add(self.ZoomInButton, 10, wx.ALIGN_CENTER_VERTICAL)
 		self.ZoomControlSizer.AddStretchSpacer(1)
 		self.ZoomControlSizer.Add(self.ZoomOutButton, 10, wx.ALIGN_CENTER_VERTICAL)
+		self.ZoomControlSizer.AddStretchSpacer(1)
+		self.ZoomControlSizer.Add(self.ZoomAspectButton, 10, wx.ALIGN_CENTER_VERTICAL)
 		self.ZoomControlSizer.AddStretchSpacer(1)
 		self.ZoomControlSizer.Add(self.ZoomFitButton, 10, wx.ALIGN_CENTER_VERTICAL)
 		self.ZoomControlSizer.AddStretchSpacer(1)
@@ -454,6 +473,7 @@ class ImagePanel(wx.Panel):
 		self.ZoomDisplay.SetToolTip(self.ZoomDisplayTip)
 		self.ZoomInButton.SetToolTip(self.ZoomInButtonTip)
 		self.ZoomOutButton.SetToolTip(self.ZoomOutButtonTip)
+		self.ZoomAspectButton.SetToolTip(self.ZoomAspectButtonTip)
 		self.ZoomFitButton.SetToolTip(self.ZoomFitButtonTip)
 		self.ZoomActualButton.SetToolTip(self.ZoomActualButtonTip)
 		self.ImageSearch.SetEntryTip()
@@ -477,6 +497,7 @@ class ImagePanel(wx.Panel):
 		self.Bind( wx.EVT_RADIOBOX, self._OnImageQualitySelect, id=self.ImageQualityControl.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnZoomIn, id=self.ZoomInButton.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnZoomOut, id=self.ZoomOutButton.GetId() )
+		self.Bind( wx.EVT_BUTTON, self._OnZoomAspect, id=self.ZoomAspectButton.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnZoomFit, id=self.ZoomFitButton.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnZoomActual, id=self.ZoomActualButton.GetId() )
 		self.Bind( wx.EVT_TEXT_ENTER, self._OnTagLookupEntry, id=self.TagLookup.entry.GetId() )
@@ -493,6 +514,7 @@ class ImagePanel(wx.Panel):
 		pub.subscribe(self._OnImageQualityLow, "ImageQualityLow")
 		pub.subscribe(self._OnZoomInReceived, "ZoomIn")
 		pub.subscribe(self._OnZoomOutReceived, "ZoomOut")
+		pub.subscribe(self._OnZoomAspectReceived, "ZoomAspect")
 		pub.subscribe(self._OnZoomFitReceived, "ZoomFit")
 		pub.subscribe(self._OnZoomActualReceived, "ZoomActualSize")
 		pub.subscribe(self._OnIndex, "IndexImage")

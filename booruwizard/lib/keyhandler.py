@@ -30,6 +30,7 @@ ID_PAN_UP = wx.NewId()
 ID_PAN_DOWN = wx.NewId()
 ID_ZOOM_IN = wx.NewId()
 ID_ZOOM_OUT = wx.NewId()
+ID_ZOOM_ASPECT = wx.NewId()
 ID_ZOOM_FIT = wx.NewId()
 ID_ZOOM_ACTUAL_SIZE = wx.NewId()
 ID_LOCK_QUESTION = wx.NewId()
@@ -69,6 +70,7 @@ KEYBIND_IDS = {
 	'pan_down'                    : ID_PAN_DOWN                   ,
 	'zoom_in'                     : ID_ZOOM_IN                    ,
 	'zoom_out'                    : ID_ZOOM_OUT                   ,
+	'zoom_aspect'                 : ID_ZOOM_ASPECT                ,
 	'zoom_fit'                    : ID_ZOOM_FIT                   ,
 	'zoom_actual_size'            : ID_ZOOM_ACTUAL_SIZE           ,
 	'lock_question'               : ID_LOCK_QUESTION              ,
@@ -109,6 +111,7 @@ KEYBIND_MESSAGES = {
 	ID_PAN_DOWN                    : 'PanDown'                ,
 	ID_ZOOM_IN                     : 'ZoomIn'                 ,
 	ID_ZOOM_OUT                    : 'ZoomOut'                ,
+	ID_ZOOM_ASPECT                 : 'ZoomAspect'             ,
 	ID_ZOOM_FIT                    : 'ZoomFit'                ,
 	ID_ZOOM_ACTUAL_SIZE            : 'ZoomActualSize'         ,
 	ID_LOCK_QUESTION               : 'LockQuestion'           ,
@@ -154,6 +157,7 @@ class KeyHandler(wx.Object):
 		self.PanDownItem = wx.MenuItem(id=wx.NewId(), text="PanDown", helpString="Pan image down.")
 		self.ZoomInItem = wx.MenuItem(id=wx.NewId(), text="ZoomIn", helpString="Zoom in image.")
 		self.ZoomOutItem = wx.MenuItem(id=wx.NewId(), text="ZoomOut", helpString="Zoom out image.")
+		self.ZoomAspectItem = wx.MenuItem(id=wx.NewId(), text="ZoomAspect", helpString="Zoom image so that the aspect ratio of the display matches that of the actual image.")
 		self.ZoomFitItem = wx.MenuItem(id=wx.NewId(), text="ZoomFit", helpString="Zoom image to fit perfectly in the window.")
 		self.ZoomActualSizeItem = wx.MenuItem(id=wx.NewId(), text="ZoomActualSize", helpString="Zoom image so it is displayed at actual size, whether or not it fits in the window.")
 		self.LockQuestionItem = wx.MenuItem(id=wx.NewId(), text="LockQuestion", helpString="Make the currently loaded question also load for the next image, regardless of whatever question that image might currently be set to load.")
@@ -192,6 +196,7 @@ class KeyHandler(wx.Object):
 						  'pan_down'                    : self.PanDownItem                      ,
 						  'zoom_in'                     : self.ZoomInItem                       ,
 						  'zoom_out'                    : self.ZoomOutItem                      ,
+						  'zoom_aspect'                 : self.ZoomAspectItem                   ,
 						  'zoom_fit'                    : self.ZoomFitItem                      ,
 						  'zoom_actual_size'            : self.ZoomActualSizeItem               ,
 						  'lock_question'               : self.LockQuestionItem                 ,
@@ -237,6 +242,7 @@ class KeyHandler(wx.Object):
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_PAN_DOWN)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_ZOOM_IN)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_ZOOM_OUT)
+		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_ZOOM_ASPECT)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_ZOOM_FIT)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_ZOOM_ACTUAL_SIZE)
 		obj.Bind(wx.EVT_MENU, self._OnEntry, id=ID_LOCK_QUESTION)
