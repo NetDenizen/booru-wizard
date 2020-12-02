@@ -321,22 +321,16 @@ class ImagePanel(wx.Panel):
 		self.ZoomInButton.SetFocus()
 	def _OnZoomOutReceived(self, message, arg2=None):
 		self.UpdateZoomControls()
-		if self.ZoomOutButton.IsEnabled():
-			self.ZoomOutButton.SetFocus()
-		else:
-			self.ZoomInButton.SetFocus()
+		self.ZoomOutButton.SetFocus()
 	def _OnZoomFitReceived(self, message, arg2=None):
 		self.UpdateZoomControls()
-		self.ZoomInButton.SetFocus()
+		self.ZoomFitButton.SetFocus()
 	def _OnZoomAspectReceived(self, message, arg2=None):
 		self.UpdateZoomControls()
-		self.ZoomInButton.SetFocus()
+		self.ZoomAspectButton.SetFocus()
 	def _OnZoomActualReceived(self, message, arg2=None):
 		self.UpdateZoomControls()
-		if self.ZoomOutButton.IsEnabled():
-			self.ZoomOutButton.SetFocus()
-		else:
-			self.ZoomInButton.SetFocus()
+		self.ZoomActualButton.SetFocus()
 	def _OnOutputUpdateButton(self, e):
 		pub.sendMessage("FileUpdateForce", message=None)
 		e.Skip()
