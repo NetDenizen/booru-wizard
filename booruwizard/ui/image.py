@@ -189,7 +189,6 @@ class ImagePanel(wx.Panel):
 												)
 											  )
 									 )
-			ImageSize = self.image.image.GetSize()
 			if self.image.viewport.CanZoomIn():
 				self.ZoomInButton.Enable()
 			else:
