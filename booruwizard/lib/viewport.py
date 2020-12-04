@@ -73,7 +73,6 @@ class ViewPort:
 				break
 			elif not ZoomIn:
 				if self.ZoomLevel >= self.FitLevel:
-					print('zoom')
 					self.AccelSteps += 1
 					if self.AccelSteps > self.ZoomAccelSteps:
 						self.AccelSteps = 0
@@ -87,10 +86,7 @@ class ViewPort:
 						if len(self.AccelStepsList) > 0:
 							self.AccelStepsList.pop()
 							self.AccelStepsList.append(self.ZoomLevel - ZoomLevel)
-					print(self.FitLevel)
-					print(self.ZoomLevel)
 				elif len(self.AccelStepsList) > 1:
-						print('not zoom')
 						self.ZoomInterval = self.AccelStepsList[-2]
 						self.ZoomLevel += self.AccelStepsList[-1]
 						self.AccelSteps -= 1
@@ -99,7 +95,6 @@ class ViewPort:
 							self.AccelSteps = self.ZoomAccelSteps
 						self.AccelStepsList.pop()
 				else:
-					print('break')
 					break
 			elif self.ZoomLevel > self.FitLevel:
 				if len(self.AccelStepsList) > 1:
@@ -194,13 +189,9 @@ class ViewPort:
 		self._CalcConstrainedSample()
 	def ApplyAspect(self):
 		self.ApplyFit()
-		print('aspect')
-		print(self.ZoomLevel - self.FitLevel)
 		if not self.ZoomLock:
 			while self.ZoomLevel - self.FitLevel < d(1.0):
 				self.ApplyZoomTimes(False, 1)
-				print('aspect')
-				print(self.ZoomLevel - self.FitLevel)
 		self.TotalSteps = 0
 		self._CalcConstrainedSample()
 		self.state = ViewPortState.ASPECT
@@ -229,7 +220,6 @@ class ViewPort:
 			self.TotalSteps = 0
 		elif self.ZoomLevel > self.FitLevel:
 			self.state = ViewPortState.ASPECT
-		print(self.state)
 
 		ImageSize = image.GetSize()
 		ImageWidth = ImageSize.GetWidth()
@@ -246,8 +236,6 @@ class ViewPort:
 		DisplayHeight = self.DisplayHeight
 		if self.state == ViewPortState.ASPECT:
 			ZoomRatio =  d(2.0) - (self.ZoomLevel - self.FitLevel)
-			print('ZoomRatio')
-			print(ZoomRatio)
 			if ImageWidth > ImageHeight:
 				DisplayHeight = min( self.DisplayHeight, fti(CalcRatioDiff( d(ImageHeight) / d(ImageWidth), d(DisplayHeight) / d(DisplayWidth) ) * d(DisplayHeight) * ZoomRatio) )
 			else:
@@ -285,7 +273,6 @@ class ViewPort:
 			self.ImageBitmap = wx.Bitmap(NewImage)
 		except:
 			self.ImageBitmap = None
-		print(self.ZoomLevel)
 	def ApplyZoomSteps(self, OldSteps):
 		"Zoom in or out by OldSteps, according to the state of the viewport."
 		if self.state == ViewPortState.ACTUAL:
