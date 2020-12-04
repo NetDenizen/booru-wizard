@@ -15,16 +15,16 @@ class ImageDisplay(wx.Panel):
 		self.viewport.UpdateBackground(self.viewport.DisplayWidth, self.viewport.DisplayHeight)
 		self.viewport.UpdateImage(self.image, self.quality)
 	def _OnPanLeft(self, message, arg2=None):
-		self.viewport.ApplyMove(self.viewport.PanInterval * -1.0, 0.0)
+		self.viewport.ApplyMoveByPanInterval(-1.0, 0.0)
 		self._UpdateMove()
 	def _OnPanRight(self, message, arg2=None):
-		self.viewport.ApplyMove(self.viewport.PanInterval, 0.0)
+		self.viewport.ApplyMoveByPanInterval(1.0, 0.0)
 		self._UpdateMove()
 	def _OnPanUp(self, message, arg2=None):
-		self.viewport.ApplyMove(0.0, self.viewport.PanInterval * -1.0)
+		self.viewport.ApplyMoveByPanInterval(0.0, -1.0)
 		self._UpdateMove()
 	def _OnPanDown(self, message, arg2=None):
-		self.viewport.ApplyMove(0.0, self.viewport.PanInterval)
+		self.viewport.ApplyMoveByPanInterval(0.0, 1.0)
 		self._UpdateMove()
 	def _OnZoomIn(self, message, arg2=None):
 		self.viewport.ApplyZoomTimes(True, 1)
@@ -190,26 +190,26 @@ class ImagePanel(wx.Panel):
 											  )
 									 )
 			ImageSize = self.image.image.GetSize()
-			if self.image.viewport.ZoomLevel == 1.0:
-				self.ZoomActualButton.Disable()
-			else:
-				self.ZoomActualButton.Enable()
-			if self.image.viewport.ZoomLevel == self.image.viewport.FitLevel:
-				self.ZoomFitButton.Disable()
-			else:
-				self.ZoomFitButton.Enable()
-			if self.image.viewport.ZoomLock or self.image.viewport.ZoomLevel - self.image.viewport.FitLevel == 1.0:
-				self.ZoomAspectButton.Disable()
-			else:
-				self.ZoomAspectButton.Enable()
-			if self.image.viewport.ZoomLock or self.image.viewport.ZoomLevel >= self.image.viewport.FitLevel + 1.0:
-				self.ZoomOutButton.Disable()
-			else:
-				self.ZoomOutButton.Enable()
-			if self.image.viewport.ZoomLock or self.image.viewport.ZoomLevel <= self.image.viewport.ZoomInterval:
-				self.ZoomInButton.Disable()
-			else:
+			if self.image.viewport.CanZoomIn():
 				self.ZoomInButton.Enable()
+			else:
+				self.ZoomInButton.Disable()
+			if self.image.viewport.CanZoomOut():
+				self.ZoomOutButton.Enable()
+			else:
+				self.ZoomOutButton.Disable()
+			if self.image.viewport.CanZoomAspect():
+				self.ZoomAspectButton.Enable()
+			else:
+				self.ZoomAspectButton.Disable()
+			if self.image.viewport.CanZoomFit():
+				self.ZoomFitButton.Enable()
+			else:
+				self.ZoomFitButton.Disable()
+			if self.image.viewport.CanZoomActual():
+				self.ZoomActualButton.Enable()
+			else:
+				self.ZoomActualButton.Disable()
 	def _update(self):
 		"Update the current bitmap, the information display, and controls."
 		self._UpdateImage()
