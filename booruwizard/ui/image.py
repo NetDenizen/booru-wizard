@@ -190,22 +190,19 @@ class ImagePanel(wx.Panel):
 											  )
 									 )
 			ImageSize = self.image.image.GetSize()
-			if (self.image.viewport.state == ViewPortState.ACTUAL and\
-			   self.image.viewport.ZoomLevel == 1.0):
+			if self.image.viewport.ZoomLevel == 1.0:
 				self.ZoomActualButton.Disable()
 			else:
 				self.ZoomActualButton.Enable()
-			if self.image.viewport.ZoomLevel == self.image.viewport.FitLevel and self.image.viewport.state != ViewPortState.ASPECT:
+			if self.image.viewport.ZoomLevel == self.image.viewport.FitLevel:
 				self.ZoomFitButton.Disable()
-				self.ZoomOutButton.Disable()
 			else:
 				self.ZoomFitButton.Enable()
-				self.ZoomOutButton.Enable()
-			if self.image.viewport.state == ViewPortState.ASPECT:
+			if self.image.viewport.ZoomLock or self.image.viewport.ZoomLevel - self.image.viewport.FitLevel == 1.0:
 				self.ZoomAspectButton.Disable()
 			else:
 				self.ZoomAspectButton.Enable()
-			if self.image.viewport.ZoomLock or self.image.viewport.state == ViewPortState.ASPECT:
+			if self.image.viewport.ZoomLock or self.image.viewport.ZoomLevel >= self.image.viewport.FitLevel + 1.0:
 				self.ZoomOutButton.Disable()
 			else:
 				self.ZoomOutButton.Enable()
