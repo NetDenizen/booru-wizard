@@ -127,6 +127,11 @@ class QuestionLabel(QuestionDisplayComponent):
 	def _OnUnlockQuestion(self, message, arg2=None):
 		QuestionDisplayComponent._OnUnlockQuestion(self, message, arg2=None)
 		self.LockCheck.SetValue(False)
+	def _OnToggleLockQuestion(self, message, arg2=None):
+		if self.LockCheck.GetValue():
+			pub.sendMessage("UnlockQuestion", message=None)
+		else:
+			pub.sendMessage("LockQuestion", message=None)
 	def _OnLockCheck(self, e):
 		if self.LockCheck.GetValue():
 			pub.sendMessage("LockQuestion", message=None)
@@ -171,6 +176,7 @@ class QuestionLabel(QuestionDisplayComponent):
 		pub.subscribe(self._OnFocusQuestionIndex, "FocusQuestionIndex")
 		pub.subscribe(self._OnLockQuestion, "LockQuestion")
 		pub.subscribe(self._OnUnlockQuestion, "UnlockQuestion")
+		pub.subscribe(self._OnToggleLockQuestion, "ToggleLockQuestion")
 
 class PositionButtons(wx.Panel):
 	def _OnLeftImage(self, e):
