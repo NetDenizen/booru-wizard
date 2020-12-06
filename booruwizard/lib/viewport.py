@@ -53,14 +53,6 @@ class ViewPort:
 	def _CalcConstrainedSample(self):
 		self._CalcSample()
 		self._ConstrainSample()
-	def _ActualFinalAccelStep(self, ZoomLevel):
-		"Calculate the zoom interval necessary to reach a zoom level of 1.0, then apply that, while replacing the last step with that step."
-		TargetDistance = ZoomLevel - d(1.0)
-		#TODO: Ensure this is always positive
-		self.ZoomLevel = d(1.0)
-		if len(self.AccelStepsList) > 0:
-			self.AccelStepsList.pop()
-			self.AccelStepsList.append(TargetDistance) #TODO: Make sure this is always less than zoom interval
 	def ApplyZoomTimes(self, ZoomIn, times):
 		"Apply zooming in or out a number of times."
 		for t in range(times):
@@ -118,7 +110,7 @@ class ViewPort:
 				self.ZoomLevel -= self.ZoomInterval
 				self.TotalSteps += 1
 				if ZoomLevel > d(1.0) and self.ZoomLevel < d(1.0):
-					self._ActualFinalAccelStep(ZoomLevel)
+					self.ZoomLevel = d(1.0)
 				if self.ZoomLevel <= self.ZoomInterval:
 					self.AccelStepsList.pop()
 					self.AccelStepsList.append(ZoomLevel - self.ZoomInterval)
@@ -170,26 +162,17 @@ class ViewPort:
 		if self.image is None:
 			return
 
-		ZoomLevel = self.ZoomLevel
 		while self.ZoomLevel < d(1.0):
 			self.ApplyZoomTimes(False, 1)
-			if ZoomLevel == self.ZoomLevel:
-				break
-			else:
-				ZoomLevel = self.ZoomLevel
 
-		ZoomLevel = self.ZoomLevel
 		while self.ZoomLevel > d(1.0):
-			ZoomLevel = self.ZoomLevel
 			self.ApplyZoomTimes(True, 1)
-		self.TotalSteps = 0
 		self._CalcConstrainedSample()
 	def ApplyAspect(self):
 		self.ApplyFit()
 		if not self.ZoomLock:
 			while self.ZoomLevel - self.FitLevel < d(1.0):
 				self.ApplyZoomTimes(False, 1)
-		self.TotalSteps = 0
 		self._CalcConstrainedSample()
 	def RenderBackground(self, width, height):
 		if width != 0 and height != 0 and\
