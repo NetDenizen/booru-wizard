@@ -111,6 +111,8 @@ class ViewPort:
 				self.TotalSteps += 1
 				if ZoomLevel > d(1.0) and self.ZoomLevel < d(1.0):
 					self.ZoomLevel = d(1.0)
+					self.AccelStepsList.pop()
+					self.AccelStepsList.append(ZoomLevel - self.ZoomLevel)
 				if self.ZoomLevel <= self.ZoomInterval:
 					self.AccelStepsList.pop()
 					self.AccelStepsList.append(ZoomLevel - self.ZoomInterval)
