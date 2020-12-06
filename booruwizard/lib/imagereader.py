@@ -80,8 +80,8 @@ class ManagedImage:
 		CompareTo = tokens[2]
 		try:
 			CompareTo = int(tokens[2])
-		except (ValueError, TypeError):
-			raise ImageConditionError( ''.join( (ErrorMessage, "(Third token must be an integer. We found '", CompareTo, "'.)") ) )
+		except (ValueError, TypeError) as err:
+			raise ImageConditionError( ''.join( (ErrorMessage, "(Third token must be an integer. We found '", CompareTo, "'.)") ) ) from err
 		result = None
 		if tokens[1] == '<':
 			result = CompareFrom < CompareTo

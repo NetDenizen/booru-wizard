@@ -5,8 +5,6 @@ from math import floor
 import wx
 from pubsub import pub
 
-from booruwizard.lib.imagereader import ImageReader
-from booruwizard.lib.viewport import ViewPortState
 from booruwizard.ui.common import PathEntry, CircularCounter, RenderThreeIfMid, TagSearch, TagLookup
 
 #TODO: Should we have a control to affect the scaling (maybe an alternate scrollbar setting), or to change the background color?

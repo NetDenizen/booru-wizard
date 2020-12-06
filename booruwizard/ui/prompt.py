@@ -132,6 +132,7 @@ class QuestionLabel(QuestionDisplayComponent):
 			pub.sendMessage("LockQuestion", message=None)
 		else:
 			pub.sendMessage("UnlockQuestion", message=None)
+		e.Skip()
 		#TODO: Put skip here?
 	def __init__(self, parent, NumImages, questions, keybinds):
 		QuestionDisplayComponent.__init__(self, parent)

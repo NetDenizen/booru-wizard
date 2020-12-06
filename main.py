@@ -92,7 +92,7 @@ def ReadTextFile(path):
 	try:
 		File = open(path, 'r')
 	except OSError as err:
-		raise MainError( ''.join( ('Failed to open file at path: ', path, ' [errno ', err.errno, ']: ', err.strerror) ) )
+		raise MainError( ''.join( ('Failed to open file at path: ', path, ' [errno ', err.errno, ']: ', err.strerror) ) ) from err
 	contents = File.read()
 	File.close()
 	return contents
@@ -104,7 +104,7 @@ def ParseJSONFile(path):
 	try:
 		obj = json.loads(contents, object_pairs_hook=OrderedDict)
 	except json.decoder.JSONDecodeError as err:
-		raise MainError( ''.join( ('Failed to decode JSON file at path: "', path, '" Reason: "', err.msg, '" Line: ', str(err.lineno), ' Col: ', str(err.colno) ) ) )
+		raise MainError( ''.join( ('Failed to decode JSON file at path: "', path, '" Reason: "', err.msg, '" Line: ', str(err.lineno), ' Col: ', str(err.colno) ) ) ) from err
 	return obj
 
 def GetDirFiles(DirPath):
@@ -117,7 +117,7 @@ def GetDirFiles(DirPath):
 				output.append(f)
 		return output
 	except OSError as err:
-		raise MainError( ''.join( ('Failed to get files from directory at: ', DirPath, ' [errno ', err.errno, ']: ', err.strerror) ) )
+		raise MainError( ''.join( ('Failed to get files from directory at: ', DirPath, ' [errno ', err.errno, ']: ', err.strerror) ) ) from err
 
 VALID_IMAGES = ('.bmp', '.dib', '.png', '.jpg', '.jpeg', '.jpe', '.jif', '.jfif', '.jfi', '.gif', '.pcx', '.pbm', '.pgm', '.ppm', '.pnm', '.tiff', '.tif', '.tga', '.icb', '.vda', '.vst', '.iff', '.xpm', '.ico', '.cur', '.ani')
 VALID_JSON = ('.json',)

@@ -88,7 +88,7 @@ class ManagedFile:
 				try:
 					self._handle = open(self.path, 'wb')
 				except OSError as err:
-					raise FileOpError(''.join( ('Failed to open file at "', self.path, '"') ), err.errno, err.strerror)
+					raise FileOpError(''.join( ('Failed to open file at "', self.path, '"') ), err.errno, err.strerror) from err
 			self._handle.seek(0)
 			self._handle.truncate()
 			self._handle.write( self._DataCallback().encode('utf-8') )
@@ -251,7 +251,7 @@ class FileData:
 	def _LoadJSONSource(self, obj):
 		"Load the source field from the JSON object."
 		source = obj.get( 'source', unfound() )
-		if isinstance(source, str) or isinstance(source, unfound) or source is None:
+		if isinstance( source, (str, unfound) ) or source is None:
 			self.SetSource(source)
 		else:
 			raise ControlFileError( ''.join( ("'source' field is '", self._GetJSONTypeName(source), "' but must be a string or null, or not included.") ) )

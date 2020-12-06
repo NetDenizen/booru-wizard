@@ -18,7 +18,7 @@ from booruwizard.lib.tag import TagsContainer
 from booruwizard.lib.template import QuestionType, OptionQuestionType
 from booruwizard.lib.netcode import HeadRequest
 from booruwizard.ui.common import CircularCounter, PathEntry, RenderThreeIfMid
-from booruwizard.ui.question.base import *
+from booruwizard.ui.question.base import RE_NOT_WHITESPACE, TagChoiceQuestion, ArbitraryCheckQuestion, EntryBase, StoragelessEntry, SplitterBase, SimilarTagsFinder, ImageTagsList, SingleStringEntry
 
 class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 	def _UpdateName(self, idx):
@@ -137,7 +137,7 @@ class CustomTags(SplitterBase):
 		self.first.SetRomanizeButtonState() # TODO: Handle this in a callback local to the class?
 		e.Skip()
 	def __init__(self, parent, TagsTracker):
-		wx.SplitterWindow.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
+		SplitterBase.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
 
 		self.first = StoragelessEntry(self)
 		self.second = ArbitraryCheckQuestion(self, TagsTracker)
@@ -509,7 +509,7 @@ class BulkTagger(wx.Panel):
 						if start > stop:
 							tmp = start
 							start = stop
-							top = tmp
+							stop = tmp
 						if stop > len(self.OutputFiles):
 							raise ValueError
 						output.extend( range(start - 1, stop) )
@@ -898,12 +898,12 @@ class SourceQuestion(SingleStringEntry):
 					self.SourceChoicesResults[self.pos.get()].append( str(r.title) )
 			self.SourceChoicesRemainingSearches = str(results.long_remaining)
 			self.SourceChoicesLabel.SetLabel( ''.join( ( "Loaded image successfully searched.", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
-		except UnknownApiError:
-			self.SourceChoicesLabel.SetLabel( ''.join( ( "Unable to search for loaded image. (Unknown error)", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
 		except UnknownServerError:
 			self.SourceChoicesLabel.SetLabel( ''.join( ( "Unable to search for loaded image. (Unknown server)", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
 		except UnknownClientError:
 			self.SourceChoicesLabel.SetLabel( ''.join( ( "Unable to search for loaded image. (Unknown client)", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
+		except UnknownApiError:
+			self.SourceChoicesLabel.SetLabel( ''.join( ( "Unable to search for loaded image. (Unknown error)", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
 		except BadKeyError:
 			self.SourceChoicesLabel.SetLabel( ''.join( ( "Unable to search for loaded image. (Bad key)", RenderThreeIfMid(' (Remaining daily searches: ', self.SourceChoicesRemainingSearches, ')') ) ) )
 		except BadFileSizeError:

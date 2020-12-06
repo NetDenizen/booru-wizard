@@ -282,7 +282,7 @@ class color:
 			self.green = float( int(text[3:5], 16) ) / 255.0
 			self.blue = float( int(text[5:7], 16) ) / 255.0
 		except ValueError as err:
-			raise ColorError(err, line, col)
+			raise ColorError(err, line, col) from err
 	def _CopyColor(self, a, b, c):
 		"Copy the three arguments to a tuple, and return it."
 		return (a, b, c)
@@ -310,7 +310,7 @@ class color:
 			try:
 				fv = float(v)
 			except ValueError as err:
-				raise ColorError(err, line, col)
+				raise ColorError(err, line, col) from err
 			if fv > d:
 				raise ColorError(''.join( ("Value ", str(i), " (", n, ") of '", v, "' must be less than '", str(d), "' and non-negative.") ), line, col)
 			elif fv < 0.0:
@@ -550,7 +550,7 @@ class parser:
 		try:
 			return func(raw)
 		except ValueError as err:
-			raise ParserConversionError(message, err, token.line, token.col)
+			raise ParserConversionError(message, err, token.line, token.col) from err
 	def _add(self, token):
 		"Parse a single key-pair in the NORMAL state."
 		#TODO: Convert this contional code to a lookup table?

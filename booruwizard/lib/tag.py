@@ -113,7 +113,7 @@ class TagsContainer:
 		names = string.split()
 		self.ClearStringList(names, value)
 	def has(self, name):
-		return (name and name in self.lookup and self.ReturnStringOccurrences(name) > 0)
+		return name and name in self.lookup and self.ReturnStringOccurrences(name) > 0
 	def HasAnyOfStringList(self, strings):
 		for s in strings:
 			if self.has(s):
