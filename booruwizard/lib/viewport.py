@@ -140,7 +140,7 @@ class ViewPort:
 		self.OrigSampleXPos = self.OrigSampleXPos.max( d(0.0) )
 		self.OrigSampleYPos = self.OrigSampleYPos.max( d(0.0) )
 		self._CalcConstrainedSample()
-	def ApplyMoveByInterval(self, x, y):
+	def ApplyMoveByPanInterval(self, x, y):
 		self.ApplyMove(d(x) * self.PanInterval, d(y) * self.PanInterval)
 	def ApplyFit(self):
 		"Zoom so the entire area is sampled."
