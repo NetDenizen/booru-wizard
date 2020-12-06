@@ -73,6 +73,9 @@ class ViewPort:
 				break
 			elif not ZoomIn:
 				if self.ZoomLevel >= self.FitLevel:
+					if self.ZoomLevel - self.FitLevel >= d(1.0):
+						self.ZoomLevel = self.FitLevel + d(1.0)
+						break
 					self.AccelSteps += 1
 					if self.AccelSteps > self.ZoomAccelSteps:
 						self.AccelSteps = 0
@@ -108,6 +111,9 @@ class ViewPort:
 				else:
 					break
 			else:
+				if self.ZoomLevel <= self.ZoomInterval:
+					self.ZoomLevel = self.ZoomInterval
+					break
 				self.AccelSteps += 1
 				if self.AccelSteps > self.ZoomAccelSteps:
 					self.AccelSteps = 0
@@ -183,8 +189,6 @@ class ViewPort:
 		while self.ZoomLevel > d(1.0):
 			ZoomLevel = self.ZoomLevel
 			self.ApplyZoomTimes(True, 1)
-		if self.ZoomLevel < d(1.0):
-			self._ActualFinalAccelStep(ZoomLevel)
 		self.TotalSteps = 0
 		self._CalcConstrainedSample()
 	def ApplyAspect(self):
