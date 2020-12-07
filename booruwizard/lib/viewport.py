@@ -189,6 +189,8 @@ class ViewPort:
 		while self.ZoomLevel > d(1.0):
 			ZoomLevel = self.ZoomLevel
 			self.ApplyZoomTimes(True, 1)
+		if self.ZoomLevel < d(1.0):
+			self._ActualFinalAccelStep(ZoomLevel)
 		self.TotalSteps = 0
 		self._CalcConstrainedSample()
 	def ApplyAspect(self):
