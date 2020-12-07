@@ -63,6 +63,7 @@ class ViewPort:
 		TargetDistance = ZoomLevel - d(1.0)
 		#TODO: Ensure this is always positive
 		self.ZoomLevel = d(1.0)
+		self.ZoomInterval = TargetDistance
 		if len(self.AccelStepsList) > 0:
 			self.AccelStepsList.pop()
 			self.AccelStepsList.append(TargetDistance) #TODO: Make sure this is always less than zoom interval
