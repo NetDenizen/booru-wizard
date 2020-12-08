@@ -131,13 +131,14 @@ class ViewPort:
 		self._CalcConstrainedSample()
 	def ApplyMove(self, x, y):
 		"Apply horizontal and vertical movement."
-		self.OrigSampleXPos += d(x)
-		self.OrigSampleYPos += d(y)
-		self.OrigSampleXPos = self.OrigSampleXPos.min( d(1.0) )
-		self.OrigSampleYPos = self.OrigSampleYPos.min( d(1.0) )
-		self.OrigSampleXPos = self.OrigSampleXPos.max( d(0.0) )
-		self.OrigSampleYPos = self.OrigSampleYPos.max( d(0.0) )
-		self._CalcConstrainedSample()
+		if self.ZoomLevel < self.FitLevel:
+			self.OrigSampleXPos += d(x)
+			self.OrigSampleYPos += d(y)
+			self.OrigSampleXPos = self.OrigSampleXPos.min( d(1.0) )
+			self.OrigSampleYPos = self.OrigSampleYPos.min( d(1.0) )
+			self.OrigSampleXPos = self.OrigSampleXPos.max( d(0.0) )
+			self.OrigSampleYPos = self.OrigSampleYPos.max( d(0.0) )
+			self._CalcConstrainedSample()
 	def ApplyMoveByPanInterval(self, x, y):
 		self.ApplyMove(d(x) * self.PanInterval, d(y) * self.PanInterval)
 	def ApplyFit(self):
