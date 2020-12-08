@@ -24,20 +24,28 @@ class ImageDisplay(wx.Panel):
 	def _OnPanDown(self, message, arg2=None):
 		self.viewport.ApplyMoveByPanInterval(0.0, 1.0)
 		self._UpdateMove()
+	def _AdjustCursorOnZoom(self):
+		if self.MouseDown and self.viewport.ZoomLevel < self.viewport.FitLevel:
+			self.SetCursor( wx.Cursor(wx.CURSOR_CROSS) )
 	def _OnZoomIn(self, message, arg2=None):
 		self.viewport.ApplyZoomTimes(True, 1)
+		self._AdjustCursorOnZoom()
 		self._UpdateMove()
 	def _OnZoomOut(self, message, arg2=None):
 		self.viewport.ApplyZoomTimes(False, 1)
+		self._AdjustCursorOnZoom()
 		self._UpdateMove()
 	def _OnZoomAspect(self, message, arg2=None):
 		self.viewport.ApplyAspect()
+		self._AdjustCursorOnZoom()
 		self._UpdateMove()
 	def _OnZoomFit(self, message, arg2=None):
 		self.viewport.ApplyFit()
+		self._AdjustCursorOnZoom()
 		self._UpdateMove()
 	def _OnZoomActualSize(self, message, arg2=None):
 		self.viewport.ApplyActualSize()
+		self._AdjustCursorOnZoom()
 		self._UpdateMove()
 	def _OnMouseDown(self, e):
 		if self.image is None:
