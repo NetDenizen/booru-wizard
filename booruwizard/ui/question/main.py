@@ -614,7 +614,7 @@ class BulkTagger(wx.Panel):
 		self._DisableButtons()
 
 		# Tooltips
-		self.NumberEntryTip = wx.ToolTip('Space separated image numbers to operate on.')
+		self.NumberEntryTip = wx.ToolTip("Space separated image numbers to operate on. Ranges can be specified by placing two numbers between a '-'. The range is inclusive of those two numbers, and space-independent.")
 		self.RemoveEntryTip = wx.ToolTip('Tags to be removed.')
 		self.SwapEntryButtonTip = wx.ToolTip("Swap the two entries.")
 		self.AddEntryTip = wx.ToolTip('Tags to be added.')
