@@ -342,7 +342,7 @@ class ImagePanel(wx.Panel):
 		if name not in self.ImageSearch.GetValue().split():
 			if self.ImageSearch.IsEmpty():
 				self.ImageSearch.Clear()
-			self.ImageSearch.write( ''.join( (name, ' ') ) )
+			self.ImageSearch.write( ''.join( (' ', name, ' ') ) )
 			self.ImageSearch.ForcePendingUpdate() #TODO: We may not need this if 'write' forces an update event.
 	def OnTagLookupSelection(self, e):
 		self._AddFoundTag( self.TagLookup.GetMenuItem( e.GetId() ) )
