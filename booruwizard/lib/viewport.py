@@ -35,10 +35,8 @@ def fti(value): # Floor To Int
 class ViewPort:
 	def _CalcSample(self):
 		"Apply zooming of an arbitrary amount."
-		PosXRatio = d(1.0) - (self.ZoomLevel / self.FitXLevel)
-		PosYRatio = d(1.0) - (self.ZoomLevel / self.FitYLevel)
-		self.SampleXPos = self.OrigSampleXPos * PosXRatio
-		self.SampleYPos = self.OrigSampleYPos * PosYRatio
+		self.SampleXPos = self.OrigSampleXPos * (self.FitXLevel - self.SampleWidth)
+		self.SampleYPos = self.OrigSampleYPos * (self.FitYLevel - self.SampleHeight)
 		self.SampleWidth = self.ZoomLevel
 		self.SampleHeight = self.ZoomLevel
 	def _ConstrainSample(self):
@@ -133,11 +131,10 @@ class ViewPort:
 		self._CalcConstrainedSample()
 	def ApplyMove(self, x, y):
 		"Apply horizontal and vertical movement."
-		FitMaxLevel = self.FitXLevel.max(self.FitYLevel)
-		self.OrigSampleXPos += (d(x) * self.ZoomLevel * FitMaxLevel)
-		self.OrigSampleYPos += (d(y) * self.ZoomLevel * FitMaxLevel)
-		self.OrigSampleXPos = self.OrigSampleXPos.min(self.FitXLevel)
-		self.OrigSampleYPos = self.OrigSampleYPos.min(self.FitYLevel)
+		self.OrigSampleXPos += d(x)
+		self.OrigSampleYPos += d(y)
+		self.OrigSampleXPos = self.OrigSampleXPos.min( d(1.0) )
+		self.OrigSampleYPos = self.OrigSampleYPos.min( d(1.0) )
 		self.OrigSampleXPos = self.OrigSampleXPos.max( d(0.0) )
 		self.OrigSampleYPos = self.OrigSampleYPos.max( d(0.0) )
 		self._CalcConstrainedSample()
@@ -166,8 +163,8 @@ class ViewPort:
 			else:
 				self.ZoomLock = False
 
-		self.OrigSampleXPos = self.FitXLevel / d(2.0) # X position of upper-left corner of sample area, as a fraction of display area's width.
-		self.OrigSampleYPos = self.FitYLevel / d(2.0) # Y position of upper-left corner of sample area, as a fraction of display area's height.
+		self.OrigSampleXPos = d(0.5) # X position of upper-left corner of sample area, as a fraction of display area's width.
+		self.OrigSampleYPos = d(0.5) # Y position of upper-left corner of sample area, as a fraction of display area's height.
 		self.SampleWidth = self.ZoomLevel # Width of sample area, as a fraction of the display area's full width.
 		self.SampleHeight = self.ZoomLevel # Height  of sample area, as a fraction of the display area's full width.
 		self._CalcConstrainedSample()
