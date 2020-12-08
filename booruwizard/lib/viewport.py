@@ -218,10 +218,9 @@ class ViewPort:
 		self.DisplayWidth = DisplayWidth
 		self.DisplayHeight = DisplayHeight
 		self.RenderBackground(self.DisplayWidth, self.DisplayHeight)
-	def UpdateImage(self, image, quality):
+	def UpdateImage(self, quality):
 		"Return wx.Image, through the viewport."
-		self.image = image
-		if image is None:
+		if self.image is None:
 			self.ImageBitmap = None
 			return
 
@@ -234,7 +233,7 @@ class ViewPort:
 		elif self.ZoomLevel > self.FitLevel:
 			self.state = ViewPortState.ASPECT
 
-		ImageSize = image.GetSize()
+		ImageSize = self.image.GetSize()
 		ImageWidth = ImageSize.GetWidth()
 		ImageHeight = ImageSize.GetHeight()
 
@@ -278,7 +277,7 @@ class ViewPort:
 
 		SampleRect = wx.Rect(SampleXPos, SampleYPos, ZoomWidth, ZoomHeight)
 		try:
-			NewImage = image.GetSubImage(SampleRect)
+			NewImage = self.image.GetSubImage(SampleRect)
 			NewImage.Rescale(DisplayWidth, DisplayHeight, quality)
 
 			NewImageSize = NewImage.GetSize()

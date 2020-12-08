@@ -11,7 +11,7 @@ from booruwizard.ui.common import PathEntry, CircularCounter, RenderThreeIfMid, 
 class ImageDisplay(wx.Panel):
 	def _UpdateMove(self):
 		self.viewport.UpdateBackground(self.viewport.DisplayWidth, self.viewport.DisplayHeight)
-		self.viewport.UpdateImage(self.image, self.quality)
+		self.viewport.UpdateImage(self.quality)
 	def _OnPanLeft(self, message, arg2=None):
 		self.viewport.ApplyMoveByPanInterval(-1.0, 0.0)
 		self._UpdateMove()
@@ -81,7 +81,7 @@ class ImageDisplay(wx.Panel):
 		self.height = PanelSize.GetHeight()
 		self.viewport.UpdateBackground(self.width, self.height)
 		self.viewport.ApplyZoomSteps(OldSteps)
-		self.viewport.UpdateImage(self.image, self.quality)
+		self.viewport.UpdateImage(self.quality)
 		self.parent.UpdateZoomControls()
 	def _OnSize(self, e):
 		self._UpdateSize()
@@ -93,13 +93,14 @@ class ImageDisplay(wx.Panel):
 			return
 		if self.quality != self.CurrentQuality:
 			self.CurrentQuality = self.quality
-			self.viewport.UpdateImage(self.image, self.quality)
+			self.viewport.UpdateImage(self.quality)
 		dc.DrawBitmap(self.viewport.BackgroundBitmap, self.viewport.XOffset, self.viewport.YOffset, True)
 		dc.DrawBitmap(self.viewport.ImageBitmap, self.viewport.XOffset, self.viewport.YOffset, True)
 		self.Refresh()
 		e.Skip()
 	def SetImage(self, image):
 		self.image = image
+		self.viewport.image = self.image
 		self._UpdateSize()
 		self.Refresh()
 	def __init__(self, parent, quality, viewport, keybinds):
