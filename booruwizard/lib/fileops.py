@@ -217,7 +217,8 @@ class FileData:
 
 		self._IsChanged = True
 		self._OriginalObj = None
-		self._DataState = self._BuildData() # The current output of the DataCallback, used to determine if _IsChanged should be set.
+		self._WrittenDataState = None
+		self._DataState = self._BuildData() # The current output of the DataCallback, compared with the _WrittenDataState stored in the file, to determine if updates are necessary.
 		self._lock = None # A lock within the ManagedFile object, used to synchronize updates.
 		self._PushUpdate = None # A callback to push data to the associated ManagedFile object
 	def lock(self):
@@ -232,11 +233,9 @@ class FileData:
 	def PrepareChange(self):
 		self.lock()
 	def FinishChange(self):
-		"Release self._lock if it is not None and set IsChanged to True."
-		DataState = self._BuildData()
-		if self._DataState != DataState:
-			self._IsChanged = True
-			self._DataState = DataState
+		"Release self._lock if it is not None and generate the new data state."
+		self._DataState = self._BuildData()
+		self._IsChanged = self._DataState != self._WrittenDataState
 		self._PushUpdate()
 		self.unlock()
 	def _LoadJSONName(self, obj):
@@ -299,6 +298,7 @@ class FileData:
 		return self._IsChanged
 	def DataCallback(self):
 		self._IsChanged = False
+		self._WrittenDataState = self._DataState
 		return self._DataState
 	def GetManagedFile(self, OutputDir, ReserveCallback, TimerCallback):
 		"Create and return associated ManagedFile object."
@@ -332,8 +332,6 @@ class FileManager:
 			f.update()
 		wx.LogMessage('Completed hard disk flush.')
 	def _OnStartUpdateTimer(self, message, arg2=None):
-		if self._UpdateInterval == -1.0:
-			return
 		if self._UpdateInterval == 0.0:
 			pub.sendMessage("FileUpdateClear", message=None)
 		self._UpdateTimer = threading.Thread(name='Update Timer', target=self._UpdateThread, daemon=True)
@@ -342,10 +340,8 @@ class FileManager:
 		wx.LogMessage('Update thread started.')
 	def _OnFileUpdateForce(self, message, arg2=None):
 		wx.LogMessage('Hard disk flush forced.')
-		if self._UpdateInterval == -1.0:
-			self.UpdateAll()
-		else:
-			self._UpdateTimerDelay.set()
+		self._UpdateTimerForceWrite.set()
+		self._UpdateTimerDelay.set()
 	def OnExit(self, e):
 		self.destroy()
 		e.Skip()
@@ -360,6 +356,7 @@ class FileManager:
 		self._UpdateTimer = None # Starts the _UpdateThread process
 		self._UpdateTimerRunning = threading.Event() # Unset to disable the timer
 		self._UpdateTimerDelay = threading.Event() # Waited on to delay the update loop. Can be set to awaken early.
+		self._UpdateTimerForceWrite = threading.Event() # If this is set, any changes will be set as soon as the update loop awakens.
 
 		self.FilesLock = threading.Semaphore(1) # Mutex on _files and _OpenFiles
 		self._files = [] # List of ManagedFile objects
@@ -380,13 +377,14 @@ class FileManager:
 		wait = self._UpdateTimerDelay.wait
 		clear = self._UpdateTimerDelay.clear
 		interrupted = self._UpdateTimerDelay.is_set
+		forced = self._UpdateTimerForceWrite.is_set
+		ClearForced = self._UpdateTimerForceWrite.clear
 		UpdateInterval = self._UpdateInterval * 1000000.0
 		CheckAny = self.CheckAny
 		sendMessage = pub.sendMessage
 		acquire = self.FilesLock.acquire
 		UpdateAll = self.UpdateAll
 		release = self.FilesLock.release
-		UpdateState = False
 		while running():
 			CurrentTime = 0.0
 			delta = 1000000.0
@@ -394,6 +392,18 @@ class FileManager:
 				if UpdateInterval == 0:
 					wait(None)
 					break
+				elif UpdateInterval < 0:
+					wait(None)
+					if CheckAny():
+						sendMessage("FileUpdatePending", message=None)
+					else:
+						sendMessage("FileUpdateClear", message=None)
+					clear()
+					if forced():
+						ClearForced()
+						break
+					else:
+						continue
 				swStart()
 				delta = float(delta) - 1000000.0
 				interval = UpdateInterval - CurrentTime
@@ -405,13 +415,10 @@ class FileManager:
 						swPause()
 						break
 					CurrentTime += WaitTime
-					NewUpdateState = CheckAny()
-					if NewUpdateState != UpdateState:
-						UpdateState = NewUpdateState
-						if UpdateState:
-							sendMessage("FileUpdatePending", message=None)
-						else:
-							sendMessage("FileUpdateClear", message=None)
+					if CheckAny():
+						sendMessage("FileUpdatePending", message=None)
+					else:
+						sendMessage("FileUpdateClear", message=None)
 				elif interval > 0:
 					wait( (interval - delta) / 1000000.0 )
 					swPause()
@@ -427,10 +434,8 @@ class FileManager:
 			sendMessage("FileUpdateClear", message=None)
 			UpdateState = False
 	def _StopUpdateTimer(self):
-		if self._UpdateInterval == -1.0:
-			self.UpdateAll()
-			return
 		self._UpdateTimerRunning.clear()
+		self._UpdateTimerForceWrite.set()
 		self._UpdateTimerDelay.set()
 		self._UpdateTimer.join()
 		wx.LogMessage('Update thread stopped.')
@@ -461,7 +466,7 @@ class FileManager:
 		wx.LogVerbose( ''.join( ("Registering file at path '", path.replace('%', '%%'), "'") ) )
 		if path not in self.InputPaths:
 			PushUpdate = None
-			if self._UpdateInterval == 0.0:
+			if self._UpdateInterval == 0.0 or self._UpdateInterval == -1.0:
 				PushUpdate = self._UpdateTimerDelay.set
 			self.ControlFiles.append( FileData(path, compact, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags) )
 			self.InputPaths.append(path)
