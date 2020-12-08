@@ -56,15 +56,13 @@ class ViewPort:
 	def _CalcConstrainedSample(self):
 		self._CalcSample()
 		self._ConstrainSample()
-	def _ActualFinalAccelStep(self, ZoomLevel):
+	def _ActualFinalAccelStep(self, target, ZoomLevel):
 		"Calculate the zoom interval necessary to reach a zoom level of 1.0, then apply that, while replacing the last step with that step."
-		TargetDistance = ZoomLevel - d(1.0)
-		#TODO: Ensure this is always positive
-		self.ZoomLevel = d(1.0)
-		self.ZoomInterval = TargetDistance
-		if len(self.AccelStepsList) > 0:
-			self.AccelStepsList.pop()
-			self.AccelStepsList.append(TargetDistance) #TODO: Make sure this is always less than zoom interval
+		TargetDistance = abs(ZoomLevel - target)
+		self.ZoomLevel = target
+		if len(self.ZoomLevelList) > 0:
+			self.ZoomLevelList.pop()
+			self.ZoomLevelList.append(self.ZoomLevel) #TODO: Make sure this is always less than zoom interval
 	def ApplyZoomTimes(self, ZoomIn, times):
 		"Apply zooming in or out a number of times."
 		for t in range(times):
@@ -79,34 +77,38 @@ class ViewPort:
 					if self.AccelSteps > self.ZoomAccelSteps:
 						self.AccelSteps = 0
 						self.ZoomInterval += self.ZoomAccel
-					self.AccelStepsList.append(self.ZoomInterval)
+					self.ZoomIntervalList.append(self.ZoomInterval)
 					ZoomLevel = self.ZoomLevel
 					self.ZoomLevel += self.ZoomInterval
+					self.ZoomLevelList.append(self.ZoomLevel)
 					self.TotalSteps -= 1
 					if ZoomLevel - self.FitLevel < d(1.0) and self.ZoomLevel - self.FitLevel > d(1.0):
 						self.ZoomLevel = self.FitLevel + d(1.0)
-						if len(self.AccelStepsList) > 0:
-							self.AccelStepsList.pop()
-							self.AccelStepsList.append(self.ZoomLevel - ZoomLevel)
-				elif len(self.AccelStepsList) > 1:
-						self.ZoomInterval = self.AccelStepsList[-2]
-						self.ZoomLevel += self.AccelStepsList[-1]
+						if len(self.ZoomIntervalList) > 0:
+							self.ZoomIntervalList.pop()
+							self.ZoomIntervalList.append(self.ZoomLevel - ZoomLevel)
+						if len(self.ZoomLevelList) > 0:
+							self.ZoomLevelList.pop()
+							self.ZoomLevelList.append(self.ZoomLevel)
+				elif len(self.ZoomIntervalList) > 0 and len(self.ZoomLevelList) > 1:
+						self.ZoomInterval = self.ZoomIntervalList.pop()
+						self.ZoomLevel = self.ZoomLevelList[-2]
 						self.AccelSteps -= 1
 						self.TotalSteps -= 1
 						if self.AccelSteps < 0:
 							self.AccelSteps = self.ZoomAccelSteps
-						self.AccelStepsList.pop()
+						self.ZoomLevelList.pop()
 				else:
 					break
 			elif self.ZoomLevel > self.FitLevel:
-				if len(self.AccelStepsList) > 1:
-						self.ZoomInterval = self.AccelStepsList[-2]
-						self.ZoomLevel -= self.AccelStepsList[-1]
+				if len(self.ZoomIntervalList) > 0 and len(self.ZoomLevelList) > 1:
+						self.ZoomInterval = self.ZoomIntervalList.pop()
+						self.ZoomLevel = self.ZoomLevelList[-2]
 						self.AccelSteps -= 1
 						self.TotalSteps += 1
 						if self.AccelSteps < 0:
 							self.AccelSteps = self.ZoomAccelSteps
-						self.AccelStepsList.pop()
+						self.ZoomLevelList.pop()
 				else:
 					break
 			else:
@@ -117,16 +119,16 @@ class ViewPort:
 				if self.AccelSteps > self.ZoomAccelSteps:
 					self.AccelSteps = 0
 					self.ZoomInterval += self.ZoomAccel
-				self.AccelStepsList.append(self.ZoomInterval)
+				self.ZoomIntervalList.append(self.ZoomInterval)
 				ZoomLevel = self.ZoomLevel
 				self.ZoomLevel -= self.ZoomInterval
+				self.ZoomLevelList.append(self.ZoomLevel)
 				self.TotalSteps += 1
 				if ZoomLevel > d(1.0) and self.ZoomLevel < d(1.0):
-					self._ActualFinalAccelStep(ZoomLevel)
+					self._ActualFinalAccelStep(d(1.0), ZoomLevel)
+				ZoomLevel = self.ZoomLevel
 				if self.ZoomLevel <= self.ZoomInterval:
-					self.AccelStepsList.pop()
-					self.AccelStepsList.append(ZoomLevel - self.ZoomInterval)
-					self.ZoomLevel = self.ZoomInterval
+					self._ActualFinalAccelStep(self.ZoomInterval, ZoomLevel)
 					break
 		self._CalcConstrainedSample()
 	def ApplyMove(self, x, y):
@@ -169,7 +171,8 @@ class ViewPort:
 		self.SampleWidth = self.ZoomLevel # Width of sample area, as a fraction of the display area's full width.
 		self.SampleHeight = self.ZoomLevel # Height  of sample area, as a fraction of the display area's full width.
 		self._CalcConstrainedSample()
-		self.AccelStepsList = [self.ZoomInterval]
+		self.ZoomIntervalList = [self.ZoomInterval]
+		self.ZoomLevelList = [self.ZoomLevel]
 		self.FitLevel = self.ZoomLevel
 	def ApplyActualSize(self):
 		if self.image is None:
@@ -189,7 +192,7 @@ class ViewPort:
 			ZoomLevel = self.ZoomLevel
 			self.ApplyZoomTimes(True, 1)
 		if self.ZoomLevel < d(1.0):
-			self._ActualFinalAccelStep(ZoomLevel)
+			self._ActualFinalAccelStep(d(1.0), ZoomLevel)
 		self.TotalSteps = 0
 		self._CalcConstrainedSample()
 	def ApplyAspect(self):
