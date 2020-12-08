@@ -169,6 +169,9 @@ class PathEntry(SearchEntry):
 class TagSearch(SearchEntry):
 	def ForcePendingUpdate(self):
 		self._MenuUpdated = False
+	def _EnableButtons(self, status):
+		self.LeftImage.Enable(status)
+		self.RightImage.Enable(status)
 	def UpdateMenu(self):
 		if self._MenuUpdated:
 			return
@@ -180,6 +183,7 @@ class TagSearch(SearchEntry):
 			Remove(i)
 		EntryValues = self.entry.GetValue().lower().split()
 		AddAll = False
+		EnableButtons = False
 		if not EntryValues:
 			AddAll = True
 		for i, f in enumerate(self._OutputFiles.ControlFiles):
@@ -196,8 +200,34 @@ class TagSearch(SearchEntry):
 					break
 			if AddAll or AddV:
 				Append(_MenuItems[i])
+				EnableButtons = True
 			f.unlock()
+		self._EnableButtons(EnableButtons)
 		self._MenuUpdated = True
+	def CheckForAnyMatches(self):
+		EntryValues = self.entry.GetValue().lower().split()
+		EnableButtons = False
+		if not EntryValues:
+			EnableButtons = True
+		else:
+			for i, f in enumerate(self._OutputFiles.ControlFiles):
+				if i == self.pos.get():
+					continue
+				f.lock()
+				AddV = False
+				for v in EntryValues:
+					if f.tags.has(v) or\
+					   ( v.startswith('-') and not f.tags.has(v[1:]) ):
+						AddV = True
+					else:
+						AddV = False
+						break
+				if AddV:
+					EnableButtons = True
+					f.unlock()
+					break
+				f.unlock()
+		self._EnableButtons(EnableButtons)
 	def ChooseMenuItem(self, i):
 		pub.sendMessage("IndexImage", message=self._MenuLookup[i])
 	def _OnLeftImageButton(self, e):
@@ -208,6 +238,7 @@ class TagSearch(SearchEntry):
 		e.Skip()
 	def _OnEntry(self, e):
 		self._MenuUpdated = False
+		self.CheckForAnyMatches()
 		e.Skip()
 	def SelfBinds(self):
 		for i in self._MenuItems:
@@ -221,14 +252,17 @@ class TagSearch(SearchEntry):
 		"Change the image index to the one specified in the event, if possible."
 		self._MenuUpdated = False
 		self.pos.set(message)
+		self.CheckForAnyMatches()
 	def _OnLeftImage(self, message, arg2=None):
 		"Shift to the left (-1) position to the current pos in the images array if the pos is greater than 0. Otherwise, loop around to the last item."
 		self._MenuUpdated = False
 		self.pos.dec()
+		self.CheckForAnyMatches()
 	def _OnRightImage(self, message, arg2=None):
 		"Shift to the right (+1) position to the current pos in the images array if the pos is less than the length of the positions array. Otherwise, loop around to the first item."
 		self._MenuUpdated = False
 		self.pos.inc()
+		self.CheckForAnyMatches()
 	def _OnLeftResult(self, message, arg2=None):
 		"Go to the left (previously) available search result, given the current image."
 		self.UpdateMenu()
@@ -262,6 +296,8 @@ class TagSearch(SearchEntry):
 		if chosen is not None:
 			pub.sendMessage("IndexImage", message=chosen)
 			self.RightImage.SetFocus()
+	def _OnFileUpdate(self, message, arg2=None):
+		wx.CallAfter(self.CheckForAnyMatches)
 	def SelfPubSub(self):
 		pub.subscribe(self._OnFocusEntry, "FocusTagSearch")
 		pub.subscribe(self._OnFocusMenu, "FocusTagSearchMenu")
@@ -270,6 +306,8 @@ class TagSearch(SearchEntry):
 		pub.subscribe(self._OnRightImage, "RightImage")
 		pub.subscribe(self._OnLeftResult, "LeftTagSearchImage")
 		pub.subscribe(self._OnRightResult, "RightTagSearchImage")
+		pub.subscribe(self._OnFileUpdate, "FileUpdatePending")
+		pub.subscribe(self._OnFileUpdate, "FileUpdateClear")
 	def __init__(self, parent, OutputFiles):
 		self._OutputFiles = OutputFiles
 		self._MenuItems = []
