@@ -871,11 +871,11 @@ class SourceQuestion(SingleStringEntry):
 		request.add_header("User-Agent", self.SourceTestUserAgent)
 		try:
 			response = urlopen(request)
-			self.BadIdChoicesLabel.SetLabel( ''.join( ("Successfully opened source URI (", str(response.status), " ", response.reason, ")") ) )
+			self.BadIdChoicesLabel.SetLabel( ''.join( ("Successfully opened source URI (", str(response.status), " ", str(response.reason), ")") ) )
 		except HTTPError as err:
-			self.BadIdChoicesLabel.SetLabel( ''.join( ("Unable to open source URI (", str(err.code), " ", err.reason, ")") ) )
+			self.BadIdChoicesLabel.SetLabel( ''.join( ("Unable to open source URI (", str(err.code), " ", str(err.reason), ")") ) )
 		except URLError as err:
-			self.BadIdChoicesLabel.SetLabel( ''.join( ("Unable to parse source URI (", err.reason, ")") ) )
+			self.BadIdChoicesLabel.SetLabel( ''.join( ("Unable to parse source URI (", str(err.reason), ")") ) )
 		self.BadIdChoicesContainerSizer.Layout()
 		e.Skip()
 	def _OnSourceSearchButton(self, e):
