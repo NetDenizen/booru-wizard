@@ -867,15 +867,18 @@ class SourceQuestion(SingleStringEntry):
 		e.Skip()
 	def _OnSourceTestButton(self, e):
 		self.BadIdChoicesLabel.SetLabel("Requesting source URI.")
-		request = HeadRequest( self.entry.GetValue() )
-		request.add_header("User-Agent", self.SourceTestUserAgent)
 		try:
-			response = urlopen(request)
-			self.BadIdChoicesLabel.SetLabel( ''.join( ("Successfully opened source URI (", str(response.status), " ", str(response.reason), ")") ) )
-		except HTTPError as err:
-			self.BadIdChoicesLabel.SetLabel( ''.join( ("Unable to open source URI (", str(err.code), " ", str(err.reason), ")") ) )
-		except URLError as err:
-			self.BadIdChoicesLabel.SetLabel( ''.join( ("Unable to parse source URI (", str(err.reason), ")") ) )
+			request = HeadRequest( self.entry.GetValue() )
+			request.add_header("User-Agent", self.SourceTestUserAgent)
+			try:
+				response = urlopen(request)
+				self.BadIdChoicesLabel.SetLabel( ''.join( ("Successfully opened source URI (", str(response.status), " ", str(response.reason), ")") ) )
+			except HTTPError as err:
+				self.BadIdChoicesLabel.SetLabel( ''.join( ("Unable to open source URI (", str(err.code), " ", str(err.reason), ")") ) )
+			except URLError as err:
+				self.BadIdChoicesLabel.SetLabel( ''.join( ("Unable to parse source URI (", str(err.reason), ")") ) )
+		except ValueError as err:
+			self.BadIdChoicesLabel.SetLabel( ''.join( ("Unrecognized URI format.") ) )
 		self.BadIdChoicesContainerSizer.Layout()
 		e.Skip()
 	def _OnSourceSearchButton(self, e):
