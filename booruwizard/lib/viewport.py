@@ -23,12 +23,6 @@ class ViewPortState(Enum):
 	ACTUAL = 1
 	ASPECT = 2
 
-def CalcRatioDiff(ImageRatio, DisplayRatio):
-	if DisplayRatio > ImageRatio:
-		return ImageRatio / DisplayRatio
-	else:
-		return DisplayRatio / ImageRatio
-
 def fti(value): # Floor To Int
 	return int( value.quantize(d('1.'), rounding=ROUND_FLOOR) )
 
@@ -247,11 +241,27 @@ class ViewPort:
 		DisplayWidth = self.DisplayWidth
 		DisplayHeight = self.DisplayHeight
 		if self.state == ViewPortState.ASPECT:
-			ZoomRatio =  d(2.0) - (self.ZoomLevel - self.FitLevel)
-			if ImageWidth > ImageHeight:
-				DisplayHeight = min( self.DisplayHeight, fti(CalcRatioDiff( d(ImageHeight) / d(ImageWidth), d(DisplayHeight) / d(DisplayWidth) ) * d(DisplayHeight) * ZoomRatio) )
+			ZoomRatio =  d(1.0) - (self.ZoomLevel - self.FitLevel)
+			WidthMultiplier = d(self.DisplayWidth) / d(ImageWidth)
+			HeightMultiplier = d(self.DisplayHeight) / d(ImageHeight)
+			SmallestMultiplier = WidthMultiplier.min(HeightMultiplier)
+			SmallestMultiplier = SmallestMultiplier.min( d(1.0) )
+			DisplayHeight = d(ImageHeight) * SmallestMultiplier
+			DisplayWidth = d(ImageWidth) * SmallestMultiplier
+			if self.DisplayWidth > self.DisplayHeight:
+				if DisplayWidth > d(self.DisplayWidth):
+					DisplayWidth = d(self.DisplayWidth)
+				DisplayWidth += ( ZoomRatio * (self.DisplayWidth - DisplayWidth) )
+				if DisplayWidth > d(self.DisplayWidth):
+					DisplayWidth = d(self.DisplayWidth)
 			else:
-				DisplayWidth = min( self.DisplayWidth, fti(CalcRatioDiff( d(ImageWidth) / d(ImageHeight), d(DisplayWidth) / d(DisplayHeight) ) * d(DisplayWidth) * ZoomRatio) )
+				if DisplayHeight > d(self.DisplayHeight):
+					DisplayHeight = d(self.DisplayHeight)
+				DisplayHeight += ( ZoomRatio * (self.DisplayHeight - DisplayHeight) )
+				if DisplayHeight > d(self.DisplayHeight):
+					DisplayHeight = d(self.DisplayHeight)
+			DisplayHeight = fti(DisplayHeight)
+			DisplayWidth = fti(DisplayWidth)
 			self.XOffset = fti( ( d(self.DisplayWidth) - DisplayWidth ) * d(0.5) )
 			self.YOffset = fti( ( d(self.DisplayHeight) - DisplayHeight ) * d(0.5) )
 		elif self.ZoomLevel == d(1.0):
