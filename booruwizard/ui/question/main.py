@@ -796,7 +796,6 @@ class SourceQuestion(SingleStringEntry):
 		self.OutputFile = OutputFile
 		self._ValueGetter = self.OutputFile.GetSource
 		self._ValueSetter = self.OutputFile.SetSource
-		self._SetPathFormatReplacement()
 		self.BadIdChoices.load(OutputFile)
 	def clear(self):
 		"Clear the question for the given case."
@@ -834,6 +833,7 @@ class SourceQuestion(SingleStringEntry):
 		super().disp()
 		self._UpdateSourceChoices()
 		self.BadIdChoices.disp()
+		self._SetPathFormatReplacement()
 		self.SetButtonStates()
 	def _UpdateChange(self):
 		self._SetValue()
