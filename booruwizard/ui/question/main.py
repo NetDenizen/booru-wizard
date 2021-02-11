@@ -988,13 +988,13 @@ class SourceQuestion(SingleStringEntry):
 		for v in q.DefaultReplacement:
 			self._AddPathFormatMenuItem(v, self.PathFormatReplaceMenu, self._OnPathFormatReplaceMenuItemChosen)
 
+		self.EntrySizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.SourceChoicesLabelSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.BadIdChoicesLabelSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.SourceChoicesContainerSizer = wx.BoxSizer(wx.VERTICAL)
 		self.BadIdChoicesContainerSizer = wx.BoxSizer(wx.VERTICAL)
 		self.SourceChoicesSizer = wx.BoxSizer(wx.VERTICAL)
 		self.PathFormatSizer = wx.BoxSizer(wx.HORIZONTAL)
-		self.ButtonsSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.BulkSourcerSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -1036,6 +1036,10 @@ class SourceQuestion(SingleStringEntry):
 		self.BadIdChoicesContainerSizer.Add(self.BadIdChoices, 35, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
 		self.BadIdChoicesContainer.SetSizer(self.BadIdChoicesContainerSizer)
 
+		self.EntrySizer.Add(self.entry, 100, wx.ALIGN_CENTER | wx.EXPAND)
+		self.EntrySizer.AddStretchSpacer(1)
+		self.EntrySizer.Add(self.RomanizeButton, 0, wx.ALIGN_CENTER | wx.CENTER | wx.SHAPED)
+
 		self.PathFormatSizer.Add(self.PathFormatButton, 0, wx.ALIGN_CENTER)
 		self.PathFormatSizer.AddStretchSpacer(1)
 		self.PathFormatSizer.Add(self.PathFormatReplaceText, 0, wx.ALIGN_CENTER)
@@ -1045,10 +1049,6 @@ class SourceQuestion(SingleStringEntry):
 		self.PathFormatSizer.Add(self.PathFormatWithText, 0, wx.ALIGN_CENTER)
 		self.PathFormatSizer.AddStretchSpacer(1)
 		self.PathFormatSizer.Add(self.PathFormatReplaceEntry, 60, wx.ALIGN_CENTER | wx.EXPAND)
-
-		self.ButtonsSizer.AddStretchSpacer(30)
-		self.ButtonsSizer.Add(self.RomanizeButton, 0, wx.ALIGN_CENTER | wx.CENTER | wx.SHAPED)
-		self.ButtonsSizer.AddStretchSpacer(30)
 
 		self.BulkSourcerSizer.Add(self.BulkSourceButton, 0, wx.CENTER | wx.ALIGN_CENTER)
 		self.BulkSourcerSizer.AddStretchSpacer(1)
@@ -1061,11 +1061,9 @@ class SourceQuestion(SingleStringEntry):
 		self.BulkSourcerSizer.Add(self.NumberChooser.NumberEntry, 50, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
 
 		self.MainSizer.AddStretchSpacer(2)
-		self.MainSizer.Add(self.entry, 0, wx.ALIGN_CENTER | wx.EXPAND)
+		self.MainSizer.Add(self.EntrySizer, 0, wx.ALIGN_CENTER | wx.EXPAND)
 		self.MainSizer.AddStretchSpacer(2)
 		self.MainSizer.Add(self.PathFormatSizer, 0, wx.ALIGN_CENTER | wx.EXPAND)
-		self.MainSizer.AddStretchSpacer(2)
-		self.MainSizer.Add(self.ButtonsSizer, 0, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
 		self.MainSizer.AddStretchSpacer(2)
 		self.MainSizer.Add(self.BulkSourcerSizer, 0, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
 		self.MainSizer.AddStretchSpacer(2)
