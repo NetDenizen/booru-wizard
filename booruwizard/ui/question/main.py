@@ -18,7 +18,7 @@ from booruwizard.lib.tag import TagsContainer
 from booruwizard.lib.template import QuestionType, OptionQuestionType
 from booruwizard.lib.netcode import HeadRequest
 from booruwizard.ui.common import CircularCounter, PathEntry, RenderThreeIfMid
-from booruwizard.ui.question.base import RE_NOT_WHITESPACE, TagChoiceQuestion, ArbitraryCheckQuestion, EntryBase, StoragelessEntry, SplitterBase, SimilarTagsFinder, ImageTagsList, SingleStringEntry
+from booruwizard.ui.question.base import RE_NOT_WHITESPACE, TagChoiceQuestion, ArbitraryCheckQuestion, EntryBase, PathNumberChooser, StoragelessEntry, SplitterBase, SimilarTagsFinder, ImageTagsList, SingleStringEntry
 
 class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 	def _UpdateName(self, idx):
@@ -452,9 +452,6 @@ class BulkTagger(wx.Panel):
 		self.AddButton.Enable(EnableAdd)
 	def _DisableButtons(self):
 		self._SetActionButtons(False, False, False, False)
-	def _AddNumber(self, value):
-		if value - 1 not in self.indices:
-			self.NumberEntry.write( ''.join( (' ', str(value), ' ') ) )
 	def _CalculateTagCoverage(self):
 		"Compute the valid actions based on which tags are selected for which indices."
 		RemoveTags = tuple( ( e.strip() for e in self.RemoveEntry.GetValue().split() ) )
@@ -463,7 +460,7 @@ class BulkTagger(wx.Panel):
 		EnableReplace = False
 		EnableAlias = False
 		EnableAdd = False
-		for i in self.indices:
+		for i in self.NumberChooser.indices:
 			f = self.OutputFiles[i]
 			CurrentHasRemove = False
 			CurrentHasAdd = False
@@ -480,53 +477,11 @@ class BulkTagger(wx.Panel):
 				EnableReplace = True
 				break
 		self._SetActionButtons(EnableRemove, EnableReplace, EnableAlias, EnableAdd)
-	def _ProcessNumbers(self):
-		"Get list of indices from the NumberEntry, or disable actions on failure."
-		output = []
-		for group in self.NumberEntry.GetValue().split():
-			items = group.strip().split('-', 1)
-			items = tuple( (i.strip() for i in items) )
-			if len(items) == 1:
-				if items[0]:
-					try:
-						tmp = int(items[0])
-						if tmp <= 0 or tmp > len(self.OutputFiles):
-							raise ValueError()
-						output.append(tmp - 1)
-					except ValueError:
-						self._DisableButtons()
-						return
-			elif len(items) == 2:
-				if not items[0] or not items[1]:
-					self._DisableButtons()
-					return
-				else:
-					try:
-						start = int(items[0])
-						stop = int(items[1])
-						if start <= 0 or stop <= 0:
-							raise ValueError()
-						if start > stop:
-							tmp = start
-							start = stop
-							stop = tmp
-						if stop > len(self.OutputFiles):
-							raise ValueError
-						output.extend( range(start - 1, stop) )
-					except ValueError:
-						self._DisableButtons()
-						return
-		self.indices = output
-		self._CalculateTagCoverage()
-	def _OnPathEntry(self, e):
-		"Send an IndexImage message, if the index of PathEntry contents can be found in paths; otherwise, try to autocomplete the contents."
-		try:
-			self._AddNumber(self.PathEntry.SearchPath( self.PathEntry.GetValue() ) + 1)
-		except ValueError: # TODO: Should this work with any exception?
-			self.PathEntry.UpdateAutocomplete()
-		e.Skip()
 	def _OnNumberEntry(self, e):
-		self._ProcessNumbers()
+		if self.NumberChooser.ProcessNumbers():
+			self._CalculateTagCoverage()
+		else:
+			self._DisableButtons()
 		e.Skip()
 	def _OnUpdate(self, e):
 		self._CalculateTagCoverage()
@@ -551,7 +506,7 @@ class BulkTagger(wx.Panel):
 	def _OnReplaceButton(self, e):
 		RemoveTags = tuple( en.strip() for en in self.RemoveEntry.GetValue().split() )
 		AddTags = tuple( en.strip() for en in self.AddEntry.GetValue().split() )
-		for i in self.indices:
+		for i in self.NumberChooser.indices:
 			f = self.OutputFiles[i]
 			f.PrepareChange()
 			if f.tags.HasAnyOfStringList(RemoveTags):
@@ -565,7 +520,7 @@ class BulkTagger(wx.Panel):
 	def _OnAliasButton(self, e):
 		RemoveTags = tuple( en.strip() for en in self.RemoveEntry.GetValue().split() )
 		AddTags = tuple( en.strip() for en in self.AddEntry.GetValue().split() )
-		for i in self.indices:
+		for i in self.NumberChooser.indices:
 			f = self.OutputFiles[i]
 			f.PrepareChange()
 			if f.tags.HasAnyOfStringList(RemoveTags):
@@ -577,7 +532,7 @@ class BulkTagger(wx.Panel):
 		e.Skip()
 	def _OnAddButton(self, e):
 		AddTags = tuple( en.strip() for en in self.AddEntry.GetValue().split() )
-		for i in self.indices:
+		for i in self.NumberChooser.indices:
 			f = self.OutputFiles[i]
 			f.PrepareChange()
 			self.TagsTracker.SubStringList(f.tags.ReturnStringList(), 1)
@@ -592,13 +547,9 @@ class BulkTagger(wx.Panel):
 		# Data
 		self.TagsTracker = TagsTracker # Global record of the number of tags in use
 		self.OutputFiles = OutputFiles # File data object
-		self.indices = []              # File indexes to apply our operations to
 
 		# Index selection controls
-		self.PathEntryLabel = wx.StaticText(self, label='Path Select')
-		self.PathEntry = PathEntry( self, tuple( (f.FullPath for f in self.OutputFiles) ) )
-		self.NumberEntryLabel = wx.StaticText(self, label='to image indices')
-		self.NumberEntry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
+		self.NumberChooser = PathNumberChooser(self, OutputFiles)
 
 		# Tag entry controls
 		self.RemoveEntry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL | wx.TE_MULTILINE)
@@ -610,11 +561,9 @@ class BulkTagger(wx.Panel):
 		self.ReplaceButton = wx.Button(self, label='> Replace >')
 		self.AliasButton = wx.Button(self, label='> Alias >')
 		self.AddButton = wx.Button(self, label='Add ^')
-
 		self._DisableButtons()
 
 		# Tooltips
-		self.NumberEntryTip = wx.ToolTip("Space separated image numbers to operate on. Ranges can be specified by placing two numbers between a '-'. The range is inclusive of those two numbers, and space-independent.")
 		self.RemoveEntryTip = wx.ToolTip('Tags to be removed.')
 		self.SwapEntryButtonTip = wx.ToolTip("Swap the two entries.")
 		self.AddEntryTip = wx.ToolTip('Tags to be added.')
@@ -624,7 +573,6 @@ class BulkTagger(wx.Panel):
 		self.AddButtonTip = wx.ToolTip('Add the tags listed in the right (add) entry.')
 
 		# Setting tooltips
-		self.NumberEntry.SetToolTip(self.NumberEntryTip)
 		self.RemoveEntry.SetToolTip(self.RemoveEntryTip)
 		self.SwapEntryButton.SetToolTip(self.SwapEntryButtonTip)
 		self.AddEntry.SetToolTip(self.AddEntryTip)
@@ -634,10 +582,10 @@ class BulkTagger(wx.Panel):
 		self.AddButton.SetToolTip(self.AddButtonTip)
 
 		# Event binding
-		self.PathEntry.SelfBinds()
-		self.Bind( wx.EVT_TEXT_ENTER, self._OnPathEntry, id=self.PathEntry.entry.GetId() )
+		self.NumberChooser.PathEntry.SelfBinds()
+		self.NumberChooser.SelfBinds()
 		self.Bind( wx.EVT_BUTTON, self._OnSwapEntryButton, id=self.SwapEntryButton.GetId() )
-		self.Bind( wx.EVT_TEXT, self._OnNumberEntry, id=self.NumberEntry.GetId() )
+		self.Bind( wx.EVT_TEXT, self._OnNumberEntry, id=self.NumberChooser.NumberEntry.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnUpdate, id=self.RemoveEntry.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnUpdate, id=self.AddEntry.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnRemoveButton, id=self.RemoveButton.GetId() )
@@ -653,13 +601,13 @@ class BulkTagger(wx.Panel):
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 
 		# Layout
-		self.SelectionSizer.Add(self.PathEntryLabel, 0, wx.CENTER | wx.ALIGN_CENTER)
+		self.SelectionSizer.Add(self.NumberChooser.PathEntryLabel, 0, wx.CENTER | wx.ALIGN_CENTER)
 		self.SelectionSizer.AddStretchSpacer(1)
-		self.SelectionSizer.Add(self.PathEntry.entry, 50, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
+		self.SelectionSizer.Add(self.NumberChooser.PathEntry.entry, 50, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
 		self.SelectionSizer.AddStretchSpacer(1)
-		self.SelectionSizer.Add(self.NumberEntryLabel, 0, wx.CENTER | wx.ALIGN_CENTER)
+		self.SelectionSizer.Add(self.NumberChooser.NumberEntryLabel, 0, wx.CENTER | wx.ALIGN_CENTER)
 		self.SelectionSizer.AddStretchSpacer(1)
-		self.SelectionSizer.Add(self.NumberEntry, 50, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
+		self.SelectionSizer.Add(self.NumberChooser.NumberEntry, 50, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
 
 		self.EntrySizer.Add(self.RemoveEntry, 75, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
 		self.EntrySizer.AddStretchSpacer(1)

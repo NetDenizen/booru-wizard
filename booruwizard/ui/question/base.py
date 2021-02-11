@@ -495,6 +495,75 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		self.Bind( wx.EVT_BUTTON, self._OnCommit, id=self.commit.GetId() )
 		self.Bind( wx.EVT_TEXT_ENTER, self._OnPathEntry, id=self.PathEntry.entry.GetId() )
 
+class PathNumberChooser:
+	def _AddNumber(self, value):
+		if value - 1 not in self.indices:
+			self.NumberEntry.write( ''.join( (' ', str(value), ' ') ) )
+	def ProcessNumbers(self):
+		"Get list of indices from the NumberEntry, or disable actions on failure."
+		self.indices = []
+		output = []
+		for group in self.NumberEntry.GetValue().split():
+			items = group.strip().split('-', 1)
+			items = tuple( (i.strip() for i in items) )
+			if len(items) == 1:
+				if items[0]:
+					try:
+						tmp = int(items[0])
+						if tmp <= 0 or tmp > self.OutputLength:
+							raise ValueError()
+						output.append(tmp - 1)
+					except ValueError:
+						return False
+			elif len(items) == 2:
+				if not items[0] or not items[1]:
+					return False
+				else:
+					try:
+						start = int(items[0])
+						stop = int(items[1])
+						if start <= 0 or stop <= 0:
+							raise ValueError()
+						if start > stop:
+							tmp = start
+							start = stop
+							stop = tmp
+						if stop > self.OutputLength:
+							raise ValueError()
+						output.extend( range(start - 1, stop) )
+					except ValueError:
+						return False
+		self.indices = output
+		return True
+	def _OnPathEntry(self, e):
+		"Send an IndexImage message, if the index of PathEntry contents can be found in paths; otherwise, try to autocomplete the contents."
+		try:
+			self._AddNumber(self.PathEntry.SearchPath( self.PathEntry.GetValue() ) + 1)
+		except ValueError: # TODO: Should this work with any exception?
+			self.PathEntry.UpdateAutocomplete()
+		e.Skip()
+	def SelfBinds(self):
+		self.parent.Bind( wx.EVT_TEXT_ENTER, self._OnPathEntry, id=self.PathEntry.entry.GetId() )
+		#self.Bind( wx.EVT_TEXT, self._OnNumberEntry, id=self.NumberEntry.GetId() )
+	def __init__(self, parent, OutputFiles):
+
+		# Data
+		self.parent = parent
+		self.OutputLength = len(OutputFiles) # File data object
+		self.indices = []                # Selected file indices
+
+		# Index selection controls
+		self.PathEntryLabel = wx.StaticText(parent, label='Path Select')
+		self.PathEntry = PathEntry( parent, tuple( (f.FullPath for f in OutputFiles) ) )
+		self.NumberEntryLabel = wx.StaticText(parent, label='to image indices')
+		self.NumberEntry = wx.TextCtrl(parent, style= wx.TE_NOHIDESEL)
+
+		# Tooltips
+		self.NumberEntryTip = wx.ToolTip("Space separated image numbers to operate on. Ranges can be specified by placing two numbers between a '-'. The range is inclusive of those two numbers, and space-independent.")
+
+		# Setting tooltips
+		self.NumberEntry.SetToolTip(self.NumberEntryTip)
+
 class SingleStringEntry(wx.Panel): # This class should never be used on its own
 	def _GetValueTemplate(self, get):
 		"Template to reduce code duplication in the _GetValue functions of child classes."
