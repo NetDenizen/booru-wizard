@@ -719,12 +719,28 @@ class SourceQuestion(SingleStringEntry):
 			self.PathFormatButton.Enable()
 		else:
 			self.PathFormatButton.Disable()
+	def _SetBulkSourceButtonState(self):
+		EntryValue = self.entry.GetValue()
+		state = False
+		if self.NumberChooser.indices and EntryValue:
+			done = False
+			for i in self.NumberChooser.indices:
+				f = self.OutputFiles[i]
+				f.lock()
+				if f.GetSource() != EntryValue:
+					state = True
+					done = True
+				f.unlock()
+				if done:
+					break
+		self.BulkSourceButton.Enable(state)
 	def SetButtonStates(self):
 		#TODO Rewrite?
 		self.SetRomanizeButtonState()
 		self._SetSourceTestButtonState()
 		self._SetSourceSearchButtonState()
 		self._SetPathFormatButtonState()
+		self._SetBulkSourceButtonState()
 	def _MenuItemExists(self, value, menu):
 		for i in menu.GetMenuItems():
 			if value == i.GetItemLabel():
@@ -895,9 +911,23 @@ class SourceQuestion(SingleStringEntry):
 	def _OnLeftImage(self, message, arg2=None):
 		"Shift to the left (-1) position to the current pos in the entry string array if the pos is greater than 0. Otherwise, loop around to the last item."
 		self.pos.dec()
-	def __init__(self, parent, q, NumImages, TagsTracker, images):
+	def _OnNumberEntry(self, e):
+		self.NumberChooser.ProcessNumbers()
+		self._SetBulkSourceButtonState()
+		e.Skip()
+	def _OnBulkSourceButton(self, e):
+		for i in self.NumberChooser.indices:
+			f = self.OutputFiles[i]
+			f.PrepareChange()
+			f.SetSource( self.entry.GetValue() )
+			f.FinishChange()
+		self._SetBulkSourceButtonState()
+		e.Skip()
+	def __init__(self, parent, q, OutputFiles, TagsTracker, images):
 		SingleStringEntry.__init__(self, parent)
 
+		self.OutputFiles = OutputFiles
+		NumImages = len(OutputFiles)
 		self.images = images
 		self.OutputFile = None # File data object
 		self._ValueSetter = None
@@ -936,6 +966,10 @@ class SourceQuestion(SingleStringEntry):
 		self.PathFormatWithText = wx.StaticText(self, label=' with')
 		self.PathFormatReplaceEntry = wx.SearchCtrl(self, style= wx.TE_NOHIDESEL)
 		self.PathFormatReplaceMenu = wx.Menu()
+		self.BulkSourceButton = wx.Button(self, label='Bulk Apply Source')
+		self.BulkSourceButtonTip = wx.ToolTip('Apply the current source to all selected image indices.')
+		self.NumberChooser = PathNumberChooser(self, OutputFiles)
+		self._SetBulkSourceButtonState()
 		#TODO: Autocomplete for these fields?
 		self.PathFormatButtonTip = wx.ToolTip('Replace all Python regex backreferences in the source field with the corresponding groups.')
 		self.PathFormatPatternEntryTip = wx.ToolTip('Enter the Python regex which will be matched against the path of the current image. If this cannot be matched against the string, replacement will be disabled.')
@@ -961,6 +995,7 @@ class SourceQuestion(SingleStringEntry):
 		self.SourceChoicesSizer = wx.BoxSizer(wx.VERTICAL)
 		self.PathFormatSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.ButtonsSizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.BulkSourcerSizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
 
 		self.entry.SetToolTip(self.EntryTip)
@@ -974,6 +1009,7 @@ class SourceQuestion(SingleStringEntry):
 		self.PathFormatPatternEntry.SetToolTip(self.PathFormatPatternEntryTip)
 		self.PathFormatReplaceEntry.SetToolTip(self.PathFormatReplaceEntryTip)
 		self.PathFormatButton.SetToolTip(self.PathFormatButtonTip)
+		self.BulkSourceButton.SetToolTip(self.BulkSourceButtonTip)
 
 		self.SourceChoicesLabelSizer.AddStretchSpacer(1)
 		self.SourceChoicesLabelSizer.Add(self.SourceChoicesLabel, 0, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
@@ -1014,6 +1050,16 @@ class SourceQuestion(SingleStringEntry):
 		self.ButtonsSizer.Add(self.RomanizeButton, 0, wx.ALIGN_CENTER | wx.CENTER | wx.SHAPED)
 		self.ButtonsSizer.AddStretchSpacer(30)
 
+		self.BulkSourcerSizer.Add(self.BulkSourceButton, 0, wx.CENTER | wx.ALIGN_CENTER)
+		self.BulkSourcerSizer.AddStretchSpacer(1)
+		self.BulkSourcerSizer.Add(self.NumberChooser.PathEntryLabel, 0, wx.CENTER | wx.ALIGN_CENTER)
+		self.BulkSourcerSizer.AddStretchSpacer(1)
+		self.BulkSourcerSizer.Add(self.NumberChooser.PathEntry.entry, 50, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
+		self.BulkSourcerSizer.AddStretchSpacer(1)
+		self.BulkSourcerSizer.Add(self.NumberChooser.NumberEntryLabel, 0, wx.CENTER | wx.ALIGN_CENTER)
+		self.BulkSourcerSizer.AddStretchSpacer(1)
+		self.BulkSourcerSizer.Add(self.NumberChooser.NumberEntry, 50, wx.CENTER | wx.ALIGN_CENTER | wx.EXPAND)
+
 		self.MainSizer.AddStretchSpacer(2)
 		self.MainSizer.Add(self.entry, 0, wx.ALIGN_CENTER | wx.EXPAND)
 		self.MainSizer.AddStretchSpacer(2)
@@ -1021,9 +1067,15 @@ class SourceQuestion(SingleStringEntry):
 		self.MainSizer.AddStretchSpacer(2)
 		self.MainSizer.Add(self.ButtonsSizer, 0, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
 		self.MainSizer.AddStretchSpacer(2)
+		self.MainSizer.Add(self.BulkSourcerSizer, 0, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
+		self.MainSizer.AddStretchSpacer(2)
 		self.MainSizer.Add(self.DisplaySplitter, 55, wx.ALIGN_CENTER | wx.CENTER | wx.EXPAND)
 		self.SetSizer(self.MainSizer)
 
+		self.NumberChooser.PathEntry.SelfBinds()
+		self.NumberChooser.SelfBinds()
+		self.Bind( wx.EVT_BUTTON, self._OnBulkSourceButton, id=self.BulkSourceButton.GetId() )
+		self.Bind( wx.EVT_TEXT, self._OnNumberEntry, id=self.NumberChooser.NumberEntry.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnRomanize, id=self.RomanizeButton.GetId() )
 		self.Bind( wx.EVT_TEXT, self._OnChange, id=self.entry.GetId() )
 		self.Bind( wx.EVT_BUTTON, self._OnPathFormatButton, id=self.PathFormatButton.GetId() )
@@ -1256,7 +1308,7 @@ class QuestionsContainer(wx.Panel):
 				self.QuestionWidgets.append( NameQuestion(self, TagsTracker) )
 				proportion = 0
 			elif q.type == QuestionType.SOURCE_QUESTION:
-				self.QuestionWidgets.append( SourceQuestion(self, q, NumImages, TagsTracker, images) )
+				self.QuestionWidgets.append( SourceQuestion(self, q, OutputFiles.ControlFiles, TagsTracker, images) )
 				#proportion = 0
 			elif q.type == QuestionType.SAFETY_QUESTION:
 				self.QuestionWidgets.append( SafetyQuestion(self) )

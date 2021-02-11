@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* Add bulk source-setting operations to SOURCE_QUESTION.
+
 * Implement DEFAULT_NAME.
 
 * The image display now uses the entirety of the open window area.
