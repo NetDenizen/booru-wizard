@@ -35,18 +35,26 @@ class CircularCounter:
 	def GetMax(self):
 		"Get the maximum value."
 		return self._MaxValue
+	def _CalcDec(self):
+		if self._value == 0:
+			return self._MaxValue
+		else:
+			return self._value - 1
+	def _CalcInc(self):
+		if self._value >= self._MaxValue:
+			return 0
+		else:
+			return self._value + 1
 	def dec(self):
 		"Decrement the value if it is greater than 0. Otherwise, loop around to the maximum value."
-		if self._value == 0:
-			self._value = self._MaxValue
-		else:
-			self._value -= 1
+		self._value = self._CalcDec()
 	def inc(self):
 		"Increment the value if it is less than the maximum value. Otherwise, loop around to 0."
-		if self._value >= self._MaxValue:
-			self._value = 0
-		else:
-			self._value += 1
+		self._value = self._CalcInc()
+	def PeekDec(self):
+		return self._CalcDec()
+	def PeekInc(self):
+		return self._CalcInc()
 	def __init__(self, MaxValue):
 		self._MaxValue = MaxValue
 		self._value = 0

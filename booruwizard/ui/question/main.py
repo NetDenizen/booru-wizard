@@ -18,7 +18,7 @@ from booruwizard.lib.tag import TagsContainer
 from booruwizard.lib.template import QuestionType, OptionQuestionType
 from booruwizard.lib.netcode import HeadRequest
 from booruwizard.ui.common import CircularCounter, PathEntry, RenderThreeIfMid
-from booruwizard.ui.question.base import RE_NOT_WHITESPACE, TagChoiceQuestion, ArbitraryCheckQuestion, EntryBase, PathNumberChooser, StoragelessEntry, SplitterBase, SimilarTagsFinder, ImageTagsList, SingleStringEntry
+from booruwizard.ui.question.base import RE_NOT_WHITESPACE, TagChoiceQuestion, ArbitraryCheckQuestion, EntryBase, PathNumberChooser, StoragelessEntry, SplitterBase, SimilarTagsFinder, ImageTagsList, SingleStringEntry, ToggleCopyArbitraryCheckQuestion
 
 class RadioQuestion(wx.lib.scrolledpanel.ScrolledPanel):
 	def _UpdateName(self, idx):
@@ -1213,6 +1213,23 @@ class TagChecker(wx.Panel):
 
 		self.finder.SeparatorsEntry.SetValue(q.DefaultSeparators)
 
+class CopyableCustomTags(CustomTags):
+	def __init__(self, parent, TagsTracker, OutputFiles):
+		SplitterBase.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
+
+		self.first = StoragelessEntry(self)
+		self.second = ToggleCopyArbitraryCheckQuestion(self, TagsTracker, OutputFiles)
+
+		self.EntryTip = wx.ToolTip("Enter tags here. They will be displayed to the right.")
+		self.first.entry.SetToolTip(self.EntryTip)
+		self.second.ChoicesTipText = "Select tags to be written to file, here."
+		self.second.SetChoicesTip()
+
+		self.SetMinimumPaneSize( self.GetSize().GetWidth() )
+		self.SplitVertically(self.first, self.second)
+
+		self.Bind( wx.EVT_TEXT, self._OnEntryChange, id=self.first.entry.GetId() )
+
 class QuestionsContainer(wx.Panel):
 	def _CurrentWidget(self):
 		"Return the current widget."
@@ -1328,6 +1345,8 @@ class QuestionsContainer(wx.Panel):
 				self.QuestionWidgets.append( NativeTags(self, TagsTracker) )
 			elif q.type == QuestionType.TAG_CHECKER:
 				self.QuestionWidgets.append( TagChecker(self, TagsTracker, q) )
+			elif q.type == QuestionType.COPYABLE_CUSTOM_TAGS:
+				self.QuestionWidgets.append( CopyableCustomTags(self, TagsTracker, OutputFiles.ControlFiles) )
 			else:
 				#TODO: Rewrite?
 				raise ValueError() # We should never get this.

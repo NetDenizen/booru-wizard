@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* Implement COPYABLE_CUSTOM_TAGS.
+
 * Add bulk source-setting operations to SOURCE_QUESTION.
 
 * Implement DEFAULT_NAME.

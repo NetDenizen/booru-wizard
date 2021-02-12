@@ -62,6 +62,7 @@ class PairKey(Enum):
 	SOURCE_QUESTION_BAD_ID_TAGS   = 42
 	SOURCE_QUESTION_USER_AGENT    = 43
 	DEFAULT_NAME                  = 44
+	COPYABLE_CUSTOM_TAGS          = 45
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 
 PAIR_KEY_NAMES = {}
@@ -204,6 +205,7 @@ class QuestionType(Enum):
 	BLANK_QUESTION        = 11 # Displays an empty pane. Use these as dividers, marked by the given prompt.
 	NATIVE_TAGS           = 12 # Displays a special SESSION_TAGS which displays all tags present in the configuration file, even if they are not selected for any images.
 	TAG_CHECKER           = 13 # Search for similar tags by splitting their names into segments based on the given separators. All tags are searched for the existence of all segments longer than one character from at least one other tag. Matches are displayed in the text box.
+	COPYABLE_CUSTOM_TAGS  = 14 # Displays a CUSTOM_TAGS pane with an option to toggle the selected tags, and to copy tags to the next image.
 QuestionTypeLookup = {
 	PairKey.ENTRY_QUESTION        : QuestionType.ENTRY_QUESTION,
 	PairKey.SESSION_TAGS          : QuestionType.SESSION_TAGS,
@@ -218,7 +220,8 @@ QuestionTypeLookup = {
 	PairKey.CUSTOM_TAGS           : QuestionType.CUSTOM_TAGS,
 	PairKey.BLANK_QUESTION        : QuestionType.BLANK_QUESTION,
 	PairKey.NATIVE_TAGS           : QuestionType.NATIVE_TAGS,
-	PairKey.TAG_CHECKER           : QuestionType.TAG_CHECKER
+	PairKey.TAG_CHECKER           : QuestionType.TAG_CHECKER,
+	PairKey.COPYABLE_CUSTOM_TAGS  : QuestionType.COPYABLE_CUSTOM_TAGS
 }
 
 class OptionQuestionType(Enum):
@@ -570,7 +573,8 @@ class parser:
 			 token.key == PairKey.ADDED_TAGS_ENTRY      or\
 			 token.key == PairKey.CUSTOM_TAGS           or\
 			 token.key == PairKey.BLANK_QUESTION        or\
-			 token.key == PairKey.NATIVE_TAGS:
+			 token.key == PairKey.NATIVE_TAGS           or\
+			 token.key == PairKey.COPYABLE_CUSTOM_TAGS:
 			self._AddQuestion(question, token)
 		elif token.key == PairKey.OPTION_NAME:
 			self._AddOptionName(token)

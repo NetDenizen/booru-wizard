@@ -4,6 +4,7 @@ import re
 from sys import platform
 
 import wx
+from pubsub import pub
 
 from kanji_to_romaji import kanji_to_romaji
 
@@ -93,11 +94,11 @@ class TagChoiceQuestion(wx.Panel): # This class should never be used on its own
 
 class ArbitraryCheckQuestion(TagChoiceQuestion):  # This class should never be used on its own
 	def SetChoices(self, names):
-		self.TagNames = names
+		self.TagNames = list(names)
 		self.ChoiceNames = self.TagNames # Names of each selection
 		if self.choices is not None:
 			self.Unbind( wx.EVT_CHECKLISTBOX, id=self.choices.GetId() )
-			self.sizer.Remove(0)
+			self.sizer.Remove(self.sizer.GetItemCount() - 1)
 			self.choices.Destroy()
 		self.choices = wx.CheckListBox(self, choices= self.ChoiceNames)
 		self.SetChoicesTip()
@@ -625,3 +626,125 @@ class SingleStringEntry(wx.Panel): # This class should never be used on its own
 		self.SetButtonStates()
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent=parent)
+
+class AdjacentTagsCopier:
+	def UpdateCopyButtonState(self):
+		CurrentImage = self.OutputFiles[self.pos.get()]
+		NextImage = self.OutputFiles[self.pos.PeekInc()]
+		CurrentImage.lock()
+		NextImage.lock()
+		enabled = False
+		for c in self.choices:
+			if CurrentImage.tags.has(c) and not NextImage.tags.has(c):
+				enabled = True
+				break
+		if enabled:
+			self.CopyButton.Enable()
+		else:
+			self.CopyButton.Disable()
+		CurrentImage.unlock()
+		NextImage.unlock()
+	def SetChoices(self, names):
+		self.choices = list(names)
+		self.UpdateCopyButtonState()
+	def _OnIndexImage(self, message, arg2=None):
+		"Change the index index to the one specified in the message, if possible."
+		self.pos.set(message)
+		self.UpdateCopyButtonState()
+	def _OnRightImage(self, message, arg2=None):
+		"Shift to the right (+1) position to the current pos in the entry string array if the pos is less than the length of the entry string array. Otherwise, loop around to the first item."
+		self.pos.inc()
+		self.UpdateCopyButtonState()
+	def _OnLeftImage(self, message, arg2=None):
+		"Shift to the left (-1) position to the current pos in the entry string array if the pos is greater than 0. Otherwise, loop around to the last item."
+		self.pos.dec()
+		self.UpdateCopyButtonState()
+	def _OnCopyButton(self, e):
+		CurrentImage = self.OutputFiles[self.pos.get()]
+		NextImage = self.OutputFiles[self.pos.PeekInc()]
+		CurrentImage.lock()
+		NextImage.PrepareChange()
+		self.TagsTracker.SubStringList(NextImage.tags.ReturnStringList(), 1)
+		NextImage.tags.SetStringList(CurrentImage.tags.ReturnStringList(), 2)
+		self.TagsTracker.AddStringList(NextImage.tags.ReturnStringList(), 1)
+		CurrentImage.unlock()
+		NextImage.FinishChange()
+		self.UpdateCopyButtonState()
+	def SelfBinds(self):
+		self.parent.Bind( wx.EVT_BUTTON, self._OnCopyButton, id=self.CopyButton.GetId() )
+	def SelfPubSub(self):
+		pub.subscribe(self._OnIndexImage, "IndexImage")
+		pub.subscribe(self._OnLeftImage, "LeftImage")
+		pub.subscribe(self._OnRightImage, "RightImage")
+	def __init__(self, parent, OutputFiles, TagsTracker):
+		self.parent = parent
+		self.OutputFiles = OutputFiles
+		self.TagsTracker = TagsTracker
+		self.NumImages = len(OutputFiles)
+		self.pos = CircularCounter(self.NumImages - 1)
+		self.choices = []
+
+		self.CopyButton = wx.Button(parent, label='Copy to next image ->')
+		self.CopyButtonTip = wx.ToolTip("Copy tags from the currently selected image, to the next image in sequential order from that.")
+		self.CopyButton.SetToolTip(self.CopyButtonTip)
+
+class ToggleCopyArbitraryCheckQuestion(ArbitraryCheckQuestion):  # This class should never be used on its own
+	def SetToggleButtonState(self):
+		if self.TagNames and self.OutputFile is not None:
+			self.ToggleButton.Enable()
+		else:
+			self.ToggleButton.Disable()
+	def SetChoices(self, names):
+		ArbitraryCheckQuestion.SetChoices(self, names)
+		self.copier.SetChoices(names)
+		self.SetToggleButtonState()
+	def _OnSelect(self, e):
+		"Bound to EVT_CHECKLISTBOX; set selected tags and remove the previously selected ones."
+		#TODO: Deduplicate?
+		self._UpdateChoice( e.GetInt() )
+		self._UpdateChecks()
+		self.copier.UpdateCopyButtonState()
+		e.Skip()
+	def _OnToggleButton(self, e):
+		self.OutputFile.PrepareChange()
+		self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
+		for i, n in enumerate(self.TagNames):
+			if i in self.CurrentChoices:
+				self.OutputFile.tags.clear(n, 2)
+			else:
+				self.OutputFile.tags.set(n, 2)
+		self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
+		self.OutputFile.FinishChange()
+		self._UpdateChecks()
+		self.copier.UpdateCopyButtonState()
+		e.Skip()
+	def __init__(self, parent, TagsTracker, OutputFiles):
+		TagChoiceQuestion.__init__(self, parent)
+
+		self.TagsTracker = TagsTracker # Global record of the number of tags in use
+		self.OutputFile = None # File data object
+		self.ChoicesTipText = None
+
+		self.copier = AdjacentTagsCopier(self, OutputFiles, TagsTracker)
+		self.copier.SelfBinds()
+		self.copier.SelfPubSub()
+
+		self.ToggleButton = wx.Button(self, label='Toggle v')
+		self.ToggleButtonTip = wx.ToolTip("Toggle all tags from unselected to selected, and vice-versa.")
+		self.ToggleButton.SetToolTip(self.ToggleButtonTip)
+
+		self.ButtonSizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+		self.ButtonSizer.Add(self.ToggleButton, 0, wx.ALIGN_CENTER | wx.CENTER)
+		self.ButtonSizer.AddStretchSpacer(1)
+		self.ButtonSizer.Add(self.copier.CopyButton, 0, wx.ALIGN_CENTER | wx.CENTER)
+
+		self.sizer.Add(self.ButtonSizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.SHAPED)
+		self.SetSizer(self.sizer)
+
+		self.Bind( wx.EVT_BUTTON, self._OnToggleButton, id=self.ToggleButton.GetId() )
+
+		self.choices = None
+		self.SetChoices([])
+		self.CurrentChoices = [] # Currently selected checkboxes
