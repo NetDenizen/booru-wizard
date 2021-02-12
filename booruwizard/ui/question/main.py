@@ -496,7 +496,7 @@ class BulkTagger(wx.Panel):
 		e.Skip()
 	def _OnRemoveButton(self, e):
 		RemoveTags = tuple( en.strip() for en in self.RemoveEntry.GetValue().split() )
-		for i in self.indices:
+		for i in self.NumberChooser.indices:
 			f = self.OutputFiles[i]
 			f.PrepareChange()
 			self.TagsTracker.SubStringList(f.tags.ReturnStringList(), 1)
