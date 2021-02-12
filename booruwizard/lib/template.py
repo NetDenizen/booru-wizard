@@ -63,6 +63,7 @@ class PairKey(Enum):
 	SOURCE_QUESTION_USER_AGENT    = 43
 	DEFAULT_NAME                  = 44
 	COPYABLE_CUSTOM_TAGS          = 45
+	DEFAULT_CUSTOM_TAGS           = 46
 	#TODO: Should MAX_OPEN_FILES and UPDATE_INTERVAL be editable during program operation?
 
 PAIR_KEY_NAMES = {}
@@ -251,6 +252,11 @@ class TagChecker(question):
 		super().__init__(ThisType, text)
 		self.DefaultSeparators = ""
 
+class CustomTags(question):
+	def __init__(self, ThisType, text):
+		super().__init__(ThisType, text)
+		self.DefaultTags = ""
+
 class option:
 	def __init__(self, name, tag):
 		self.name = name
@@ -361,6 +367,7 @@ class ParserState(Enum):
 	SOURCE_QUESTION = 5 # When we are in a SOURCE_QUESTION and are waiting for SOURCE_QUESTION_PATTERN, SOURCE_QUESTION_REPLACEMENT, SOURCE_QUESTION_BAD_ID_TAGS, SOURCE_QUESTION_USER_AGENT.
 	IMAGE_CONDITION = 6 # When we have processed an IMAGE_CONDITION_CONDITION and are waiting for a IMAGE_CONDITION_TAGS.
 	TAG_CHECKER     = 7 # When we have processed a TAG_CHECKER and are waiting for TAG_CHECKER_SEPARATORS tags.
+	CUSTOM_TAGS     = 8 # When we have processed a CUSTOM_TAGS or COPYABLE_CUSTOM_TAGS and are waiting for a DEFAULT_CUSTOM_TAGS.
 
 RE_HUMANSIZE = re.compile('^([0-9.]+)[ \t]*([a-zA-Z]*)$')
 SIZE_SPECIFIERS = {'kb'        : 1000.0,
@@ -429,7 +436,8 @@ class parser:
 		"Return True if the state is NORMAL or if the state is OPTION_QUESTION and there is at least one option entry in its array."
 		if self._state == ParserState.NORMAL or\
 		   self._state == ParserState.SOURCE_QUESTION or\
-		   self._state == ParserState.TAG_CHECKER:
+		   self._state == ParserState.TAG_CHECKER or\
+		   self._state == ParserState.CUSTOM_TAGS:
 			return True
 		if self._state == ParserState.OPTION_NAME or\
 		   self._state == ParserState.ALIAS_FROM  or\
@@ -544,6 +552,16 @@ class parser:
 			self.output[-1].DefaultSeparators = token.value
 		else:
 			raise ParserError("TAG_CHECKER_SEPARATORS set when not in a TAG_CHECKER.", token.line, token.col)
+	def _AddCustomTags(self, token):
+		"Add a *CUSTOM_TAGS to the end of output"
+		self._AddQuestion(CustomTags, token)
+		self._state = ParserState.CUSTOM_TAGS
+	def _AddDefaultCustomTags(self, token):
+		#TODO: Rewrite?
+		if self._state == ParserState.CUSTOM_TAGS:
+			self.output[-1].DefaultTags = token.value
+		else:
+			raise ParserError("DEFAULT_CUSTOM_TAGS added when not in a *CUSTOM_TAGS.", token.line, token.col)
 	def _SetFromLookup(self, lookup, token, errmsg, setter):
 		found = lookup.get(token.value.lower(), None)
 		if found is None:
@@ -571,10 +589,8 @@ class parser:
 			 token.key == PairKey.BULK_TAGGER           or\
 			 token.key == PairKey.ADDED_TAGS            or\
 			 token.key == PairKey.ADDED_TAGS_ENTRY      or\
-			 token.key == PairKey.CUSTOM_TAGS           or\
 			 token.key == PairKey.BLANK_QUESTION        or\
-			 token.key == PairKey.NATIVE_TAGS           or\
-			 token.key == PairKey.COPYABLE_CUSTOM_TAGS:
+			 token.key == PairKey.NATIVE_TAGS:
 			self._AddQuestion(question, token)
 		elif token.key == PairKey.OPTION_NAME:
 			self._AddOptionName(token)
@@ -647,6 +663,11 @@ class parser:
 			self._AddSourceQuestionUserAgent(token)
 		elif token.key == PairKey.DEFAULT_NAME:
 			self.DefaultName = token.value
+		elif token.key == PairKey.CUSTOM_TAGS           or\
+			 token.key == PairKey.COPYABLE_CUSTOM_TAGS:
+			self._AddCustomTags(token)
+		elif token.key == PairKey.DEFAULT_CUSTOM_TAGS:
+			self._AddDefaultCustomTags(token)
 		else:
 			raise ParserError("Unhandled token.", token.line, token.col)
 	def parse(self, string):

@@ -136,7 +136,7 @@ class CustomTags(SplitterBase):
 		self.second.SetChoices( self.first.entry.GetValue().split() )
 		self.first.SetRomanizeButtonState() # TODO: Handle this in a callback local to the class?
 		e.Skip()
-	def __init__(self, parent, TagsTracker):
+	def __init__(self, parent, DefaultTags, TagsTracker):
 		SplitterBase.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
 
 		self.first = StoragelessEntry(self)
@@ -151,6 +151,8 @@ class CustomTags(SplitterBase):
 		self.SplitVertically(self.first, self.second)
 
 		self.Bind( wx.EVT_TEXT, self._OnEntryChange, id=self.first.entry.GetId() )
+
+		self.first.entry.SetValue(DefaultTags)
 
 class EntryQuestion(EntryBase):
 	def _UpdateEntryText(self):
@@ -1214,7 +1216,7 @@ class TagChecker(wx.Panel):
 		self.finder.SeparatorsEntry.SetValue(q.DefaultSeparators)
 
 class CopyableCustomTags(CustomTags):
-	def __init__(self, parent, TagsTracker, OutputFiles):
+	def __init__(self, parent, DefaultTags, TagsTracker, OutputFiles):
 		SplitterBase.__init__(self, parent=parent, style=wx.SP_LIVE_UPDATE)
 
 		self.first = StoragelessEntry(self)
@@ -1229,6 +1231,8 @@ class CopyableCustomTags(CustomTags):
 		self.SplitVertically(self.first, self.second)
 
 		self.Bind( wx.EVT_TEXT, self._OnEntryChange, id=self.first.entry.GetId() )
+
+		self.first.entry.SetValue(DefaultTags)
 
 class QuestionsContainer(wx.Panel):
 	def _CurrentWidget(self):
@@ -1338,7 +1342,7 @@ class QuestionsContainer(wx.Panel):
 			elif q.type == QuestionType.ADDED_TAGS_ENTRY:
 				self.QuestionWidgets.append( AddedTagsEntry(self, NumImages, OutputFiles, TagsTracker) )
 			elif q.type == QuestionType.CUSTOM_TAGS:
-				self.QuestionWidgets.append( CustomTags(self, TagsTracker) )
+				self.QuestionWidgets.append( CustomTags(self, q.DefaultTags, TagsTracker) )
 			elif q.type == QuestionType.BLANK_QUESTION:
 				self.QuestionWidgets.append( BlankQuestion(self) )
 			elif q.type == QuestionType.NATIVE_TAGS:
@@ -1346,7 +1350,7 @@ class QuestionsContainer(wx.Panel):
 			elif q.type == QuestionType.TAG_CHECKER:
 				self.QuestionWidgets.append( TagChecker(self, TagsTracker, q) )
 			elif q.type == QuestionType.COPYABLE_CUSTOM_TAGS:
-				self.QuestionWidgets.append( CopyableCustomTags(self, TagsTracker, OutputFiles.ControlFiles) )
+				self.QuestionWidgets.append( CopyableCustomTags(self, q.DefaultTags, TagsTracker, OutputFiles.ControlFiles) )
 			else:
 				#TODO: Rewrite?
 				raise ValueError() # We should never get this.
