@@ -500,7 +500,10 @@ class BulkTagger(wx.Panel):
 			f = self.OutputFiles[i]
 			f.PrepareChange()
 			self.TagsTracker.SubStringList(f.tags.ReturnStringList(), 1)
-			f.tags.ClearStringList(RemoveTags, 2)
+			for t in RemoveTags:
+				f.tags.clear(t, 2)
+				f.ClearConditionalTags(t)
+				f.SetTaglessTags(RemoveTags)
 			self.TagsTracker.AddStringList(f.tags.ReturnStringList(), 1)
 			f.FinishChange()
 		self._CalculateTagCoverage()
@@ -513,8 +516,14 @@ class BulkTagger(wx.Panel):
 			f.PrepareChange()
 			if f.tags.HasAnyOfStringList(RemoveTags):
 				self.TagsTracker.SubStringList(f.tags.ReturnStringList(), 1)
-				f.tags.ClearStringList(RemoveTags, 2)
-				f.tags.SetStringList(AddTags, 2)
+				for t in RemoveTags:
+					f.tags.clear(t, 2)
+					f.ClearConditionalTags(t)
+					f.SetTaglessTags(RemoveTags)
+				for t in AddTags:
+					f.tags.set(t, 2)
+					f.SetConditionalTags(t)
+					f.SetTaglessTags()
 				self.TagsTracker.AddStringList(f.tags.ReturnStringList(), 1)
 			f.FinishChange()
 		self._CalculateTagCoverage()
@@ -527,7 +536,10 @@ class BulkTagger(wx.Panel):
 			f.PrepareChange()
 			if f.tags.HasAnyOfStringList(RemoveTags):
 				self.TagsTracker.SubStringList(f.tags.ReturnStringList(), 1)
-				f.tags.SetStringList(AddTags, 2)
+				for t in AddTags:
+					f.tags.set(t, 2)
+					f.SetConditionalTags(t)
+					f.SetTaglessTags()
 				self.TagsTracker.AddStringList(f.tags.ReturnStringList(), 1)
 			f.FinishChange()
 		self._CalculateTagCoverage()
@@ -538,7 +550,10 @@ class BulkTagger(wx.Panel):
 			f = self.OutputFiles[i]
 			f.PrepareChange()
 			self.TagsTracker.SubStringList(f.tags.ReturnStringList(), 1)
-			f.tags.SetStringList(AddTags, 2)
+			for t in AddTags:
+				f.tags.set(t, 2)
+				f.SetConditionalTags(t)
+				f.SetTaglessTags()
 			self.TagsTracker.AddStringList(f.tags.ReturnStringList(), 1)
 			f.FinishChange()
 		self._CalculateTagCoverage()

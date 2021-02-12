@@ -389,6 +389,8 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 			self.parent.OwnTags.OutputFile.PrepareChange()
 			self.TagsTracker.SubStringList(self.parent.OwnTags.OutputFile.tags.ReturnStringList(), 1)
 			self.parent.OwnTags.OutputFile.tags.set(self.TagNames[c], 2)
+			self.parent.OwnTags.OutputFile.SetConditionalTags(self.TagNames[c])
+			self.parent.OwnTags.OutputFile.SetTaglessTags()
 			self.TagsTracker.AddStringList(self.parent.OwnTags.OutputFile.tags.ReturnStringList(), 1)
 			self.parent.OwnTags.OutputFile.FinishChange()
 		self.parent.disp()
@@ -665,7 +667,10 @@ class AdjacentTagsCopier:
 		CurrentImage.lock()
 		NextImage.PrepareChange()
 		self.TagsTracker.SubStringList(NextImage.tags.ReturnStringList(), 1)
-		NextImage.tags.SetStringList(CurrentImage.tags.ReturnStringList(), 2)
+		for t in CurrentImage.tags.ReturnStringList():
+			NextImage.tags.set(t, 2)
+			NextImage.SetConditionalTags(t)
+			NextImage.SetTaglessTags()
 		self.TagsTracker.AddStringList(NextImage.tags.ReturnStringList(), 1)
 		CurrentImage.unlock()
 		NextImage.FinishChange()
@@ -706,13 +711,18 @@ class ToggleCopyArbitraryCheckQuestion(ArbitraryCheckQuestion):  # This class sh
 		self.copier.UpdateCopyButtonState()
 		e.Skip()
 	def _OnToggleButton(self, e):
+		ChosenNames = [n for i, n in enumerate(self.TagNames) if i in self.CurrentChoices]
 		self.OutputFile.PrepareChange()
 		self.TagsTracker.SubStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		for i, n in enumerate(self.TagNames):
 			if i in self.CurrentChoices:
 				self.OutputFile.tags.clear(n, 2)
+				self.OutputFile.ClearConditionalTags(n)
+				self.OutputFile.SetTaglessTags(ChosenNames)
 			else:
 				self.OutputFile.tags.set(n, 2)
+				self.OutputFile.SetConditionalTags(n)
+				self.OutputFile.SetTaglessTags()
 		self.TagsTracker.AddStringList(self.OutputFile.tags.ReturnStringList(), 1)
 		self.OutputFile.FinishChange()
 		self._UpdateChecks()
