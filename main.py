@@ -49,14 +49,13 @@ class MainError(Exception):
 	pass
 
 class DialogSettings:
-	def __init__(self, ConfigFile, ImageInputDir, JSONInputDir, JSONOutputDir, JSONCompact, SearchDepth):
+	def __init__(self, ConfigFile, ImageInputDir, JSONInputDir, JSONOutputDir, JSONCompact):
 		self.EarlyExit = True
 		self.ConfigFile = ConfigFile
 		self.ImageInputDir = ImageInputDir
 		self.JSONInputDir = JSONInputDir
 		self.JSONOutputDir = JSONOutputDir
 		self.JSONCompact = JSONCompact
-		self.SearchDepth = SearchDepth
 	def validate(self):
 		if not os.path.exists(self.ConfigFile):
 			raise MainError( ''.join( ('Config file path: "', self.ConfigFile, '" does not exist.') ) )
@@ -74,12 +73,6 @@ class DialogSettings:
 			raise MainError( ''.join( ('JSON output file path: "', self.JSONOutputDir, '" does not exist.') ) )
 		if not os.path.isdir(self.JSONOutputDir):
 			raise MainError( ''.join( ('JSON output file path: "', self.JSONOutputDir, '" is not a directory.') ) )
-		try:
-			int(self.SearchDepth)
-		except ValueError as err:
-			raise MainError( ''.join( ( 'Failed to convert "', self.SearchDepth, '" to integer (', str(err), ').' ) ) ) from err
-		if int(self.SearchDepth) < 0:
-			raise MainError( ''.join( ( self.SearchDepth, ' must be greater than or equal to 0.' ) ) )
 
 def ParseCommandLine():
 	"Function to create a command line argument parser, and return the args object from it."
@@ -91,7 +84,6 @@ def ParseCommandLine():
 	ArgParser.add_argument('--json-input', '-j', action='store', default='', help='Path to the JSON input directory. If none, then it will be copied from "--image-input".')
 	ArgParser.add_argument('--json-output', '-o', action='store', default='', help='Path to the JSON output directory. If none, then copy it will be copied from "--json-input".')
 	ArgParser.add_argument('--json-compact', '-C', action='store_true', help='Print the JSON output in a compacted format to conserve size. If this is not set, it will be pretty-printed, which maximizes readability at the expense of size.')
-	ArgParser.add_argument('--search-depth', '-D', action='store', default='1', help='Directory depth to search for files. If 0, the software will traverse the ENTIRE directory tree.')
 	return ArgParser.parse_args()
 
 def ReadTextFile(path):
@@ -115,32 +107,17 @@ def ParseJSONFile(path):
 		raise MainError( ''.join( ('Failed to decode JSON file at path: "', path, '" Reason: "', err.msg, '" Line: ', str(err.lineno), ' Col: ', str(err.colno) ) ) ) from err
 	return obj
 
-def GetPathComponents(path):
-	return list( os.path.normpath(path).split(os.sep) )
-
-def CountPathComponents(path):
-	return len( GetPathComponents(path) )
-
-def GetDirFiles(DirPath, depth):
+def GetDirFiles(DirPath):
 	"Function to get all file paths from a directory."
-	DirPaths = [DirPath]
-	BasePathLength = CountPathComponents(DirPath)
-	output = []
-	while DirPaths:
-		CurrentDirPath = DirPaths.pop()
-		try:
-			for n in sorted( os.listdir(CurrentDirPath) ):
-				f = os.path.join(CurrentDirPath, n)
-				if depth > 0 and\
-				   CountPathComponents(f) - BasePathLength > depth:
-					pass
-				elif os.path.isfile(f):
-					output.append(f)
-				elif os.path.isdir(f):
-					DirPaths.append(f)
-		except OSError as err:
-			raise MainError( ''.join( ('Failed to get files from directory at: ', CurrentDirPath, ' [errno ', err.errno, ']: ', err.strerror) ) ) from err
-	return output
+	try:
+		output = []
+		for n in sorted( os.listdir(DirPath) ):
+			f = os.path.join(DirPath, n)
+			if os.path.isfile(f):
+				output.append(f)
+		return output
+	except OSError as err:
+		raise MainError( ''.join( ('Failed to get files from directory at: ', DirPath, ' [errno ', err.errno, ']: ', err.strerror) ) ) from err
 
 VALID_IMAGES = ('.bmp', '.dib', '.png', '.jpg', '.jpeg', '.jpe', '.jif', '.jfif', '.jfi', '.gif', '.pcx', '.pbm', '.pgm', '.ppm', '.pnm', '.tiff', '.tif', '.tga', '.icb', '.vda', '.vst', '.iff', '.xpm', '.ico', '.cur', '.ani')
 VALID_JSON = ('.json',)
@@ -162,7 +139,7 @@ def main():
 	if args.verbose:
 		wx.Log.SetVerbose()
 
-	settings = DialogSettings(args.config, args.image_input, args.json_input, args.json_output, args.json_compact, args.search_depth)
+	settings = DialogSettings(args.config, args.image_input, args.json_input, args.json_output, args.json_compact)
 	if not args.no_dialog:
 		dialog = FileDialogFrame(None, APPTITLE, settings)
 		dialog.Show()
@@ -175,8 +152,8 @@ def main():
 		settings.JSONOutputDir = settings.JSONInputDir
 	settings.validate()
 
-	ImagePaths = GetFileTypes(GetDirFiles( settings.ImageInputDir, int(settings.SearchDepth) ), VALID_IMAGES)
-	JSONPaths = GetFileTypes(GetDirFiles( settings.JSONInputDir, int(settings.SearchDepth) ), VALID_JSON)
+	ImagePaths = GetFileTypes(GetDirFiles(settings.ImageInputDir), VALID_IMAGES)
+	JSONPaths = GetFileTypes(GetDirFiles(settings.JSONInputDir), VALID_JSON)
 
 	wx.LogMessage( ''.join( ("Reading config at file at '", settings.ConfigFile.replace('%', '%%'), "'") ) )
 	config = parser()

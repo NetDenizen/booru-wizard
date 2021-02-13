@@ -206,23 +206,6 @@ class DirPicker(wx.Panel):
 		self.DirChooser.SetInitialDirectory( os.path.dirname(path) )
 		self.DirChooser.SetPath(path)
 
-class FreeTextBox(wx.Panel):
-	def GetValue(self):
-		"Wrapper for self.entry.GetValue"
-		return self.entry.GetValue()
-	def __init__(self, parent, message, value):
-		wx.Panel.__init__(self, parent=parent)
-
-		self.label = wx.StaticText(self, label= message, style= wx.ALIGN_CENTER)
-		self.entry = wx.TextCtrl(self, style= wx.TE_NOHIDESEL)
-		self.sizer = wx.BoxSizer(wx.VERTICAL)
-
-		self.sizer.Add(self.label, 0, wx.ALIGN_CENTER | wx.SHAPED)
-		self.sizer.Add(self.entry, 0, wx.ALIGN_CENTER | wx.SHAPED)
-		self.SetSizer(self.sizer)
-
-		self.entry.SetValue(value)
-
 class FileDialogFrame(wx.Frame):
 	def _OnOK(self, e):
 		self.settings.ConfigFile = self.ConfigFileChooser.GetPath()
@@ -230,7 +213,6 @@ class FileDialogFrame(wx.Frame):
 		self.settings.JSONInputDir = self.JSONInputDirChooser.GetPath()
 		self.settings.JSONOutputDir = self.JSONOutputDirChooser.GetPath()
 		self.settings.JSONCompact = self.JSONCompactCheckBox.IsChecked()
-		self.settings.SearchDepth = self.SearchDepthEntry.GetValue()
 		self.settings.EarlyExit = False
 		self.Close()
 		e.Skip()
@@ -248,7 +230,6 @@ class FileDialogFrame(wx.Frame):
 		self.JSONInputDirChooser = DirPicker(self, 'Pick the JSON input directory. The image directory is used if this is blank.', settings.JSONInputDir)
 		self.JSONOutputDirChooser = DirPicker(self, 'Pick the JSON output directory. The JSON input directory used if this is blank.', settings.JSONOutputDir)
 		self.JSONCompactCheckBox = wx.CheckBox(self, label='Compact JSON output to conserve size at expense of readability: ', style=wx.ALIGN_RIGHT)
-		self.SearchDepthEntry = FreeTextBox(self, 'Directory depth to search for files. If 0, the software will traverse the ENTIRE directory tree.', settings.SearchDepth)
 		self.OKButton = wx.Button(self, label='OK')
 		self.WrapperSizer  = wx.BoxSizer(wx.HORIZONTAL)
 		self.MainSizer = wx.BoxSizer(wx.VERTICAL)
@@ -257,7 +238,6 @@ class FileDialogFrame(wx.Frame):
 
 		self.MainSizer.AddStretchSpacer(1)
 		self.MainSizer.Add(self.ConfigFileChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
-		self.MainSizer.Add(self.SearchDepthEntry, 7, wx.ALIGN_CENTER | wx.EXPAND)
 		self.MainSizer.Add(self.ImageInputDirChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
 		self.MainSizer.Add(self.JSONInputDirChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
 		self.MainSizer.Add(self.JSONOutputDirChooser, 7, wx.ALIGN_CENTER | wx.EXPAND)
