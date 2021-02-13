@@ -385,14 +385,14 @@ class ImageTagsList(TagChoiceQuestion): # This class should never be used on its
 		e.Skip()
 	def _OnCommit(self, e):
 		"Copy the selected tags to the output SessionTags field of the parent class."
+		self.parent.OwnTags.OutputFile.PrepareChange()
 		for c in self.CurrentChoices:
-			self.parent.OwnTags.OutputFile.PrepareChange()
 			self.TagsTracker.SubStringList(self.parent.OwnTags.OutputFile.tags.ReturnStringList(), 1)
 			self.parent.OwnTags.OutputFile.tags.set(self.TagNames[c], 2)
 			self.parent.OwnTags.OutputFile.SetConditionalTags(self.TagNames[c])
 			self.parent.OwnTags.OutputFile.SetTaglessTags()
 			self.TagsTracker.AddStringList(self.parent.OwnTags.OutputFile.tags.ReturnStringList(), 1)
-			self.parent.OwnTags.OutputFile.FinishChange()
+		self.parent.OwnTags.OutputFile.FinishChange()
 		self.parent.disp()
 		e.Skip()
 	def _OnPathEntry(self, e):
