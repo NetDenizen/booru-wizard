@@ -109,10 +109,13 @@ class SearchEntry: # This class should never be used on its own
 			val = ContainsOrig[0]
 		else:
 			prefixes = tuple( (p for p in prefixes if p) )
-			MaxPrefixLen = len( max(prefixes, key=len) )
-			MaxPrefixes = tuple( (p for p in prefixes if len(p) == MaxPrefixLen) )
-			if len(MaxPrefixes) == 1:
-				val = MaxPrefixes[0]
+			MinPrefixLen = len( min(prefixes, key=len) )
+			MinPrefixes = []
+			for p in prefixes:
+				if p not in MinPrefixes and len(p) == MinPrefixLen:
+					MinPrefixes.append(p)
+			if len(MinPrefixes) == 1:
+				val = MinPrefixes[0]
 			else:
 				val = TrueOrig
 		self.entry.SetValue(val)
