@@ -699,6 +699,10 @@ class ToggleCopyArbitraryCheckQuestion(ArbitraryCheckQuestion):  # This class sh
 			self.ToggleButton.Enable()
 		else:
 			self.ToggleButton.Disable()
+	def load(self, OutputFile):
+		"Initialize the question for a certain case."
+		self.OutputFile = OutputFile
+		self.SetToggleButtonState()
 	def SetChoices(self, names):
 		ArbitraryCheckQuestion.SetChoices(self, names)
 		self.copier.SetChoices(names)
