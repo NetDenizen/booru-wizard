@@ -667,10 +667,11 @@ class AdjacentTagsCopier:
 		CurrentImage.lock()
 		NextImage.PrepareChange()
 		self.TagsTracker.SubStringList(NextImage.tags.ReturnStringList(), 1)
-		for t in CurrentImage.tags.ReturnStringList():
-			NextImage.tags.set(t, 2)
-			NextImage.SetConditionalTags(t)
-			NextImage.SetTaglessTags()
+		for c in self.choices:
+			if CurrentImage.tags.has(c):
+				NextImage.tags.set(c, 2)
+				NextImage.SetConditionalTags(c)
+				NextImage.SetTaglessTags()
 		self.TagsTracker.AddStringList(NextImage.tags.ReturnStringList(), 1)
 		CurrentImage.unlock()
 		NextImage.FinishChange()
