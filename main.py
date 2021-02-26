@@ -152,6 +152,29 @@ def GetFileTypes(paths, extensions):
 			output.append(p)
 	return output
 
+
+def ValidateImagePaths(paths):
+	UsedNames = []
+	for p in paths:
+		name = os.path.basename(p)
+		if name not in UsedNames:
+			UsedNames.append(name)
+		else:
+			raise MainError( ''.join( ('There cannot be two image files with the same name ("', name, '").') ) )
+
+def GetJSONObjects(directory, paths):
+	UsedNames = []
+	objects = []
+	for p in paths:
+		obj = ParseJSONFile( os.path.join(directory, p) )
+		for k in obj.keys():
+			if k not in UsedNames:
+				UsedNames.append(k)
+			else:
+				raise MainError( ''.join( ('There cannot be two JSON entries with the same name ("', k, '").') ) )
+		objects.append(obj)
+	return objects
+
 def main():
 	"Main procedure."
 	#TODO: Tidy this the fuck up.
@@ -176,7 +199,9 @@ def main():
 	settings.validate()
 
 	ImagePaths = GetFileTypes(GetDirFiles( settings.ImageInputDir, int(settings.SearchDepth) ), VALID_IMAGES)
+	ValidateImagePaths(ImagePaths)
 	JSONPaths = GetFileTypes(GetDirFiles( settings.JSONInputDir, int(settings.SearchDepth) ), VALID_JSON)
+	JSONObjects = GetJSONObjects(settings.JSONInputDir, JSONPaths)
 
 	wx.LogMessage( ''.join( ("Reading config at file at '", settings.ConfigFile.replace('%', '%%'), "'") ) )
 	config = parser()
@@ -209,8 +234,7 @@ def main():
 		OutputFiles.AddFile(settings.JSONOutputDir, p, settings.JSONCompact,
 							config.DefaultName, config.DefaultSource, config.DefaultSafety,
 							config.ConditionalTags, config.NamelessTags, config.SourcelessTags, config.TaglessTags)
-	for p in JSONPaths:
-		obj = ParseJSONFile( os.path.join(settings.JSONInputDir, p) )
+	for obj in JSONObjects:
 		OutputFiles.AddJSON(settings.ImageInputDir, settings.JSONOutputDir, obj, settings.JSONCompact,
 							config.DefaultName, config.DefaultSource, config.DefaultSafety,
 							config.ConditionalTags, config.NamelessTags, config.SourcelessTags, config.TaglessTags)
