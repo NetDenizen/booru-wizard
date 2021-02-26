@@ -2,6 +2,8 @@
 
 ## TODO-TO-DO 2.0
 
+* Implement '--search-depth' or -D option, and a complementary opening dialog box to allow the user to choose the depth to search for images and JSON files.
+
 * Implement DEFAULT_CUSTOM_TAGS.
 
 * Implement COPYABLE_CUSTOM_TAGS.
