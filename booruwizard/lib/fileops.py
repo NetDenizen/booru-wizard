@@ -463,8 +463,8 @@ class FileManager:
 					 )
 	def AddFile(self, OutputDir, path, compact, DefaultName, DefaultSource, DefaultSafety, ConditionalTags, NamelessTags, SourcelessTags, TaglessTags):
 		"Add a FileData object and its associated MangedFile object, with all the proper callbacks set."
-		wx.LogVerbose( ''.join( ("Registering file at path '", path.replace('%', '%%'), "'") ) )
 		if path not in self.InputPaths:
+			wx.LogVerbose( ''.join( ("Registering file at path '", path.replace('%', '%%'), "'") ) )
 			PushUpdate = None
 			if self._UpdateInterval == 0.0 or self._UpdateInterval == -1.0:
 				PushUpdate = self._UpdateTimerDelay.set
