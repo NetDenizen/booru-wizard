@@ -120,11 +120,6 @@ class ImageReader:
 	def _add(self, path):
 		"Add path to images array and open it if there is any space remaining."
 		image = ManagedImage(self, len(self.images), path)
-		image.open()
-		if image.DataSize != 0 and (self._CurrentBufSize + image.DataSize <= self._MaxBufSize or len(self._OpenImages) == 0):
-			self._activate(image)
-		else:
-			image.close()
 		self.images.append(image)
 	def AddPathsList(self, paths):
 		for p in paths:
