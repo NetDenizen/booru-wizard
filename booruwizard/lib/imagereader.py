@@ -156,6 +156,6 @@ class ImageReader:
 		return self._OpenImages.index(image)
 	def FinishImageConditions(self):
 		for i in self.images:
-			if not i.ImageConditionsHandled:
+			if self.ImageConditions and not i.ImageConditionsHandled:
 				i.open()
 				i.close()
