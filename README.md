@@ -1,5 +1,7 @@
 # Booru Wizard
 
+BOORU-WIZARD WILL LIKELY SEE NO FURTHER DEVELOPMENT IN THE FORSEEABLE FUTURE. The project it was initially made for never really took off, so I don't see any reason to continue work on it. So, I will leave it in an archived state for reference. The 2.0 version in the development branch should be pretty stable. I just never got around to finalizing the version.
+
 This piece of software is meant to generate a wizard with which the user may choose metadata for various images. The metadata will be that associated with the various \*booru style sites; Danbooru, Gelbooru, etc.
 
 So far, this entails:
